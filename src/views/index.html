@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chánh điện Tam Thế — Đạo tràng 200 chỗ (9:16)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Noto+Serif:wght@700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/live.css" /><link rel="stylesheet" href="/css/studio.css" /><link rel="stylesheet" href="/css/live-studio.css" />
+  <link rel="preload" as="image" href="/assets/tam-the-sanctuary-stage.png" fetchpriority="high" />
+<link rel="stylesheet" href="/css/temple-character.css"><link rel="stylesheet" href="/css/studio-polish.css"></head>
+<body><header class="studio-bar"><a class="brand" href="/admin"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M16 27C6 26 2 20 3 13c5 0 10 2 13 7 3-5 8-7 13-7 1 7-3 13-13 14Z"/><path d="M16 24C8 20 10 10 16 4c6 6 8 16 0 20Z"/></svg>Tam Thế <span class="muted">Studio</span></a><nav class="studio-links" aria-label="Điều hướng chính"><a href="/admin">Quản lý</a><a href="/" aria-current="page">Phòng Live</a><a href="/?obs=1" target="_blank" rel="noopener">OBS ↗</a></nav></header>
+  <div class="app-workspace">
+    <!-- ====================================================================
+         KHUNG 9:16 CHUẨN TIKTOK LIVE / OBS BROWSER SOURCE (1080 x 1920)
+         ==================================================================== -->
+    <div class="stage-wrapper" id="stageWrapper">
+      <div class="stage-9x16" id="stage9x16"><div class="welcome-card" id="welcomeCard" role="status" aria-live="polite"><span class="welcome-mark" data-icon="welcome" aria-hidden="true"></span><div><small>Hữu duyên tương ngộ</small><strong id="welcomeUser"></strong><span>vừa ghé chánh điện</span></div></div>
+        <!-- 1. HÌNH NỀN CHÁNH ĐIỆN ĐỨC PHẬT A DI ĐÀ 8K SẮC NÉT -->
+        <img
+          src="/assets/tam-the-sanctuary-stage.png"
+          alt="Chánh điện Tam Thế với đạo tràng 200 chỗ"
+          class="sanctuary-bg-img"
+          fetchpriority="high"
+        />
+
+        <!-- 1B. HỆ THỐNG HÀO QUANG ĐỨC PHẬT A DI ĐÀ (XOAY CHUYỂN VẠN TRƯỢNG, KHÔNG CHE MẶT PHẬT) -->
+        <div class="buddha-halo-system" id="buddhaHaloSystem">
+          <div class="halo-sunburst"></div>
+          <div class="halo-counter-rays"></div>
+          <div class="halo-pulse-ring ring-1"></div>
+          <div class="halo-pulse-ring ring-2"></div>
+          <svg class="halo-dharma-svg" viewBox="0 0 680 680">
+            <g class="dharma-wheel-outer" stroke="#fff2a6" fill="none">
+              <circle cx="340" cy="340" r="295" stroke-width="2.2" stroke-dasharray="14 10" stroke-opacity="0.78" />
+              <circle cx="340" cy="340" r="252" stroke-width="1.8" stroke-dasharray="6 8" stroke-opacity="0.65" />
+              <circle cx="340" cy="340" r="210" stroke-width="2.5" stroke-opacity="0.7" />
+            </g>
+            <g class="dharma-wheel-inner" stroke="#ffe47a" fill="none">
+              <circle cx="340" cy="340" r="168" stroke-width="2.2" stroke-dasharray="20 12" stroke-opacity="0.85" />
+              <circle cx="340" cy="340" r="134" stroke-width="1.6" stroke-opacity="0.65" />
+            </g>
+          </svg>
+        </div>
+
+        <div class="buddha-side-halo buddha-side-halo-left" id="leftBuddhaHalo" aria-hidden="true"></div>
+        <div class="buddha-side-halo buddha-side-halo-right" id="rightBuddhaHalo" aria-hidden="true"></div>
+
+        <!-- HÀO QUANG ĐÀI SEN TRÊN TAY ĐỨC PHẬT A DI ĐÀ -->
+        <div class="lotus-hand-halo" id="lotusHandHalo"></div>
+
+        <!-- 2. THANH TRẠNG THÁI MỎNG TRÊN ĐỈNH (KHÔNG CHE TƯỢNG PHẬT) -->
+        <header class="minimal-top-bar">
+          <div class="live-pill" id="liveStatusPill">
+            <span class="live-dot" id="liveDot"></span>
+            <span id="liveStatusText">CHÁNH ĐIỆN TAM THẾ • ĐẠO TRÀNG 200 CHỖ</span>
+          </div>
+          <div class="top-Right-badges">
+            <div class="mini-stat-pill">
+            <span class="top-stat-icon" data-icon="incense" aria-hidden="true"></span><strong id="statIncense">108</strong> hương <span class="stat-divider" aria-hidden="true"></span><span class="top-stat-icon" data-icon="lotus" aria-hidden="true"></span><strong id="statMerit">1,080</strong> CĐ
+            </div>
+          </div>
+        </header>
+
+        <!-- 3. CỘT SÁNG TÂM HƯƠNG & LƯ HƯƠNG TRUNG TÂM -->
+        <div class="sacred-light-beam" id="sacredLightBeam"></div>
+
+        <div class="incense-burner-zone" id="incenseBurnerZone" title="Bấm để Thắp Hương Dâng Phật">
+          <div class="incense-sticks-holder" id="incenseSticksHolder"></div>
+        </div>
+
+        <!-- PHÁP KHÍ TƯƠNG TÁC HAI BÊN BÀN THỜ: ĐẠI HỒNG CHUNG & MÕ GỖ & ỐNG XĂM -->
+        <div class="ritual-hotspot bell-hotspot" id="bellStation" title="Bấm để Thỉnh Đại Hồng Chung">
+          <span class="hotspot-icon" data-icon="bell" aria-hidden="true"></span>
+          <span class="hotspot-label">Thỉnh Chuông</span>
+        </div>
+
+        <div class="ritual-hotspot woodfish-hotspot" id="woodenFishStation" title="Bấm để Gõ Mõ Tích Công Đức">
+          <span class="hotspot-icon" data-icon="fish" aria-hidden="true"></span>
+          <span class="hotspot-label">Gõ Mõ (<span id="statWoodenFish">360</span>)</span>
+        </div>
+
+        <div class="ritual-hotspot fortune-hotspot" id="fortuneCylinder" title="Bấm để Xin Xăm / Gieo Quẻ">
+          <span class="hotspot-icon" data-icon="fortune" aria-hidden="true"></span>
+          <span class="hotspot-label">Xin Xăm</span>
+        </div>
+
+        <!-- 4. CHỦ LỄ ĐANG DÂNG HƯƠNG TRƯỚC LƯ HƯƠNG ĐỒNG (GIỮA CHÁNH ĐIỆN) -->
+        <div class="central-worshipper" id="centralWorshipper">
+          <div class="worshipper-wish-bubble" id="centralWishBubble">
+            “Cầu gia đình bình an, vạn sự cát tường như ý”
+          </div>
+          <div class="central-sprite-stack" id="centralSpriteStack">
+            <img src="/assets/devotee_walk.png" data-pose="walk1" class="devotee-sprite pose-frame" alt="" />
+            <img src="/assets/devotee_walk_2.png" data-pose="walk2" class="devotee-sprite pose-frame" alt="" />
+            <img src="/assets/devotee_kneel_down.png" data-pose="kneelDown" class="devotee-sprite pose-frame" alt="" />
+            <img src="/assets/devotee.png" data-pose="kneel" class="devotee-sprite pose-frame active" alt="" />
+            <img src="/assets/devotee_bow.png" data-pose="forehead" class="devotee-sprite pose-frame" alt="" />
+            <img src="/assets/devotee_bow_mid.png" data-pose="bowMid" class="devotee-sprite pose-frame" alt="" />
+            <img src="/assets/devotee_prostrate.png" data-pose="prostrate" class="devotee-sprite pose-frame" alt="" />
+            <img src="/assets/devotee_prostrate_deep.png" data-pose="prostrateDeep" class="devotee-sprite pose-frame" alt="" />
+          </div>
+          <div class="name-tag central-name-tag">
+            <div class="tag-avatar" id="centralAvatar">M</div>
+            <div class="tag-texts">
+              <div class="tag-name" id="centralName">Thí Chủ Minh Tâm</div>
+              <div class="tag-sub" id="centralAction">Dâng hương • +15 Công Đức</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. HÀNG 6 ĐỆM QUỲ VIP (TOP 6 BẢNG VÀNG CÔNG ĐỨC TRÊN BỤC GỖ) -->
+        <div class="vip-cushions-layer" id="vipCushionsLayer"></div>
+
+        <!-- 6. ĐẠO TRÀNG NGƯỜI XEM QUỲ LỄ HAI BÊN THẢM ĐỎ (40 CHỖ NGỒI PHỐI CẢNH) -->
+        <div class="congregation-hall" id="congregationHall"></div>
+
+        <!-- 7. NGƯỜI XEM ĐANG BƯỚC ĐI TRÊN THẢM ĐỎ TIẾN LÊN DÂNG HƯƠNG -->
+        <div class="carpet-walker-layer" id="carpetWalkerLayer"></div>
+
+        <!-- 8. ĐÈN HOA ĐĂNG / SỚ CẦU NGUYỆN BAY LÊN -->
+        <div class="sky-lanterns-layer" id="skyLanternsLayer"></div>
+
+        <!-- 9. LỚP CANVAS HIỆU ỨNG KHÓI HƯƠNG, HOA SEN RƠI & SÓNG ÂM -->
+        <canvas id="templeCanvas"></canvas>
+
+        <!-- 10. THANH HUD GỌN GÀNG DƯỚI ĐÁY (GIỐNG MẪU THAM CHIẾU) -->
+        <footer class="bottom-hud-bar">
+ <div class="hud-left-col"><div class="hud-active-notice" id="hudActiveNotice"><span class="notice-mark hud-icon" data-icon="lotus" aria-hidden="true"></span><div class="notice-copy"><strong id="devoteeNameLine">Thí chủ hữu duyên</strong><span id="devoteeActionTag">Chào mừng đến chánh điện</span></div><span class="notice-live">TÂM THÀNH</span></div>
+ <div class="hud-gift-cards">
+ <button class="hud-gift-card" id="cardIncense" aria-label="Dâng 3 nén hương"><span class="hud-icon" data-icon="incense"></span><span class="gift-title">Dâng hương</span><span class="gift-coin-tag">Ba nén tâm thành</span></button>
+ <button class="hud-gift-card" id="cardBlessing" aria-label="Cầu phúc và thả hoa đăng"><span class="hud-icon" data-icon="prayer"></span><span class="gift-title">Cầu phúc</span><span class="gift-coin-tag">Gửi một lời nguyện</span></button>
+ <button class="hud-gift-card" id="cardLotus" aria-label="Dâng hoa sen"><span class="hud-icon" data-icon="lotus"></span><span class="gift-title">Hoa sen</span><span class="gift-coin-tag">Thành tâm kính lễ</span></button></div></div>
+ <div class="hud-right-leaderboard"><div class="hud-lb-header"><span class="hud-icon" data-icon="ceremony"></span>Tấm lòng thành</div><div class="hud-lb-list" id="leaderboardList"></div></div></footer>
+
+        <!-- BANNER ĐẠI LỄ KIM LONG CHẦU PHẬT -->
+        <div class="grand-ceremony-banner" id="grandCeremonyBanner">
+          <div class="grand-title" id="grandTitle">ĐẠI LỄ KIM LONG CHẦU PHẬT</div>
+          <div class="grand-sub" id="grandSub">Công đức vô lượng: Đại Thí Chủ dâng lễ</div>
+        </div>
+
+        <!-- MODAL TỜ GIẢI QUẺ LINH XĂM -->
+        <div class="fortune-modal-overlay" id="fortuneModal">
+          <div class="fortune-scroll-card">
+            <div class="fortune-badge" id="fortuneRankBadge">THƯỢNG THƯỢNG CÁT</div>
+            <div class="fortune-heading" id="fortuneTitle">Quẻ Số 1 — Nhật Xuất Đông Phương</div>
+            <div class="fortune-devotee" id="fortuneDevotee">Thí chủ xin quẻ: Minh Tâm</div>
+            <div class="fortune-poem" id="fortunePoem"></div>
+            <div class="fortune-meaning" id="fortuneMeaning"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====================================================================
+         BẢNG ĐIỀU KHIỂN NHANH RPC & GIẢ LẬP TRỰC TIẾP (ẨN KHI ?obs=1)
+         ==================================================================== -->
+<aside class="quick-dock" id="quickDock"><div class="dock-header"><div><span class="eyebrow">Tam Thế Studio</span><h1>Phòng Live</h1></div><a class="dock-link" href="/?obs=1" target="_blank">OBS ↗</a></div><button class="dock-btn primary full" id="btnUnlockAudio">Bật âm thanh buổi Live</button><nav class="tabs" data-tab-group role="tablist" aria-label="Điều khiển Live"><button data-tab="liveRitual">Nghi thức</button><button data-tab="liveVoice">Giọng đọc</button><button data-tab="liveMusic">Nhạc</button><button data-tab="liveConnect">Kết nối</button></nav>
+<section id="liveRitual" role="tabpanel"><div class="field"><label for="inputDevoteeName">Tên thí chủ</label><input id="inputDevoteeName" value="Khách Demo"></div><div class="field"><label for="inputDevoteeWish">Lời nguyện</label><input id="inputDevoteeWish" value="Cầu bình an và sức khỏe"></div><div class="dock-grid-2"><button class="dock-btn" id="btnRpcIncense">Dâng hương</button><button class="dock-btn" id="btnRpcLantern">Thả hoa đăng</button><button class="dock-btn" id="btnRpcWoodenFish">Gõ mõ</button><button class="dock-btn" id="btnRpcBell">Thỉnh chuông</button><button class="dock-btn" id="btnRpcFortune">Gieo quẻ</button><button class="dock-btn" id="btnRpcGiftLotus">Dâng hoa sen</button></div><button class="dock-btn full" id="btnRpcGrandCeremony">Đại lễ Kim Long</button><div class="dock-section"><h2>Hoạt động</h2><div class="event-feed" id="eventFeed"></div></div></section><section id="liveVoice" role="tabpanel" hidden><div class="sfx-controls"><h2><span class="sfx-title-icon" data-icon="sound" aria-hidden="true"></span>Âm thanh pháp khí</h2><div class="sfx-preview-grid"><button class="dock-btn sfx-preview-card" id="btnTestWood"><span class="sfx-card-icon" data-icon="fish" aria-hidden="true"></span><span class="sfx-card-copy"><strong>Tiếng mõ</strong><small>Nhịp gỗ trầm</small></span><span class="sfx-card-play" data-icon="play" aria-hidden="true"></span></button><button class="dock-btn sfx-preview-card" id="btnTestBell"><span class="sfx-card-icon" data-icon="bell" aria-hidden="true"></span><span class="sfx-card-copy"><strong>Tiếng chuông</strong><small>Ngân vang trong điện</small></span><span class="sfx-card-play" data-icon="play" aria-hidden="true"></span></button><button class="dock-btn sfx-preview-card" id="btnTestFortune"><span class="sfx-card-icon" data-icon="fortune" aria-hidden="true"></span><span class="sfx-card-copy"><strong>Gieo quẻ</strong><small>Lắc ống xăm tre</small></span><span class="sfx-card-play" data-icon="play" aria-hidden="true"></span></button></div><label for="sfxVolume">Âm lượng pháp khí</label><input id="sfxVolume" type="range" min="0" max="100" value="80"><p class="helper" id="sfxStatus" role="status">Tiếng mõ, chuông và gieo quẻ được phát theo từng nghi thức.</p></div><div class="field"><label for="ttsVoiceSelect">Giọng mặc định trên Live</label><select id="ttsVoiceSelect" disabled><option>Chờ ZeroTTS…</option></select></div><fieldset class="voice-rotation" id="voiceRotationFieldset" disabled><legend>Giọng luân phiên</legend><p class="helper">Chọn từ 2 giọng trở lên. Mỗi nghi thức có lời đọc sẽ dùng giọng kế tiếp; bỏ chọn hết để chỉ dùng giọng mặc định.</p><div class="voice-rotation-list" id="voiceRotationList"><p class="helper">Chờ ZeroTTS…</p></div></fieldset><p class="helper" id="ttsVoiceStatus" role="status">Giọng đã chọn dùng cho các tương tác tự động.</p><div class="row"><button class="btn" id="btnVoicePreview" disabled>Nghe thử giọng</button></div><audio id="voiceAudioPreview" controls aria-label="Nghe thử giọng đọc"></audio><button class="dock-btn full" id="btnToggleTts">Giọng đọc: BẬT</button><label for="sliderTtsVol">Âm lượng giọng đọc <strong id="valTtsVol">95%</strong></label><input type="range" id="sliderTtsVol" min="0" max="100" value="95"><p class="helper">Lời dẫn tự phát theo tương tác. Chỉnh bộ câu dẫn trong trang Quản lý.</p><a class="dock-link" href="/admin">Chỉnh lời dẫn tự động ↗</a><details><summary>Thông báo riêng khi cần</summary><label for="ttsDirectText">Nội dung đọc · tối đa 1.000 ký tự</label><textarea id="ttsDirectText" maxlength="1000" placeholder="Nhập thông báo riêng cho buổi Live…"></textarea><p class="helper">Lời dẫn nghi thức vẫn tự phát; không cần nhập tại đây.</p><button class="btn" id="btnBroadcastVoice">Phát thông báo trên Live</button><p class="helper" id="broadcastStatus" role="status"></p></details></section><section id="liveMusic" role="tabpanel" hidden><div class="field"><label for="musicTrack">Bản nhạc đang chọn</label><select id="musicTrack"></select></div><div class="row"><button class="btn" id="btnMusicPreview">Nghe thử</button><button class="btn" id="btnMusicNext">Bài tiếp theo</button></div><audio id="musicPreview" controls aria-label="Nghe thử nhạc thiền"></audio><label class="row"><input style="width:18px;min-height:24px;flex:none" type="checkbox" id="musicAutoRotate"> Tự chuyển bài khi hết bản</label><p class="helper">6 bản ambient tổng hợp nguyên bản, mỗi bản 48 giây. Nhạc tự giảm khi có giọng đọc.</p><button class="dock-btn full" id="btnToggleMusic">Nhạc nền: BẬT</button><label for="sliderMusicVol">Âm lượng nhạc <strong id="valMusicVol">65%</strong></label><input type="range" id="sliderMusicVol" min="0" max="100" value="65"><details><summary>Dùng nhạc riêng</summary><label for="musicFile">File âm thanh · dưới 50 MB</label><input id="musicFile" type="file" accept="audio/*"><p id="musicFileStatus" class="helper"></p></details></section><section id="liveConnect" role="tabpanel" hidden><h2>TikTok Live</h2><div class="field"><label for="inputTikTokUser">Tài khoản đang phát Live</label><input id="inputTikTokUser" placeholder="@username"><button class="dock-btn full" id="btnConnectTikTok">Kết nối TikTok</button></div><button class="dock-btn full" id="btnToggleAutoSim">Giả lập người xem: TẮT</button><button class="dock-btn full" id="btnWelcomePreview">Thử bảng chào người vào phòng</button><details class="auth-details" open><summary>Kết nối điều khiển</summary><label for="rpcTokenInput">RPC token trong terminal</label><div class="row"><input type="password" id="rpcTokenInput" autocomplete="off" placeholder="Dán token để bắt đầu"><button class="btn" id="btnAuthenticate">Xác thực</button></div><p id="authStatus" class="helper" role="status">Chưa xác thực.</p><button class="btn" id="btnLogout">Xóa token</button></details></section></aside>
+  </div>
+
+  <script type="module" src="/scripts/index.ts"></script>
+</body>
+</html>

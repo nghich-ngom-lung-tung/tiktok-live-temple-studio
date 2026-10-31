@@ -1,0 +1,24 @@
+{
+  "name": "tiktok-live-temple-studio",
+  "version": "1.0.0",
+  "description": "Tam Thế Studio for TikTok Live (Node.js + ZeroTTS Vietnamese voices)",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "dev:client": "vite --host 127.0.0.1",
+    "dev:server": "node --watch server.js",
+    "typecheck": "tsc --noEmit",
+    "build": "npm run typecheck && vite build",
+    "start": "npm run build && node server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "tiktok-live-connector": "^2.1.0",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2",
+    "vite": "^8.3.5"
+  }
+}
