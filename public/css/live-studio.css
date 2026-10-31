@@ -1,0 +1,28 @@
+html,body { background:#f6f2e9; }
+html { height:auto; min-height:100%; overflow:auto; }
+body { overflow:auto; height:auto; min-height:100vh; }
+body>.studio-bar { position:relative; z-index:1; }
+.app-workspace { height:calc(100dvh - 65px); min-height:600px; width:100%; padding:24px; align-items:flex-start; gap:32px; }
+.stage-wrapper { flex-shrink:0; height:calc(100dvh - 113px); min-height:552px; width:auto; border:1px solid #d8cbb8; border-radius:8px; contain:none; isolation:isolate; }
+.stage-9x16 { contain:none; isolation:isolate; background:#27190b url('/assets/tam-the-sanctuary-stage.png') center top/cover no-repeat; }
+.quick-dock { display:block; width:410px; min-width:0; height:100%; max-height:none; background:#fffdf8; border:1px solid #e6ddcf; border-radius:10px; padding:22px; overflow:auto; color:#352c23; }
+.quick-dock .dock-header { display:flex; align-items:center; justify-content:space-between; border:0; margin-bottom:18px; padding:0; }
+.quick-dock h1 { font:600 24px/1.4 'Be Vietnam Pro',sans-serif; color:#352c23; margin:2px 0; }
+.quick-dock .dock-link { background:none; color:#6f6252; border:0; padding:10px 0; font-size:13px; text-decoration:underline; text-underline-offset:4px; }
+.quick-dock .tabs { gap:20px; margin:18px 0 22px; }
+.quick-dock .dock-section { background:transparent; padding:20px 0 0; margin-top:20px; border:0; border-top:1px solid #e6ddcf; border-radius:0; }
+.quick-dock .dock-btn.full { width:100%; margin:12px 0; }
+.quick-dock .active-toggle { background:#efe5d4; border-color:#b6a384; color:#352c23; }
+.quick-dock .event-feed { height:auto; max-height:180px; margin-top:12px; padding:0; }
+.quick-dock .event-feed-item { border:0; border-bottom:1px solid #e6ddcf; border-radius:0; background:none; padding:10px 0; color:#796c5b; font-size:12px; }
+.quick-dock input[type=range] { width:100%; accent-color:#987127; margin:12px 0; min-height:28px; }
+.quick-dock label strong { float:right; color:#6f6252; }
+.welcome-card { position:absolute; z-index:150; top:1060px; left:36px; width:340px; background:#17120eee; border:1px solid #bc9856; border-radius:12px; padding:18px; display:flex; align-items:center; gap:16px; opacity:0; transform:translateX(-24px); transition:opacity .3s,transform .3s; pointer-events:none; }
+.welcome-card.visible { opacity:1; transform:translateX(0); }
+.welcome-mark { display:grid; place-items:center; color:#e9c574; width:44px; height:44px; flex-shrink:0; }.welcome-mark svg { width:34px; height:34px; }
+.welcome-card small { display:block; font-size:18px; color:#c7b694; }.welcome-card strong { display:block; font:600 26px/1.5 'Be Vietnam Pro',sans-serif; max-width:240px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#fff0ce; }.welcome-card div>span { color:#bdb4a3; font-size:18px; }
+.fortune-scroll-card { max-height:1500px; overflow:auto; }.fortune-meaning { white-space:pre-line; }
+body.obs-mode>.studio-bar { display:none; }
+body.obs-mode .app-workspace { min-height:0; height:100dvh; padding:0; }
+body.obs-mode .stage-wrapper { height:min(100dvh,177.7778vw); min-height:0; border:0; border-radius:0; }
+@media(max-width:960px) { .app-workspace { height:auto; min-height:0; flex-direction:column; align-items:center; padding:20px 16px; gap:20px; }.stage-wrapper { height:auto; min-height:0; width:min(100%,390px); aspect-ratio:9/16; }.quick-dock { width:min(100%,500px); height:auto; max-height:none; overflow:visible; padding:18px; }.quick-dock .row { flex-wrap:wrap; }.quick-dock .row input { flex-basis:100%; }body.obs-mode .app-workspace { flex-direction:row; align-items:center; }body.obs-mode .stage-wrapper { width:auto; max-width:100vw; } }
