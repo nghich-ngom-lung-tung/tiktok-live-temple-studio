@@ -20,6 +20,10 @@ function createApp({ config, security, rateLimiters, controllers }) {
     rateLimiters.asset,
     express.static(config.TTS_CACHE_DIR, { maxAge: '7d' })
   );
+  app.use(
+    '/stage-backgrounds',
+    express.static(config.STAGE_BACKGROUND_DIR, { maxAge: '365d', immutable: true, index: false, dotfiles: 'deny' })
+  );
   registerHttpRoutes({
     app,
     controllers: {

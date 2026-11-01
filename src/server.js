@@ -15,6 +15,7 @@ const { createAuthController } = require('./controllers/authController');
 const { createRpcController } = require('./controllers/rpcController');
 const { createStateController } = require('./controllers/stateController');
 const { createTtsController } = require('./controllers/ttsController');
+const { createStageBackgroundController } = require('./controllers/stageBackgroundController');
 const { attachWebSocketController } = require('./controllers/webSocketController');
 const { createApp } = require('./app');
 const { createCeremonyQueue } = require('./services/ceremonyQueue');
@@ -22,6 +23,7 @@ const { createCeremonyQueue } = require('./services/ceremonyQueue');
 function createApplication() {
   fs.mkdirSync(config.DATA_DIR, { recursive: true });
   fs.mkdirSync(config.TTS_CACHE_DIR, { recursive: true });
+  fs.mkdirSync(config.STAGE_BACKGROUND_DIR, { recursive: true });
 
   const stateModel = new TempleStateModel({ stateFile: config.STATE_FILE });
   const realtime = createRealtimeService();
@@ -67,6 +69,12 @@ function createApplication() {
     state: createStateController({ stateModel, ttsManager }),
     tts: createTtsController({ stateModel, ttsManager })
   };
+  controllers.stageBackground = createStageBackgroundController({
+    stateModel,
+    realtime,
+    ttsManager,
+    stageBackgroundDir: config.STAGE_BACKGROUND_DIR
+  });
   const rateLimiters = security.createRateLimiters();
   const app = createApp({ config, security, rateLimiters, controllers });
   const server = http.createServer(app);

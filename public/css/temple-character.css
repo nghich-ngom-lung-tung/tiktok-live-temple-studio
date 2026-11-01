@@ -28,6 +28,11 @@
 .quick-dock { width:470px; }
 .studio-page .track-row { padding:18px 10px; border-radius:8px; }.studio-page .track-row:hover { background:#f5ebd9; }.studio-page .track-row[aria-pressed=true] { background:#f2e5ca; color:#7f352a; }
 .scene-preview { border:1px solid #c9aa6a; border-radius:10px; }.sfx-controls { border:1px solid #dfcaa9; border-radius:10px; padding:14px; margin-bottom:20px; background:#fcf7ee; }
+.stage-background-controls { margin-top:16px; padding-top:16px; border-top:1px solid #e6ddcf; }
+.stage-background-controls .field { margin-bottom:12px; }
+.stage-background-controls input[type=file] { width:100%; padding:9px; border:1px solid #dfcfb4; border-radius:8px; background:#fffdf8; color:#624c32; font-size:13px; }
+.stage-background-actions { display:flex; flex-wrap:wrap; gap:8px; }
+.stage-background-controls .helper { margin-top:8px; }
 /* Scene overlays are rendered in 1080 × 1920 logical pixels. */
 .bottom-hud-bar { left:24px; right:24px; bottom:22px; height:214px; grid-template-columns:minmax(0,1.95fr) minmax(0,1fr); gap:14px; z-index:180; }
 .hud-left-col { min-width:0; gap:10px; }.hud-active-notice { height:56px; flex-shrink:0; background:#79382df5; border:1px solid #d4b77a; padding:7px 14px; border-radius:13px; color:#fff2d3; justify-content:flex-start; }
@@ -46,7 +51,7 @@
 .viewer-chat-bubble strong { display:block; font-size:18px; color:#a26b32; margin-bottom:5px; }.viewer-chat-bubble>span { display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden; }.is-chatting .viewer-face { border-color:#fff3ae; box-shadow:0 0 0 5px #f5d37977; }
 @keyframes chatAppear { from{opacity:0;transform:translateY(12px) scale(.95);}to{opacity:1;transform:none;} }
 #templeCanvas { background:transparent!important; mix-blend-mode:screen; }.vip-cushions-layer,.congregation-hall { contain:none; }
-.stage-wrapper { background:#56371d url('/assets/tam-the-sanctuary-stage.png') center top/cover no-repeat; }.stage-9x16 { background:transparent; }
+.stage-wrapper { background:#56371d; }.stage-9x16 { background:transparent; }
 @media(max-width:700px) { .studio-page .stats { gap:8px; }.studio-page .stat { padding:12px; }.studio-page .stat strong { font-size:24px; }.ritual-action .ritual-icon svg { width:26px;height:26px; }.ritual-label small,.ritual-arrow { display:none; }.studio-page .ritual-action,.quick-dock .ritual-action { min-height:70px;padding:12px;gap:10px; }.studio-page .tabs button,.quick-dock .tabs button { padding:10px 12px; }.studio-page .tabs { gap:5px; }.quick-dock .tabs { gap:2px; } }
 @media(max-width:960px) { .quick-dock { width:min(100%,500px); } }
 @media(prefers-reduced-motion:reduce) { .is-pressed,.viewer-chat-bubble { animation:none; }.ritual-action:hover { transform:none!important; } }

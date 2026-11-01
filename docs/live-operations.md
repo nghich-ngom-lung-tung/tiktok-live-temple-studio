@@ -15,6 +15,7 @@
 - Giọng đọc, nhạc nền, pháp khí và âm lượng được lưu trên server và đồng bộ đến các màn đã xác thực. Bật/tắt áp dụng cả khi màn OBS dùng hồ sơ trình duyệt riêng.
 - Trình duyệt hoặc phần mềm phát có thể yêu cầu tương tác để cho phép âm thanh. Kiểm tra tiếng thực tế trên điện thoại trước buổi Live; trạng thái nút bật tiếng không chứng minh đầu ra TikTok đã nghe được.
 - File nhạc tải từ máy vẫn chỉ phát trong tab đã chọn file; thư viện nhạc có sẵn đồng bộ giữa các màn.
+- **Đổi ảnh chánh điện**: ở **Quản lý → Tổng quan → Chánh điện Tam Thế**, chọn PNG/JPG/WebP tối đa 8 MB, xem trước rồi bấm **Tải lên và áp dụng**. Ảnh mới được lưu trong `data/stage-backgrounds`, giữ lại giữa các lần khởi động và tự đồng bộ sang Phòng Live/OBS; bấm **Ảnh mặc định** để quay lại ảnh ban đầu. Ảnh dọc 9:16 cho khung tốt nhất; ảnh ngang sẽ được cắt cho vừa, còn nhân vật và thẻ tương tác vẫn nằm phía trước.
 
 ## Hàng đợi nghi thức
 

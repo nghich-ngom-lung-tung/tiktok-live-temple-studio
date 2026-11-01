@@ -29,6 +29,7 @@ const DEFAULT_STATE = {
     fortuneReadingMode: 'summary',
     musicTrack: 'lotus',
     musicAutoRotate: false,
+    stageBackgroundUrl: '/assets/tam-the-sanctuary-stage.png',
     bgMusicEnabled: true,
     sfxEnabled: true,
     presentationPaused: false,

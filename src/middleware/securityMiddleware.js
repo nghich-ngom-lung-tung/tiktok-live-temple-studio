@@ -61,6 +61,7 @@ function createRateLimiters() {
     rpc: createRateLimit(240, 60_000),
     tts: createRateLimit(30, 60_000),
     asset: createRateLimit(240, 60_000),
+    stageBackground: createRateLimit(8, 60_000),
     auth: createRateLimit(20, 60_000)
   };
 }

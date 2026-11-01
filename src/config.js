@@ -33,6 +33,7 @@ module.exports = {
   ADMIN_PAGE_PATH: path.join(ROOT_DIR, 'dist', 'admin', 'index.html'),
   DATA_DIR: path.join(ROOT_DIR, 'data'),
   TTS_CACHE_DIR: path.join(ROOT_DIR, 'data', 'tts-cache'),
+  STAGE_BACKGROUND_DIR: path.join(ROOT_DIR, 'data', 'stage-backgrounds'),
   STATE_FILE: path.join(ROOT_DIR, 'data', 'merit-state.json'),
   TTS_WORKER_PATH: path.join(ROOT_DIR, 'tts_worker.py'),
   PORT,

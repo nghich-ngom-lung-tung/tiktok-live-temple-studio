@@ -4,7 +4,7 @@ body { overflow:auto; height:auto; min-height:100vh; }
 body>.studio-bar { position:relative; z-index:1; }
 .app-workspace { height:calc(100dvh - 65px); min-height:600px; width:100%; padding:24px; align-items:flex-start; gap:32px; }
 .stage-wrapper { flex-shrink:0; height:calc(100dvh - 113px); min-height:552px; width:auto; border:1px solid #d8cbb8; border-radius:8px; contain:none; isolation:isolate; }
-.stage-9x16 { contain:none; isolation:isolate; background:#27190b url('/assets/tam-the-sanctuary-stage.png') center top/cover no-repeat; }
+.stage-9x16 { contain:none; isolation:isolate; background:#27190b; }
 .quick-dock { display:block; width:410px; min-width:0; height:100%; max-height:none; background:#fffdf8; border:1px solid #e6ddcf; border-radius:10px; padding:22px; overflow:auto; color:#352c23; }
 .quick-dock .dock-header { display:flex; align-items:center; justify-content:space-between; border:0; margin-bottom:18px; padding:0; }
 .quick-dock h1 { font:600 24px/1.4 'Be Vietnam Pro',sans-serif; color:#352c23; margin:2px 0; }

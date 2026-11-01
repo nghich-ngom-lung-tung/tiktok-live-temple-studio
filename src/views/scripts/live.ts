@@ -698,6 +698,12 @@ initLiveOperations();
     latestUIState = st;
     presentationPaused = Boolean(st.settings?.presentationPaused);
     audio.applyRemoteSettings(st.settings || {});
+    const stageBackground = st.settings?.stageBackgroundUrl || '/assets/tam-the-sanctuary-stage.png';
+    document.querySelectorAll<HTMLImageElement>('.sanctuary-bg-img').forEach(image => {
+      if (image.getAttribute('src') !== stageBackground) image.src = stageBackground;
+    });
+    if (stageWrapper) { stageWrapper.style.backgroundImage = 'none'; stageWrapper.style.backgroundColor = '#56371d'; }
+    if (stage9x16) { stage9x16.style.backgroundImage = 'none'; stage9x16.style.backgroundColor = '#27190b'; }
     document.body.classList.toggle('presentation-paused', presentationPaused);
     syncPlayback(st.playback);
     syncLiveOperations(st);
