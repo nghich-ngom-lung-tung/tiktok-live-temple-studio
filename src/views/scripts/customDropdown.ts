@@ -216,7 +216,7 @@ const UPLOAD_SVG = `<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" w
   <path d="M10 14V3M10 3L6 7M10 3L14 7M3 13v3a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>`;
 
-export function enhanceFileInput(input: HTMLInputElement): HTMLElement {
+export function enhanceFileInput(input: HTMLInputElement, buttonLabel = 'Chọn tệp'): HTMLElement {
   const existing = input.parentElement?.closest<HTMLElement>('.temple-file-picker');
   if (existing) return existing;
 
@@ -230,7 +230,10 @@ export function enhanceFileInput(input: HTMLInputElement): HTMLElement {
   const btn = document.createElement('button');
   btn.type = 'button';
   btn.className = 'temple-file-btn';
-  btn.innerHTML = `${UPLOAD_SVG}<span>Chọn tệp âm thanh</span>`;
+  btn.innerHTML = UPLOAD_SVG;
+  const label = document.createElement('span');
+  label.textContent = buttonLabel;
+  btn.append(label);
 
   const fileName = document.createElement('span');
   fileName.className = 'temple-file-name';
@@ -259,7 +262,9 @@ export function enhanceFileInput(input: HTMLInputElement): HTMLElement {
 
 export function initCustomComponents(): void {
   document.querySelectorAll<HTMLSelectElement>('select').forEach(enhanceSelect);
-  document.querySelectorAll<HTMLInputElement>('input[type="file"]').forEach(enhanceFileInput);
+  document.querySelectorAll<HTMLInputElement>('input[type="file"]').forEach(input => {
+    enhanceFileInput(input, input.id === 'musicFile' ? 'Chọn tệp âm thanh' : 'Chọn tệp');
+  });
 }
 
 // Global outside click and escape handler

@@ -30,7 +30,6 @@
 .scene-preview { border:1px solid #c9aa6a; border-radius:10px; }.sfx-controls { border:1px solid #dfcaa9; border-radius:10px; padding:14px; margin-bottom:20px; background:#fcf7ee; }
 .stage-background-controls { margin-top:16px; padding-top:16px; border-top:1px solid #e6ddcf; }
 .stage-background-controls .field { margin-bottom:12px; }
-.stage-background-controls input[type=file] { width:100%; padding:9px; border:1px solid #dfcfb4; border-radius:8px; background:#fffdf8; color:#624c32; font-size:13px; }
 .stage-background-actions { display:flex; flex-wrap:wrap; gap:8px; }
 .stage-background-controls .helper { margin-top:8px; }
 /* Scene overlays are rendered in 1080 × 1920 logical pixels. */

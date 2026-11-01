@@ -3,6 +3,7 @@ import { syncVoiceControls } from './voiceControls';
 import { syncMusicControls } from './musicControls';
 import { initTabs, rpc, toast, escapeHtml } from './studioShared';
 import { syncNarrationControls } from './narrationControls';
+import { enhanceFileInput } from './customDropdown';
 initTabs();
 const $=(id:string)=>document.getElementById(id);
 const value=(id:string)=>($(id) as HTMLInputElement).value.trim();
@@ -18,17 +19,18 @@ function installStageBackgroundControls():void {
  controls.innerHTML='<div class="field"><label for="stageBackgroundFile">Đổi ảnh nền chánh điện</label><input id="stageBackgroundFile" type="file" accept="image/png,image/jpeg,image/webp"><p class="helper">Nhận PNG, JPG hoặc WebP · tối đa 8 MB. Khuyên dùng ảnh dọc 9:16; ảnh ngang sẽ được cắt cho vừa khung. Nhân vật và các thẻ Live vẫn hiển thị phía trước.</p></div><div class="row stage-background-actions"><button class="btn primary" id="btnApplyStageBackground" type="button" disabled>Tải lên và áp dụng</button><button class="btn" id="btnResetStageBackground" type="button" hidden>Ảnh mặc định</button></div><p class="helper" id="stageBackgroundStatus" role="status">Ảnh nền hiện tại được đồng bộ sang Phòng Live và OBS.</p>';
  panel.append(controls);
  const fileInput=$('stageBackgroundFile') as HTMLInputElement, applyButton=$('btnApplyStageBackground') as HTMLButtonElement, resetButton=$('btnResetStageBackground') as HTMLButtonElement, status=$('stageBackgroundStatus');
+ enhanceFileInput(fileInput,'Chọn ảnh nền');
  let selectedFile:File|null=null;
  window.addEventListener('temple-auth-changed',()=>{applyButton.disabled=!selectedFile||!window.TempleAuth.getToken();resetButton.disabled=!window.TempleAuth.getToken();});
  fileInput.addEventListener('change',()=>{
   selectedFile=fileInput.files?.[0]||null;
   if(stagePreviewObjectUrl){URL.revokeObjectURL(stagePreviewObjectUrl);stagePreviewObjectUrl='';}
   if(!selectedFile){stagePreviewLocked=false;setStagePreviewImages(stageBackgroundUrl);applyButton.disabled=true;return;}
-  if(!['image/png','image/jpeg','image/webp'].includes(selectedFile.type)||selectedFile.size>8*1024*1024){status.textContent=selectedFile.size>8*1024*1024?'Ảnh phải nhỏ hơn 8 MB.':'Chỉ nhận ảnh PNG, JPG hoặc WebP.';selectedFile=null;fileInput.value='';stagePreviewLocked=false;setStagePreviewImages(stageBackgroundUrl);applyButton.disabled=true;return;}
+  if(!['image/png','image/jpeg','image/webp'].includes(selectedFile.type)||selectedFile.size>8*1024*1024){status.textContent=selectedFile.size>8*1024*1024?'Ảnh phải nhỏ hơn 8 MB.':'Chỉ nhận ảnh PNG, JPG hoặc WebP.';selectedFile=null;fileInput.value='';fileInput.dispatchEvent(new Event('change'));stagePreviewLocked=false;setStagePreviewImages(stageBackgroundUrl);applyButton.disabled=true;return;}
   stagePreviewObjectUrl=URL.createObjectURL(selectedFile);stagePreviewLocked=true;setStagePreviewImages(stagePreviewObjectUrl);status.textContent='Đang kiểm tra ảnh xem trước…';applyButton.disabled=true;
   const previewUrl=stagePreviewObjectUrl, previewImage=new Image();
   previewImage.onload=()=>{if(stagePreviewObjectUrl!==previewUrl)return;status.textContent=`Xem trước: ${selectedFile?.name}. Bấm “Tải lên và áp dụng” để đồng bộ.`;applyButton.disabled=!selectedFile||!window.TempleAuth.getToken();};
-  previewImage.onerror=()=>{if(stagePreviewObjectUrl!==previewUrl)return;URL.revokeObjectURL(previewUrl);stagePreviewObjectUrl='';selectedFile=null;fileInput.value='';stagePreviewLocked=false;setStagePreviewImages(stageBackgroundUrl);status.textContent='Không đọc được ảnh này. Hãy thử một tệp PNG, JPG hoặc WebP khác.';applyButton.disabled=true;};
+  previewImage.onerror=()=>{if(stagePreviewObjectUrl!==previewUrl)return;URL.revokeObjectURL(previewUrl);stagePreviewObjectUrl='';selectedFile=null;fileInput.value='';fileInput.dispatchEvent(new Event('change'));stagePreviewLocked=false;setStagePreviewImages(stageBackgroundUrl);status.textContent='Không đọc được ảnh này. Hãy thử một tệp PNG, JPG hoặc WebP khác.';applyButton.disabled=true;};
   previewImage.src=previewUrl;
  });
  applyButton.addEventListener('click',async()=>{
@@ -37,7 +39,7 @@ function installStageBackgroundControls():void {
    const response=await window.TempleAuth.fetch('/api/stage-background',{method:'POST',headers:{'Content-Type':selectedFile.type},body:selectedFile});
    const result=await response.json().catch(()=>({}));if(!response.ok||!result.ok)throw new Error(result.error||`Không tải được ảnh (${response.status}).`);
    stageBackgroundUrl=result.url;stagePreviewLocked=false;setStagePreviewImages(stageBackgroundUrl);status.textContent=`Đã áp dụng ảnh ${result.width} × ${result.height} px cho Phòng Live và OBS.`;toast('Đã đổi ảnh nền chánh điện.');
-   if(stagePreviewObjectUrl){URL.revokeObjectURL(stagePreviewObjectUrl);stagePreviewObjectUrl='';}selectedFile=null;fileInput.value='';resetButton.hidden=false;resetButton.disabled=false;
+   if(stagePreviewObjectUrl){URL.revokeObjectURL(stagePreviewObjectUrl);stagePreviewObjectUrl='';}selectedFile=null;fileInput.value='';fileInput.dispatchEvent(new Event('change'));resetButton.hidden=false;resetButton.disabled=false;
   }catch(error){stagePreviewLocked=false;setStagePreviewImages(stageBackgroundUrl);status.textContent=error.message||'Không tải được ảnh.';toast(status.textContent);resetButton.disabled=false;}
   finally{applyButton.disabled=!selectedFile||!window.TempleAuth.getToken();}
  });
@@ -46,7 +48,7 @@ function installStageBackgroundControls():void {
   try{
    const response=await window.TempleAuth.fetch('/api/stage-background/reset',{method:'POST'});const result=await response.json().catch(()=>({}));if(!response.ok||!result.ok)throw new Error(result.error||`Không khôi phục được ảnh (${response.status}).`);
    stageBackgroundUrl=result.url;stagePreviewLocked=false;setStagePreviewImages(stageBackgroundUrl);resetButton.hidden=true;status.textContent='Đã khôi phục ảnh nền mặc định và đồng bộ sang Phòng Live/OBS.';toast('Đã khôi phục ảnh nền mặc định.');
-   if(stagePreviewObjectUrl){URL.revokeObjectURL(stagePreviewObjectUrl);stagePreviewObjectUrl='';}selectedFile=null;fileInput.value='';
+   if(stagePreviewObjectUrl){URL.revokeObjectURL(stagePreviewObjectUrl);stagePreviewObjectUrl='';}selectedFile=null;fileInput.value='';fileInput.dispatchEvent(new Event('change'));
   }catch(error){status.textContent=error.message||'Không khôi phục được ảnh.';toast(status.textContent);resetButton.disabled=false;}
  });
 }
