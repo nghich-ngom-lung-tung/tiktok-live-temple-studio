@@ -116,6 +116,21 @@ class ZeroTtsManager {
         if (entry) {
           clearTimeout(entry.timer);
           this.pending.delete(message.id);
+          if (message.ok && !message.durationSec && message.file && path.basename(message.file) === message.file) {
+            try {
+              const fd = fs.openSync(path.join(this.rootDir, 'data', 'tts-cache', message.file), 'r');
+              const header = Buffer.alloc(4096);
+              let length;
+              try { length = fs.readSync(fd, header, 0, header.length, 0); } finally { fs.closeSync(fd); }
+              let byteRate = 0;
+              for (let offset = 12; offset + 8 <= length;) {
+                const chunk = header.toString('ascii', offset, offset + 4), size = header.readUInt32LE(offset + 4);
+                if (chunk === 'fmt ' && offset + 20 <= length) byteRate = header.readUInt32LE(offset + 16);
+                if (chunk === 'data' && byteRate) { message.durationSec = size / byteRate; break; }
+                offset += 8 + size + (size % 2);
+              }
+            } catch (_) {}
+          }
           entry.resolve(message);
         }
       } else if (message.type === 'error') {

@@ -3,6 +3,7 @@ const { isBlockedSpamOrToxic, sanitizeUserName, sanitizeWishText } = require('..
 function createCommentService({ rituals, onComment = () => {} }) {
   const Rituals = rituals;
   const commentCooldownMap = new Map();
+  const bubbleCooldownMap = new Map();
 
 function parseViewerComment(commentText, user, uniqueId, avatar) {
   const raw = String(commentText || '').trim();
@@ -10,14 +11,19 @@ function parseViewerComment(commentText, user, uniqueId, avatar) {
     return null;
   }
 
-  const cleanWish = sanitizeWishText(raw);
-  if (!cleanWish || cleanWish.length < 3) {
-    return null;
-  }
-
-  // Chống 1 người spam bình luận liên tục làm nghẽn hàng đợi TTS (cooldown 3.5 giây/người)
+  const cleanUser = sanitizeUserName(user);
   const userKey = uniqueId || user || '';
   const now = Date.now();
+  const cleanChat = raw.normalize('NFC').replace(/[\u0000-\u001F\u007F]/g, ' ').trim().slice(0, 240);
+  if (cleanChat && now - (bubbleCooldownMap.get(userKey) || 0) >= 200) {
+    onComment({ user: cleanUser, uniqueId, avatar, comment: cleanChat });
+    bubbleCooldownMap.set(userKey, now);
+    if (bubbleCooldownMap.size > 1000) bubbleCooldownMap.delete(bubbleCooldownMap.keys().next().value);
+  }
+  const cleanWish = sanitizeWishText(raw);
+  if (!cleanWish || cleanWish.length < 3) return null;
+
+  // Chống 1 người spam bình luận liên tục làm nghẽn hàng đợi TTS (cooldown 3.5 giây/người)
   if (userKey) {
     const lastTs = commentCooldownMap.get(userKey) || 0;
     if (now - lastTs < 3500) {
@@ -30,8 +36,6 @@ function parseViewerComment(commentText, user, uniqueId, avatar) {
     }
   }
 
-  const cleanUser = sanitizeUserName(user);
-  onComment({ user: cleanUser, uniqueId, avatar, comment: cleanWish });
   const lower = cleanWish.toLowerCase();
 
   // 1. Xin xăm / Gieo quẻ

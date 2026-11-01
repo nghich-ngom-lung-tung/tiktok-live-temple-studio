@@ -17,6 +17,7 @@ const { createStateController } = require('./controllers/stateController');
 const { createTtsController } = require('./controllers/ttsController');
 const { attachWebSocketController } = require('./controllers/webSocketController');
 const { createApp } = require('./app');
+const { createCeremonyQueue } = require('./services/ceremonyQueue');
 
 function createApplication() {
   fs.mkdirSync(config.DATA_DIR, { recursive: true });
@@ -30,11 +31,13 @@ function createApplication() {
     stateModel,
     broadcastNotification: realtime.broadcastNotification
   });
-  const ritualService = createRitualService({ stateModel, realtime, ttsManager, fortuneDeck });
+  const ceremonyQueue = createCeremonyQueue({ stateModel, realtime, ttsManager });
+  const ritualService = createRitualService({ stateModel, realtime, ttsManager, fortuneDeck, ceremonyQueue });
   const autoSimulationService = createAutoSimulationService({ stateModel, ritualService });
   ritualService.setAutoSimulationController(autoSimulationService.configureAutoSim);
 
   const commentService = createCommentService({ rituals: ritualService, onComment(data) {
+    if (stateModel.roomViewers.has(String(data.uniqueId || '').toLocaleLowerCase('vi'))) stateModel.recordRoomActivity('comments');
     const dev = stateModel.recordDevotee(data.user, data.uniqueId, data.avatar, 0, 0, 0);
     realtime.broadcastNotification('temple.state', stateModel.getPublicState(ttsManager));
     realtime.broadcastNotification('temple.chat', { ...data, uniqueId: dev.uniqueId });
@@ -44,7 +47,8 @@ function createApplication() {
     realtime,
     ritualService,
     commentService,
-    ttsManager
+    ttsManager,
+    ceremonyQueue
   });
   const rpcService = createRpcService({
     stateModel,
@@ -53,6 +57,7 @@ function createApplication() {
     ttsManager,
     tiktokLiveService,
     autoSimulationService,
+    ceremonyQueue,
     realtime
   });
 

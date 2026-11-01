@@ -1,14 +1,40 @@
 const { renderNarration, validateTemplates } = require('./narrationService');
 const { sanitizeUserName, sanitizeWishText } = require('../utils/textSanitizer');
 
-function createRitualService({ stateModel, realtime, ttsManager, fortuneDeck }) {
+function createRitualService({ stateModel, realtime, ttsManager, fortuneDeck, ceremonyQueue = null }) {
   const state = stateModel.state;
   const FORTUNE_DECK = fortuneDeck;
   const recordDevotee = (...args) => stateModel.recordDevotee(...args);
-  const pushEventLog = (...args) => stateModel.pushEventLog(...args);
+  const CHARACTER_KEYS = ['aoLam', 'maleBrown', 'elder', 'novice', 'pinkAoDai'];
+  function pushEventLog(event) {
+    const settings = state.settings;
+    const pool = Array.isArray(settings.centralCharacterRotationPool)
+      ? [...new Set(settings.centralCharacterRotationPool.filter(key => CHARACTER_KEYS.includes(key)))]
+      : [];
+    let character = CHARACTER_KEYS.includes(settings.centralCharacter) ? settings.centralCharacter : 'aoLam';
+
+    if (settings.centralCharacterRotationEnabled && pool.length > 1) {
+      let cursor = Number(settings.centralCharacterRotationCursor);
+      if (!Number.isInteger(cursor) || cursor < 0 || cursor >= pool.length) {
+        cursor = Math.max(0, pool.indexOf(character));
+      }
+      character = pool[cursor];
+      settings.centralCharacterRotationCursor = (cursor + 1) % pool.length;
+      settings.centralCharacter = character;
+      settings.centralCharacterConfigured = true;
+    }
+
+    return stateModel.pushEventLog({ ...event, centralCharacter: character });
+  }
   const saveState = () => stateModel.saveState();
   const broadcastNotification = (...args) => realtime.broadcastNotification(...args);
   const getPublicState = () => stateModel.getPublicState(ttsManager);
+  const publishRitual = event => {
+    if (ceremonyQueue) {
+      ceremonyQueue.enqueue(event);
+      broadcastNotification('temple.state', getPublicState());
+    } else broadcastNotification('temple.event', { event, state: getPublicState() });
+  };
   let configureAutoSim = () => {};
   const fortuneBags = new Map();
   const lastFortunes = new Map();
@@ -52,7 +78,7 @@ const rituals = {
     });
 
     saveState();
-    broadcastNotification('temple.event', { event, state: getPublicState() });
+    publishRitual(event);
     return { event, state: getPublicState() };
   },
 
@@ -65,6 +91,9 @@ const rituals = {
 
     state.woodenFishHits += count;
     const devotee = recordDevotee(user, uniqueId, avatar, merit, 0, 0);
+    const ttsText = params.readTts === true
+      ? renderNarration(state.settings, 'woodenFish', { user: devotee.name, count })
+      : '';
 
     const event = pushEventLog({
       type: 'strikeWoodenFish',
@@ -73,12 +102,12 @@ const rituals = {
       avatar: devotee.avatar,
       count,
       merit,
-      ttsText: params.readTts === true ? renderNarration(state.settings, 'woodenFish', { user: devotee.name, count }) : '',
+      ttsText,
       ttsVoice: ttsText ? nextRitualVoice() : (state.settings.ttsVoice || 'maichi')
     });
 
     saveState();
-    broadcastNotification('temple.event', { event, state: getPublicState() });
+    publishRitual(event);
     return { event, state: getPublicState() };
   },
 
@@ -110,7 +139,7 @@ const rituals = {
     });
 
     saveState();
-    broadcastNotification('temple.event', { event, state: getPublicState() });
+    publishRitual(event);
     return { event, state: getPublicState() };
   },
 
@@ -140,7 +169,7 @@ const rituals = {
     });
 
     saveState();
-    broadcastNotification('temple.event', { event, state: getPublicState() });
+    publishRitual(event);
     return { event, state: getPublicState() };
   },
 
@@ -181,6 +210,10 @@ const rituals = {
       avatar: devotee.avatar,
       giftType,
       giftName,
+      giftId: params.giftId || null,
+      giftQuantity: Number(params.giftQuantity || 1),
+      presentation: params.presentation || null,
+      count: Math.min(9, Number(params.giftQuantity || 1)),
       coins,
       merit,
       wish,
@@ -189,7 +222,7 @@ const rituals = {
     });
 
     saveState();
-    broadcastNotification('temple.event', { event, state: getPublicState() });
+    publishRitual(event);
     return { event, state: getPublicState() };
   },
 
@@ -237,7 +270,7 @@ const rituals = {
     });
 
     saveState();
-    broadcastNotification('temple.event', { event, state: getPublicState() });
+    publishRitual(event);
     return { event, state: getPublicState() };
   },
 
@@ -251,6 +284,15 @@ const rituals = {
   },
 
   updateSettings(params = {}) {
+    if (params.autoSim === true && (params.presentationPaused ?? state.settings.presentationPaused)) throw new Error('Tiếp tục hiệu ứng trước khi bật giả lập tương tác.');
+    if (params.giftMappings !== undefined) {
+      const mappings = params.giftMappings;
+      const actions = ['burnIncense', 'sendPrayer', 'ringBell', 'strikeWoodenFish', 'offerGift', 'grandCeremony'];
+      if (!mappings || typeof mappings !== 'object' || Array.isArray(mappings) || Object.keys(mappings).length > 100
+        || Object.entries(mappings).some(([id, rule]) => !/^\d{1,20}$/.test(id) || !rule || typeof rule !== 'object' || !actions.includes(rule.action) || typeof rule.label !== 'string' || rule.label.length > 80)) {
+        throw new Error('Cấu hình quà không hợp lệ: dùng ID quà dạng số và chọn nghi thức.');
+      }
+    }
     if (Object.prototype.hasOwnProperty.call(params, 'ttsVoice')) {
       const status = ttsManager.getStatus();
       if (!status.ready) throw new Error('Chờ ZeroTTS sẵn sàng trước khi đổi giọng.');
@@ -266,22 +308,52 @@ const rituals = {
         throw new Error('Danh sách giọng luân phiên không hợp lệ.');
       }
     }
-    const allowed = ['ttsVoice', 'ttsVoiceRotation', 'ttsEnabled', 'bgMusicEnabled', 'sfxEnabled', 'musicVolume', 'ttsVolume', 'smokeDensity', 'autoSim', 'autoSimIntervalMs', 'narrationTemplates', 'fortuneReadingMode', 'musicTrack', 'musicAutoRotate'];
+    const characterKeys = ['aoLam', 'maleBrown', 'elder', 'novice', 'pinkAoDai'];
+    if (Object.prototype.hasOwnProperty.call(params, 'centralCharacter') && !characterKeys.includes(params.centralCharacter)) {
+      throw new Error('Nhân vật chủ lễ không hợp lệ.');
+    }
+    if (Object.prototype.hasOwnProperty.call(params, 'centralCharacterRotationEnabled') && typeof params.centralCharacterRotationEnabled !== 'boolean') {
+      throw new Error('Trạng thái xoay tua không hợp lệ.');
+    }
+    if (Object.prototype.hasOwnProperty.call(params, 'centralCharacterRotationPool')) {
+      const pool = params.centralCharacterRotationPool;
+      if (!Array.isArray(pool) || pool.length > characterKeys.length || pool.some(key => !characterKeys.includes(key)) || new Set(pool).size !== pool.length) {
+        throw new Error('Danh sách nhân vật xoay tua không hợp lệ.');
+      }
+      const enabled = params.centralCharacterRotationEnabled ?? state.settings.centralCharacterRotationEnabled;
+      if (enabled && pool.length < 2) throw new Error('Chọn ít nhất hai nhân vật để bật xoay tua.');
+    }
+    if (params.centralCharacterRotationEnabled === true) {
+      const pool = params.centralCharacterRotationPool ?? state.settings.centralCharacterRotationPool;
+      if (!Array.isArray(pool) || pool.length < 2) throw new Error('Chọn ít nhất hai nhân vật để bật xoay tua.');
+    }
+    const allowed = ['ttsVoice', 'ttsVoiceRotation', 'ttsEnabled', 'bgMusicEnabled', 'sfxEnabled', 'musicVolume', 'ttsVolume', 'smokeDensity', 'autoSim', 'autoSimIntervalMs', 'narrationTemplates', 'fortuneReadingMode', 'musicTrack', 'musicAutoRotate', 'centralCharacter', 'centralCharacterRotationEnabled', 'centralCharacterRotationPool'];
+    allowed.push('presentationPaused', 'sfxVolume', 'giftMappings');
     if (Object.keys(params).some(key => !allowed.includes(key))) throw new Error('Cấu hình không được hỗ trợ.');
     const next = { ...params };
+    if (params.presentationPaused === true) next.autoSim = false;
+    if (params.centralCharacter !== undefined) next.centralCharacterConfigured = true;
+    if (params.centralCharacter !== undefined || params.centralCharacterRotationPool !== undefined || params.centralCharacterRotationEnabled !== undefined) {
+      const nextCharacter = params.centralCharacter ?? state.settings.centralCharacter;
+      const nextPool = params.centralCharacterRotationPool ?? state.settings.centralCharacterRotationPool;
+      const foundIndex = Array.isArray(nextPool) ? nextPool.indexOf(nextCharacter) : -1;
+      next.centralCharacterRotationCursor = foundIndex >= 0 ? foundIndex : 0;
+    }
     if (params.narrationTemplates !== undefined) next.narrationTemplates = { ...state.settings.narrationTemplates, ...validateTemplates(params.narrationTemplates) };
     if (params.fortuneReadingMode !== undefined && !['summary', 'full'].includes(params.fortuneReadingMode)) throw new Error('Chế độ đọc quẻ không hợp lệ.');
     if (params.musicTrack !== undefined && !['lotus', 'rain', 'stream', 'bamboo', 'night', 'dawn'].includes(params.musicTrack)) throw new Error('Bản nhạc không hợp lệ.');
-    for (const key of ['ttsEnabled', 'bgMusicEnabled', 'sfxEnabled', 'autoSim', 'musicAutoRotate']) {
+    for (const key of ['ttsEnabled', 'bgMusicEnabled', 'sfxEnabled', 'autoSim', 'musicAutoRotate', 'presentationPaused']) {
       if (params[key] !== undefined && typeof params[key] !== 'boolean') throw new Error('Trạng thái bật tắt không hợp lệ.');
     }
-    for (const key of ['musicVolume', 'ttsVolume']) {
+    for (const key of ['musicVolume', 'ttsVolume', 'sfxVolume']) {
       if (params[key] !== undefined && (!Number.isFinite(params[key]) || params[key] < 0 || params[key] > 1)) throw new Error('Âm lượng cần nằm trong khoảng 0 đến 1.');
     }
     state.settings = { ...state.settings, ...next };
-    if (typeof params.autoSim === 'boolean') {
-      configureAutoSim(params.autoSim);
+    if (typeof next.autoSim === 'boolean') {
+      configureAutoSim(next.autoSim);
     }
+    if (params.presentationPaused === true) ceremonyQueue?.clear();
+    else if (params.presentationPaused === false) ceremonyQueue?.resume();
     saveState();
     broadcastNotification('temple.state', getPublicState());
     return getPublicState();
