@@ -10,6 +10,7 @@ const rotationList = document.getElementById('voiceRotationList');
 const player = (document.getElementById('adminAudioPreview') || document.getElementById('voiceAudioPreview')) as HTMLAudioElement | null;
 let saving = false, previewing = false, ready = false, savedVoice = 'maichi';
 let availableVoices: string[] = [], savedRotation: string[] = [];
+let draftRotation: string[] | null = null;
 let savedRotationKey = '[]';
 
 function renderRotationOptions(): void {
@@ -22,13 +23,14 @@ function renderRotationOptions(): void {
     rotationList.append(message);
     return;
   }
+  const selectedRotation = draftRotation ?? savedRotation;
   for (const voice of availableVoices) {
     const label = document.createElement('label');
     label.className = 'voice-choice';
     const input = document.createElement('input');
     input.type = 'checkbox';
     input.value = voice;
-    input.checked = savedRotation.includes(voice);
+    input.checked = selectedRotation.includes(voice);
     input.disabled = saving;
     const caption = document.createElement('span');
     caption.textContent = names[voice] || voice;
@@ -106,10 +108,12 @@ rotationList?.addEventListener('change', async event => {
   const nextRotation = Array.from(rotationList.querySelectorAll<HTMLInputElement>('input[type="checkbox"]'))
     .filter(input => input.checked).map(input => input.value);
   if (nextRotation.length === 1) {
-    if (status) status.textContent = 'Chọn thêm ít nhất một giọng nữa để bật xoay vòng.';
+    draftRotation = nextRotation;
+    if (status) status.textContent = `Đã chọn ${names[nextRotation[0]] || nextRotation[0]}. Chọn thêm một giọng nữa để lưu và bật xoay vòng.`;
     renderRotationOptions();
     return;
   }
+  draftRotation = nextRotation;
   saving = true;
   updateDisabledState();
   renderRotationOptions();
@@ -127,8 +131,10 @@ rotationList?.addEventListener('change', async event => {
       ? `Đang xoay vòng: ${savedRotation.map(voice => names[voice] || voice).join(' → ')}.`
       : `Đã tắt xoay vòng. Đang dùng ${names[savedVoice] || savedVoice}.`;
   } catch (error) {
+    draftRotation = null;
     if (status) status.textContent = error instanceof Error ? error.message : 'Không lưu được danh sách giọng.';
   } finally {
+    draftRotation = null;
     saving = false;
     updateDisabledState();
     renderRotationOptions();

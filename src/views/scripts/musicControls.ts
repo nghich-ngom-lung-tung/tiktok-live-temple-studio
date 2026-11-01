@@ -21,5 +21,14 @@ auto?.addEventListener('change',async()=>{ const value=auto.checked; try{ await 
 document.getElementById('btnMusicNext')?.addEventListener('click',()=>void choose(tracks[(tracks.findIndex(t=>t.id===selected)+1)%tracks.length].id));
 document.getElementById('btnMusicPreview')?.addEventListener('click',()=>{ if(!preview)return; preview.src=localUrl||`/assets/music/${selected}.wav`; preview.play().catch(()=>toast('Bấm phát trên thanh nghe thử để bật âm thanh.')); });
 (document.getElementById('musicFile') as HTMLInputElement|null)?.addEventListener('change',e=>{ const file=(e.target as HTMLInputElement).files?.[0]; if(!file)return; if(!file.type.startsWith('audio/')||file.size>50*1024*1024){toast('Chọn file âm thanh dưới 50 MB.');return;} if(localUrl)URL.revokeObjectURL(localUrl); localUrl=URL.createObjectURL(file); if(engine)engine.setMusicSource(localUrl); if(preview){preview.src=localUrl;preview.play().catch(()=>{});} const note=document.getElementById('musicFileStatus'); if(note)note.textContent=`File riêng: ${file.name}. Chỉ phát ở tab này; tải lại trang để dùng thư viện.`; });
-export function bindMusicEngine(value:any):void { engine=value; engine.bgAudio.addEventListener('ended',()=>{if(rotate&&!localUrl)void choose(tracks[(tracks.findIndex(t=>t.id===selected)+1)%tracks.length].id);}); syncMusicControls({musicTrack:selected,musicAutoRotate:rotate}); }
+export function bindMusicEngine(value:any):void {
+  engine=value;
+  engine.bgAudio.addEventListener('ended',()=>{
+    if(!rotate||localUrl||!engine.bgAudio.ended)return;
+    const source = new URL(engine.bgAudio.currentSrc || engine.bgAudio.src, location.href).pathname;
+    const expectedTrack = tracks.find(track => source.endsWith(`/${track.id}.wav`))?.id;
+    if (expectedTrack) void rpc('temple.advanceMusic',{expectedTrack}).catch(error=>toast(error.message));
+  });
+  syncMusicControls({musicTrack:selected,musicAutoRotate:rotate});
+}
 export function syncMusicControls(settings:any):void { const next=tracks.some(t=>t.id===settings?.musicTrack)?settings.musicTrack:selected; const changed=next!==selected; selected=next; rotate=Boolean(settings?.musicAutoRotate); if(changed&&localUrl){URL.revokeObjectURL(localUrl);localUrl='';} if(select)select.value=selected; if(auto)auto.checked=rotate; document.querySelectorAll<HTMLElement>('[data-track]').forEach(el=>el.setAttribute('aria-pressed',String(el.dataset.track===selected))); if(engine){engine.bgAudio.loop=localUrl?true:!rotate;if(!localUrl)engine.setMusicSource(`/assets/music/${selected}.wav`);} }

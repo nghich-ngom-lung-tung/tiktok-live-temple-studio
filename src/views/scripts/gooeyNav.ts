@@ -35,6 +35,8 @@ type Particle = {
   duration: number;
 };
 
+type GooeyItem = HTMLAnchorElement | HTMLButtonElement;
+
 const clamp = (value: number): number => Math.max(0, Math.min(1, value));
 const easeOut = (value: number): number => 1 - Math.pow(1 - value, 3);
 
@@ -83,10 +85,11 @@ function ensureGooeyFilter(): void {
 }
 
 function enhanceNavigation(nav: HTMLElement): void {
-  const links = Array.from(nav.querySelectorAll<HTMLAnchorElement>(':scope > a[href]'));
-  if (links.length < 2) return;
+  const items = Array.from(nav.querySelectorAll<GooeyItem>(':scope > a[href], :scope > button[data-tab]'));
+  if (items.length < 2) return;
 
-  const currentLink = links.find((link) => link.getAttribute('aria-current') === 'page') ?? links[0];
+  let currentItem = items.find((item) => item.getAttribute('aria-current') === 'page'
+    || item.getAttribute('aria-selected') === 'true') ?? items[0];
   nav.classList.add('gooey-nav');
 
   const canvasClip = document.createElement('span');
@@ -106,16 +109,16 @@ function enhanceNavigation(nav: HTMLElement): void {
   }
 
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  const geometry = new Map<HTMLAnchorElement, NavRect>();
+  const geometry = new Map<GooeyItem, NavRect>();
   const pills: PillMotion[] = [];
   let particles: Particle[] = [];
   let animationFrame = 0;
   let cssWidth = 0;
   let cssHeight = 0;
   let pixelRatio = 1;
-  let displayedLink = currentLink;
-  let pointerLink: HTMLAnchorElement | null = null;
-  let focusedLink: HTMLAnchorElement | null = null;
+  let displayedItem = currentItem;
+  let pointerItem: GooeyItem | null = null;
+  let focusedItem: GooeyItem | null = null;
 
   const drawPill = (x: number, y: number, width: number, height: number): void => {
     if (width <= 0 || height <= 0) return;
@@ -150,7 +153,7 @@ function enhanceNavigation(nav: HTMLElement): void {
     nav.classList.remove('gooey-moving');
     clearCanvas();
 
-    const rect = geometry.get(displayedLink);
+    const rect = geometry.get(displayedItem);
     if (rect) drawPill(rect.x, rect.y, rect.w, rect.h);
   };
 
@@ -221,9 +224,9 @@ function enhanceNavigation(nav: HTMLElement): void {
     context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
 
     geometry.clear();
-    for (const link of links) {
-      const rect = link.getBoundingClientRect();
-      geometry.set(link, {
+    for (const item of items) {
+      const rect = item.getBoundingClientRect();
+      geometry.set(item, {
         x: rect.left - navRect.left + canvasPadding + 1,
         y: rect.top - navRect.top + canvasPadding + 1,
         w: Math.max(0, rect.width - 2),
@@ -236,13 +239,13 @@ function enhanceNavigation(nav: HTMLElement): void {
     drawStatic();
   };
 
-  const moveTo = (target: HTMLAnchorElement, animate: boolean): void => {
-    nav.classList.toggle('gooey-previewing', target !== currentLink);
-    if (target === displayedLink) return;
+  const moveTo = (target: GooeyItem, animate: boolean): void => {
+    nav.classList.toggle('gooey-previewing', target !== currentItem);
+    if (target === displayedItem) return;
 
-    const from = geometry.get(displayedLink);
+    const from = geometry.get(displayedItem);
     const to = geometry.get(target);
-    displayedLink = target;
+    displayedItem = target;
 
     if (!from || !to || !animate || reducedMotion.matches) {
       drawStatic();
@@ -299,29 +302,36 @@ function enhanceNavigation(nav: HTMLElement): void {
     if (document.hidden) drawStatic();
   });
 
-  for (const link of links) {
-    link.addEventListener('pointerenter', () => {
-      pointerLink = link;
-      moveTo(link, true);
+  for (const item of items) {
+    item.addEventListener('pointerenter', () => {
+      pointerItem = item;
+      moveTo(item, true);
+    });
+    item.addEventListener('click', () => {
+      currentItem = item;
+      moveTo(item, true);
     });
   }
 
   nav.addEventListener('pointerleave', () => {
-    pointerLink = null;
-    moveTo(focusedLink ?? currentLink, true);
+    pointerItem = null;
+    moveTo(focusedItem ?? currentItem, true);
   });
 
   nav.addEventListener('focusin', (event) => {
     const target = event.target;
-    if (!(target instanceof HTMLAnchorElement) || !links.includes(target)) return;
-    focusedLink = target;
-    moveTo(target, true);
+    if (!(target instanceof HTMLElement) || !items.includes(target as GooeyItem)) return;
+    focusedItem = target as GooeyItem;
+    if (target instanceof HTMLButtonElement && target.getAttribute('aria-selected') === 'true') {
+      currentItem = target;
+    }
+    moveTo(target as GooeyItem, true);
   });
 
   nav.addEventListener('focusout', (event) => {
     if (event.relatedTarget instanceof Node && nav.contains(event.relatedTarget)) return;
-    focusedLink = null;
-    moveTo(pointerLink ?? currentLink, true);
+    focusedItem = null;
+    moveTo(pointerItem ?? currentItem, true);
   });
 
   nav.classList.add('gooey-ready');
@@ -330,7 +340,7 @@ function enhanceNavigation(nav: HTMLElement): void {
 
 function initialiseNavigation(): void {
   ensureGooeyFilter();
-  document.querySelectorAll<HTMLElement>('.studio-links').forEach(enhanceNavigation);
+  document.querySelectorAll<HTMLElement>('.studio-links, .tabs[data-tab-group]').forEach(enhanceNavigation);
 }
 
 if (document.readyState === 'loading') {

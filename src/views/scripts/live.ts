@@ -1,11 +1,13 @@
-import { avatarMarkup, viewerKey, showViewerChat } from './viewerPresence';
+import { avatarMarkup, viewerKey, showViewerChat, clearViewerChats } from './viewerPresence';
+import { initLiveOperations, syncLiveOperations } from './liveOperations';
 import { ritualIcon } from './studioEffects';
-import { VIP_CUSHION_COORDS, HALL_SEAT_COORDS, HALL_VIEWER_SEAT_ORDER } from './templeLayout';
+import { VIP_CUSHION_COORDS, hallLayoutForCount } from './templeLayout';
 import { syncVoiceControls } from './voiceControls';
 import { bindMusicEngine, syncMusicControls } from './musicControls';
 import './narrationControls';
 import { initTabs, rpc, toast } from './studioShared';
 initTabs();
+initLiveOperations();
 /**
  * Live 9:16 Client Controller — Chánh Điện Đức Phật A Di Đà & Đạo Tràng Phật Tử Quỳ Lễ
  * - Hiển thị 6 Đệm Quỳ VIP (Top 6 Bảng Vàng Công Đức)
@@ -14,6 +16,16 @@ initTabs();
  * - Giọng đọc ZeroTTS (Mai Chi) + Pháp khí Web Audio
  */
 (function () {
+  let presentationPaused = false;
+  let playbackState: any = null;
+  let latestUIState: any = null;
+  let playbackStartTimer = 0;
+  const playedCeremonies = new Set<string>();
+  const ritualEffectTimers = new Set<number>();
+  function effectLater(callback: () => void, delay: number): void {
+    const timer = window.setTimeout(() => { ritualEffectTimers.delete(timer); if (!presentationPaused) callback(); }, delay);
+    ritualEffectTimers.add(timer);
+  }
   const params = new URLSearchParams(window.location.search);
   if (params.get('obs') === '1') {
     document.body.classList.add('obs-mode');
@@ -41,8 +53,8 @@ initTabs();
   const sfxStatus = document.getElementById('sfxStatus');
   const previewSfx = (id: string, label: string, play: () => void) => {
     document.getElementById(id)?.addEventListener('click', () => {
+      if (presentationPaused || !audio.sfxEnabled) { toast('Bật pháp khí và tiếp tục hiệu ứng trước khi nghe thử.'); return; }
       audio.ensureContext();
-      audio.sfxEnabled = true;
       play();
       if (sfxStatus) sfxStatus.textContent = `Đang phát thử ${label}.`;
     });
@@ -51,16 +63,20 @@ initTabs();
   previewSfx('btnTestBell', 'tiếng Đại Hồng Chung', () => audio.playTempleBell());
   previewSfx('btnTestFortune', 'tiếng lắc ống xăm', () => audio.playFortuneShake());
   document.getElementById('sfxVolume')?.addEventListener('input',e=>{audio.sfxVolume=Number((e.target as HTMLInputElement).value)/100;});
+  document.getElementById('sfxVolume')?.addEventListener('change', event => {
+    void rpc('temple.updateSettings', { sfxVolume: Number((event.target as HTMLInputElement).value) / 100 }).catch(error => toast(error.message));
+  });
   const welcomeQueue: { user: string; uniqueId?: string }[] = [];
   const recentWelcome = new Map<string, number>();
   let welcoming = false;
+  let welcomeTimer = 0;
   function showNextWelcome() {
     if(welcoming || !welcomeQueue.length) return;
     welcoming = true;
     const member = welcomeQueue.shift();
     document.getElementById('welcomeUser').textContent = member.user;
     document.getElementById('welcomeCard').classList.add('visible');
-    setTimeout(()=>{ document.getElementById('welcomeCard').classList.remove('visible'); setTimeout(()=>{welcoming=false;showNextWelcome();},350); },4000);
+    welcomeTimer = window.setTimeout(()=>{ document.getElementById('welcomeCard').classList.remove('visible'); welcomeTimer = window.setTimeout(()=>{welcoming=false;showNextWelcome();},350); },4000);
   }
   function queueWelcome(member) {
     if(!member?.user) return;
@@ -123,16 +139,20 @@ initTabs();
     particles.setIncenseTips(tips);
   }
 
-  // 4. Dựng Hàng 6 Đệm Quỳ VIP (Top 6 Thí Chủ trên bục gỗ y=858)
+  function crowdFrames(viewer) {
+    return CHARACTER_SPRITE_SETS[viewer?.character as keyof typeof CHARACTER_SPRITE_SETS] || CHARACTER_SPRITE_SETS.aoLam;
+  }
+
+  // Chỉ dựng nhân vật cho người xem đã được ghi nhận trong phiên room.
   function renderVipCushions(leaderboard = []) {
     const layer = document.getElementById('vipCushionsLayer');
     if (!layer) return;
 
-    layer.innerHTML = VIP_CUSHION_COORDS.map((slot, idx) => {
-      const dev = leaderboard[idx] || { name: `VIP ${idx + 1}` };
+    layer.innerHTML = leaderboard.slice(0, VIP_CUSHION_COORDS.length).map((dev, idx) => {
+      const slot = VIP_CUSHION_COORDS[idx];
       return `
         <div class="vip-devotee-slot" data-viewer="${escapeHtml(viewerKey(dev))}" data-viewer-name="${escapeHtml(String(dev.name || '').toLocaleLowerCase('vi'))}" data-x="${slot.x}" data-y="${slot.y}" style="left: ${slot.x}px; top: ${slot.y}px; z-index: ${12 + idx};">
-          <img src="/assets/devotee.png" alt="" class="devotee-sprite" />${leaderboard[idx] ? avatarMarkup(dev) : ''}
+          <img src="${crowdFrames(dev).kneel}" data-character="${escapeHtml(dev.character || 'aoLam')}" alt="" class="devotee-sprite" />${avatarMarkup(dev)}
           <div class="vip-rank-pill">
             <span class="vip-rank-num">${slot.rank}</span>
             <span class="vip-rank-name">${escapeHtml(shortenName(dev.name, 12))}</span>
@@ -150,21 +170,22 @@ initTabs();
     if (!congregationHall) return;
     // Những người xếp từ hạng 7 trở đi ngồi ở các vị trí đầu tiên cạnh thảm đỏ
     const hallViewers = leaderboard.slice(6);
-    const sig = JSON.stringify(hallViewers.map((d) => `${d.uniqueId}:${d.name}:${d.merit}:${d.avatar}`));
+    const sig = JSON.stringify(hallViewers.map((d) => `${d.uniqueId}:${d.name}:${d.merit}:${d.avatar}:${d.character}`));
     if (sig === lastRenderedLeaderboardJson && congregationHall.children.length > 0) return;
     lastRenderedLeaderboardJson = sig;
 
-    // Ưu tiên gắn thẻ tên vào các ghế gần thảm đỏ dễ nhìn nhất
+    const hallSeats = hallLayoutForCount(hallViewers.length);
     const seatViewerMap = new Map();
     hallViewers.forEach((viewer, idx) => {
-      if (idx < HALL_VIEWER_SEAT_ORDER.length) {
-        seatViewerMap.set(HALL_VIEWER_SEAT_ORDER[idx], viewer);
+      if (idx < hallSeats.length) {
+        seatViewerMap.set(idx, viewer);
       }
     });
 
-    congregationHall.innerHTML = HALL_SEAT_COORDS.map((seat, idx) => {
+    congregationHall.innerHTML = hallSeats.map((seat, idx) => {
       const viewer = seatViewerMap.get(idx);
-      const showBadge = viewer && HALL_VIEWER_SEAT_ORDER.indexOf(idx) < 18;
+      if (!viewer) return '';
+      const showBadge = Boolean(viewer);
       const badgeHtml = showBadge
         ? `
           <div class="seat-badge">
@@ -186,7 +207,7 @@ initTabs();
           style="left: ${seat.x}px; top: ${seat.y}px; z-index: ${20 + seat.row * 2}; transform: translate(-50%, -100%) scale(${seat.scale});"
         >
           <img
-            src="/assets/devotee.png"
+            src="${crowdFrames(viewer).kneel}" data-character="${escapeHtml(viewer.character || 'aoLam')}"
             alt=""
             class="devotee-sprite"
           />
@@ -196,11 +217,11 @@ initTabs();
     }).join('');
   }
 
-  // Show all 200 seats before authentication; replace placeholders when state arrives.
+  // Không hiển thị khách mặc định trước khi nhận trạng thái room.
   renderVipCushions();
   renderCongregationHall();
 
-  // Preload toàn bộ 8 frame nhân vật vào bộ nhớ để chuyển frame mượt 0ms
+  // Bộ 8 khung cho từng nhân vật chủ lễ. Đạo tràng nền vẫn dùng Phật tử áo lam.
   const SPRITE_FRAMES = {
     walk1: '/assets/devotee_walk.png',
     walk2: '/assets/devotee_walk_2.png',
@@ -211,13 +232,250 @@ initTabs();
     prostrate: '/assets/devotee_prostrate.png',
     prostrateDeep: '/assets/devotee_prostrate_deep.png'
   };
-  Object.values(SPRITE_FRAMES).forEach((url) => {
+  const CHARACTER_SPRITE_SETS = {
+    aoLam: SPRITE_FRAMES,
+    maleBrown: {
+      walk1: '/assets/characters/male-brown/walk1.webp',
+      walk2: '/assets/characters/male-brown/walk2.webp',
+      kneelDown: '/assets/characters/male-brown/kneelDown.webp',
+      kneel: '/assets/characters/male-brown/kneel.webp',
+      forehead: '/assets/characters/male-brown/forehead.webp',
+      bowMid: '/assets/characters/male-brown/bowMid.webp',
+      prostrate: '/assets/characters/male-brown/prostrate.webp',
+      prostrateDeep: '/assets/characters/male-brown/prostrateDeep.webp'
+    },
+    elder: {
+      walk1: '/assets/characters/elder/walk1.webp',
+      walk2: '/assets/characters/elder/walk2.webp',
+      kneelDown: '/assets/characters/elder/kneelDown.webp',
+      kneel: '/assets/characters/elder/kneel.webp',
+      forehead: '/assets/characters/elder/forehead.webp',
+      bowMid: '/assets/characters/elder/bowMid.webp',
+      prostrate: '/assets/characters/elder/prostrate.webp',
+      prostrateDeep: '/assets/characters/elder/prostrateDeep.webp'
+    },
+    novice: {
+      walk1: '/assets/characters/novice/walk1.webp',
+      walk2: '/assets/characters/novice/walk2.webp',
+      kneelDown: '/assets/characters/novice/kneelDown.webp',
+      kneel: '/assets/characters/novice/kneel.webp',
+      forehead: '/assets/characters/novice/forehead.webp',
+      bowMid: '/assets/characters/novice/bowMid.webp',
+      prostrate: '/assets/characters/novice/prostrate.webp',
+      prostrateDeep: '/assets/characters/novice/prostrateDeep.webp'
+    },
+    pinkAoDai: {
+      walk1: '/assets/characters/pink-ao-dai/walk1.webp',
+      walk2: '/assets/characters/pink-ao-dai/walk2.webp',
+      kneelDown: '/assets/characters/pink-ao-dai/kneelDown.webp',
+      kneel: '/assets/characters/pink-ao-dai/kneel.webp',
+      forehead: '/assets/characters/pink-ao-dai/forehead.webp',
+      bowMid: '/assets/characters/pink-ao-dai/bowMid.webp',
+      prostrate: '/assets/characters/pink-ao-dai/prostrate.webp',
+      prostrateDeep: '/assets/characters/pink-ao-dai/prostrateDeep.webp'
+    }
+  };
+  const CENTRAL_CHARACTER_STORAGE_KEY = 'temple.centralCharacter';
+  const CHARACTER_KEYS = Object.keys(CHARACTER_SPRITE_SETS) as Array<keyof typeof CHARACTER_SPRITE_SETS>;
+  const characterSelector = document.getElementById('centralCharacterSelect') as HTMLSelectElement | null;
+  const characterRotationToggle = document.getElementById('centralCharacterRotationEnabled') as HTMLInputElement | null;
+  const characterRotationOptions = Array.from(document.querySelectorAll<HTMLInputElement>('[data-character-rotation-option]'));
+  const characterSyncStatus = document.getElementById('centralCharacterSyncStatus');
+  const initialStoredCharacter = localStorage.getItem(CENTRAL_CHARACTER_STORAGE_KEY);
+  let hasReceivedCentralCharacterState = false;
+  let lastServerCharacterSettings: Record<string, unknown> | null = null;
+  let characterSaveTimer = 0;
+
+  function setCentralCharacter(characterKey: string, persist = false) {
+    const key = Object.prototype.hasOwnProperty.call(CHARACTER_SPRITE_SETS, characterKey)
+      ? characterKey as keyof typeof CHARACTER_SPRITE_SETS
+      : 'aoLam';
+    const spriteSet = CHARACTER_SPRITE_SETS[key];
+    const stack = document.getElementById('centralSpriteStack');
+    stack?.querySelectorAll<HTMLImageElement>('.pose-frame').forEach((frame) => {
+      const pose = frame.dataset.pose as keyof typeof spriteSet | undefined;
+      if (pose && spriteSet[pose]) frame.src = spriteSet[pose];
+    });
+    const selector = document.getElementById('centralCharacterSelect') as HTMLSelectElement | null;
+    if (selector) selector.value = key;
+    if (persist) localStorage.setItem(CENTRAL_CHARACTER_STORAGE_KEY, key);
+  }
+
+  function selectedRotationPool(): string[] {
+    return characterRotationOptions.filter(option => option.checked).map(option => option.value);
+  }
+
+  function applyCentralCharacterSettings(settings: Record<string, unknown>, characterOverride?: string): void {
+    const serverCharacter = typeof settings.centralCharacter === 'string' ? settings.centralCharacter : 'aoLam';
+    const character = characterOverride || serverCharacter;
+    if (!playbackState?.current) setCentralCharacter(character, true);
+    else if (characterSelector) characterSelector.value = character;
+    if (characterRotationToggle) characterRotationToggle.checked = Boolean(settings.centralCharacterRotationEnabled);
+    const pool = Array.isArray(settings.centralCharacterRotationPool) ? settings.centralCharacterRotationPool : CHARACTER_KEYS;
+    characterRotationOptions.forEach(option => { option.checked = pool.includes(option.value); });
+    lastServerCharacterSettings = {
+      centralCharacter: character,
+      centralCharacterRotationEnabled: Boolean(settings.centralCharacterRotationEnabled),
+      centralCharacterRotationPool: pool.filter((key): key is string => typeof key === 'string')
+    };
+    if (characterSyncStatus) characterSyncStatus.textContent = 'Đã đồng bộ với các màn hình Live và OBS.';
+  }
+
+  function queueCentralCharacterSettingsSave(): void {
+    if (!characterSelector || !characterRotationToggle || !characterSyncStatus) return;
+    characterSyncStatus.textContent = 'Đang đồng bộ lựa chọn nhân vật…';
+    window.clearTimeout(characterSaveTimer);
+    characterSaveTimer = window.setTimeout(async () => {
+      const settings = {
+        centralCharacter: characterSelector.value,
+        centralCharacterRotationEnabled: characterRotationToggle.checked,
+        centralCharacterRotationPool: selectedRotationPool()
+      };
+      if (settings.centralCharacterRotationEnabled && settings.centralCharacterRotationPool.length < 2) {
+        characterSyncStatus.textContent = 'Chọn ít nhất 2 nhân vật để xoay tua.';
+        toast('Xoay tua cần ít nhất hai nhân vật.');
+        if (lastServerCharacterSettings) applyCentralCharacterSettings(lastServerCharacterSettings);
+        return;
+      }
+      try {
+        const result = await rpc('temple.updateSettings', settings);
+        if (result?.settings) applyCentralCharacterSettings(result.settings);
+      } catch (error) {
+        characterSyncStatus.textContent = 'Chưa đồng bộ được. Kiểm tra xác thực RPC.';
+        toast(error instanceof Error ? error.message : 'Không đồng bộ được nhân vật.');
+        if (lastServerCharacterSettings) applyCentralCharacterSettings(lastServerCharacterSettings);
+      }
+    }, 180);
+  }
+
+  function syncCentralCharacterSettings(settings: Record<string, unknown>): void {
+    if (!hasReceivedCentralCharacterState) {
+      hasReceivedCentralCharacterState = true;
+      const useLegacySelection = settings.centralCharacterConfigured !== true
+        && initialStoredCharacter
+        && Object.prototype.hasOwnProperty.call(CHARACTER_SPRITE_SETS, initialStoredCharacter)
+        && params.get('obs') !== '1'
+        && Boolean(characterSelector);
+      applyCentralCharacterSettings(settings, useLegacySelection ? initialStoredCharacter : undefined);
+      if (useLegacySelection) queueCentralCharacterSettingsSave();
+      return;
+    }
+    applyCentralCharacterSettings(settings);
+  }
+
+  const spriteUrls = new Set(Object.values(CHARACTER_SPRITE_SETS).flatMap((set) => Object.values(set)));
+  spriteUrls.forEach((url) => {
     const img = new Image();
     img.src = url;
   });
 
-  function pulseHallBowing(user = '') {
+  const initialCharacter = initialStoredCharacter && Object.prototype.hasOwnProperty.call(CHARACTER_SPRITE_SETS, initialStoredCharacter)
+    ? initialStoredCharacter
+    : 'aoLam';
+  setCentralCharacter(initialCharacter);
+  characterSelector?.addEventListener('change', () => {
+    setCentralCharacter(characterSelector.value, true);
+    queueCentralCharacterSettingsSave();
+  });
+  characterRotationToggle?.addEventListener('change', queueCentralCharacterSettingsSave);
+  characterRotationOptions.forEach(option => option.addEventListener('change', queueCentralCharacterSettingsSave));
+
+  async function simulateRoomViewers(count: number): Promise<void> {
+    const status = document.getElementById('simulatedViewersStatus');
+    const buttons = ['btnSimulateViewers', 'btnClearSimulatedViewers'].map(id => document.getElementById(id) as HTMLButtonElement | null);
+    buttons.forEach(button => { if (button) button.disabled = true; });
+    try {
+      if (!Number.isInteger(count) || count < 0 || count > 200) throw new Error('Nhập số nguyên từ 0 đến 200.');
+      if (status) status.textContent = 'Đang cập nhật người giả lập…';
+      const state = await rpc('temple.setSimulatedViewers', { count });
+      updateUIState(state);
+    } catch (error) {
+      if (status) status.textContent = error instanceof Error ? error.message : 'Không tạo được người giả lập.';
+    } finally {
+      buttons.forEach(button => { if (button) button.disabled = false; });
+    }
+  }
+  document.getElementById('btnSimulateViewers')?.addEventListener('click', () => {
+    const input = document.getElementById('simulatedViewerCount') as HTMLInputElement;
+    void simulateRoomViewers(input.value.trim() ? Number(input.value) : NaN);
+  });
+  document.getElementById('btnClearSimulatedViewers')?.addEventListener('click', () => { void simulateRoomViewers(0); });
+  document.getElementById('btnSimulateChat')?.addEventListener('click', async event => {
+    const button = event.currentTarget as HTMLButtonElement;
+    const user = document.getElementById('simulatedChatUser') as HTMLSelectElement;
+    const input = document.getElementById('simulatedChatText') as HTMLInputElement;
+    const status = document.getElementById('simulatedChatStatus');
+    button.disabled = true;
+    try {
+      await rpc('temple.previewViewerChat', { uniqueId: user.value, comment: input.value });
+      if (status) status.textContent = 'Đã gửi bong bóng đến nhân vật và các màn Live/OBS.';
+    } catch (error) {
+      if (status) status.textContent = error instanceof Error ? error.message : 'Không gửi được chat thử.';
+    } finally { button.disabled = !user.value; }
+  });
+
+  const roomArrivalLayer = document.createElement('div');
+  roomArrivalLayer.className = 'room-arrival-layer';
+  stage9x16?.appendChild(roomArrivalLayer);
+  let seatedViewerKeys = new Set<string>();
+  const roomArrivals = new Map<string, { walker: HTMLElement; animation: Animation; stop: () => void }>();
+
+  function syncRoomArrivals(viewers): void {
     const seats = Array.from(document.querySelectorAll<HTMLElement>('#congregationHall .hall-seat, #vipCushionsLayer .vip-devotee-slot'));
+    const currentKeys = new Set<string>(viewers.map(viewer => viewerKey(viewer)));
+    for (const [key, arrival] of roomArrivals) {
+      if (!currentKeys.has(key)) { arrival.stop(); arrival.animation.cancel(); arrival.walker.remove(); roomArrivals.delete(key); }
+    }
+    let entryIndex = 0;
+    viewers.forEach(viewer => {
+      const key = viewerKey(viewer);
+      const seat = seats.find(item => item.dataset.viewer === key);
+      if (!seat) return;
+      seat.title = `${viewer.name}\n@${viewer.uniqueId}\n${Number(viewer.merit || 0).toLocaleString('vi-VN')} công đức${viewer.isSimulated ? '\nNgười giả lập' : ''}`;
+      if (roomArrivals.has(key)) { seat.classList.add('is-entering'); return; }
+      if (seatedViewerKeys.has(key) || presentationPaused || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      seat.classList.add('is-entering');
+      const frames = crowdFrames(viewer);
+      const walker = document.createElement('div');
+      walker.className = 'room-arrival-walker';
+      walker.dataset.viewerArrival = key;
+      const sprite = document.createElement('img');
+      sprite.src = frames.walk1; sprite.alt = '';
+      const label = document.createElement('div');
+      label.className = 'room-arrival-name';
+      const avatar = document.createElement('span');
+      avatar.innerHTML = avatarMarkup(viewer);
+      const name = document.createElement('strong'); name.textContent = viewer.name;
+      label.append(avatar, name); walker.append(sprite, label); roomArrivalLayer.append(walker);
+      const targetX = Number(seat.dataset.x), targetY = Number(seat.dataset.y);
+      const targetTransform = seat.style.transform || 'translate(-50%, -100%)';
+      const delay = entryIndex++ * 140;
+      const animation = walker.animate([
+        { left:'540px', top:'1840px', transform:'translate(-50%, -100%) scale(.85)', opacity:0, offset:0 },
+        { left:'540px', top:'1760px', transform:'translate(-50%, -100%) scale(.85)', opacity:1, offset:.12 },
+        { left:'540px', top:`${targetY + 80}px`, transform:targetTransform, opacity:1, offset:.72 },
+        { left:`${targetX}px`, top:`${targetY}px`, transform:targetTransform, opacity:1, offset:1 }
+      ], { duration:2400, delay, easing:'linear', fill:'both' });
+      let stepTimer = 0, settleTimer = 0;
+      const startTimer = window.setTimeout(() => {
+        let step = 0;
+        stepTimer = window.setInterval(() => { sprite.src = ++step % 2 ? frames.walk2 : frames.walk1; }, 185);
+      }, delay);
+      const stop = () => { window.clearTimeout(startTimer); window.clearInterval(stepTimer); window.clearTimeout(settleTimer); };
+      roomArrivals.set(key, { walker, animation, stop });
+      void animation.finished.then(() => {
+        window.clearInterval(stepTimer); sprite.src = frames.kneelDown;
+        settleTimer = window.setTimeout(() => {
+          document.querySelectorAll<HTMLElement>('[data-viewer]').forEach(item => { if (item.dataset.viewer === key) item.classList.remove('is-entering'); });
+          stop(); walker.remove(); roomArrivals.delete(key);
+        }, 180);
+      }).catch(() => { stop(); walker.remove(); });
+    });
+    seatedViewerKeys = currentKeys;
+  }
+
+  function pulseHallBowing(user = '') {
+    const seats = Array.from(document.querySelectorAll<HTMLElement>('#congregationHall .hall-seat:not(.is-entering), #vipCushionsLayer .vip-devotee-slot:not(.is-entering)'));
     if (!seats.length) return;
     const key = String(user).trim().toLocaleLowerCase('vi');
     const focused = key ? seats.find(el => el.dataset.viewerName === key) : undefined;
@@ -226,16 +484,17 @@ initTabs();
     targets.slice(0, 76).forEach((seat, index) => {
       const img = seat.querySelector<HTMLImageElement>('.devotee-sprite');
       if (!img) return;
+      const frames = crowdFrames({ character: img.dataset.character });
       const delay = (index % 22) * 36;
-      window.setTimeout(() => {
+      effectLater(() => {
         seat.classList.remove('is-bowing');
         void img.offsetWidth;
         seat.classList.add('is-bowing');
-        img.src = SPRITE_FRAMES.forehead;
-        window.setTimeout(() => { img.src = SPRITE_FRAMES.bowMid; }, 190);
-        window.setTimeout(() => { img.src = SPRITE_FRAMES.prostrateDeep; }, 380);
-        window.setTimeout(() => { img.src = SPRITE_FRAMES.kneel; }, 760);
-        window.setTimeout(() => seat.classList.remove('is-bowing'), 1180);
+        img.src = frames.forehead;
+        effectLater(() => { img.src = frames.bowMid; }, 190);
+        effectLater(() => { img.src = frames.prostrateDeep; }, 380);
+        effectLater(() => { img.src = frames.kneel; }, 760);
+        effectLater(() => seat.classList.remove('is-bowing'), 1180);
       }, delay);
     });
   }
@@ -312,16 +571,25 @@ initTabs();
     playThreeBowsSequence(2050);
   }
 
+  function replayCardArrival(element: HTMLElement | null, className: string): void {
+    if (!element) return;
+    element.classList.remove(className);
+    void element.offsetWidth;
+    element.classList.add(className);
+  }
+
   function updateCentralWorshipper(user, avatar, actionLabel, wish, doThreeBows = true) {
     const nameEl = document.getElementById('centralName');
     const actEl = document.getElementById('centralAction');
     const wishEl = document.getElementById('centralWishBubble');
     const avatarEl = document.getElementById('centralAvatar');
     const beam = document.getElementById('sacredLightBeam');
+    const centralEl = document.getElementById('centralWorshipper');
 
     if (nameEl) nameEl.textContent = user || 'Thí Chủ Hữu Duyên';
     if (actEl) actEl.textContent = actionLabel || 'Dâng hương cầu an';
     if (wishEl) wishEl.textContent = `“${wish || 'Nam Mô A Di Đà Phật, cầu bình an cát tường'}”`;
+    replayCardArrival(centralEl, 'cards-arriving');
 
     if (avatarEl) {
       if (avatar) {
@@ -333,7 +601,6 @@ initTabs();
 
     if (doThreeBows) {
       clearProstrationTimers();
-      const centralEl = document.getElementById('centralWorshipper');
       if (centralEl) centralEl.classList.remove('walking-up');
       playThreeBowsSequence(0);
     }
@@ -365,16 +632,79 @@ initTabs();
     const hudAct = document.getElementById('devoteeActionTag');
     if (hudName) hudName.textContent = user || 'Thí Chủ';
     if (hudAct) hudAct.textContent = actionLabel || 'Dâng hương';
+    replayCardArrival(document.getElementById('hudActiveNotice'), 'is-updating');
   }
 
   // 6. Cập nhật toàn bộ giao diện theo State từ Server
-  let hasInitializedRealLeader = false;
+  let scheduledCeremonyId = '';
+
+  function stopPresentation(): void {
+    window.clearTimeout(playbackStartTimer); scheduledCeremonyId = '';
+    clearProstrationTimers(); ritualEffectTimers.forEach(timer => window.clearTimeout(timer)); ritualEffectTimers.clear();
+    audio.stopTts(); clearViewerChats();
+    window.clearTimeout(fortuneTimer); window.clearTimeout(grandTimer);
+    document.getElementById('fortuneModal')?.classList.remove('visible');
+    document.getElementById('grandCeremonyBanner')?.classList.remove('visible');
+    document.getElementById('centralWorshipper')?.classList.remove('walking-up');
+    document.getElementById('skyLanternsLayer')?.replaceChildren();
+    document.getElementById('sacredLightBeam')?.classList.remove('intense');
+    document.querySelectorAll('.flare').forEach(element => element.classList.remove('flare'));
+    particles.soundWaves.length = 0; particles.burstParticles.length = 0; particles.floatingTexts.length = 0;
+    document.querySelectorAll<HTMLElement>('#congregationHall .hall-seat, #vipCushionsLayer .vip-devotee-slot').forEach(seat => {
+      seat.classList.remove('is-bowing', 'is-chatting');
+      const image = seat.querySelector<HTMLImageElement>('.devotee-sprite');
+      if (image) image.src = crowdFrames({ character: image.dataset.character }).kneel;
+    });
+    if (presentationPaused) {
+      window.clearTimeout(welcomeTimer); welcomeQueue.length = 0; welcoming = false;
+      document.getElementById('welcomeCard')?.classList.remove('visible');
+    }
+    for (const [key, arrival] of roomArrivals) { arrival.stop(); arrival.animation.cancel(); arrival.walker.remove(); roomArrivals.delete(key); }
+    document.querySelectorAll('.is-entering').forEach(seat => seat.classList.remove('is-entering'));
+    setCentralPose('kneel');
+  }
+
+  function syncPlayback(status: any): void {
+    if (!status) return;
+    const wasActive = Boolean(playbackState?.current);
+    playbackState = status;
+    presentationPaused = Boolean(status.paused);
+    particles.paused = presentationPaused;
+    document.body.classList.toggle('presentation-paused', presentationPaused);
+    if (latestUIState) {
+      latestUIState.playback = status;
+      latestUIState.settings.presentationPaused = presentationPaused;
+      syncLiveOperations(latestUIState);
+      audio.applyRemoteSettings(latestUIState.settings);
+    }
+    if (presentationPaused) { stopPresentation(); return; }
+    const active = status.current;
+    if (!active) { if (wasActive || scheduledCeremonyId) stopPresentation(); return; }
+    const event = active.event;
+    if (!event?.id || playedCeremonies.has(event.id) || scheduledCeremonyId === event.id || active.endsAt <= Date.now()) return;
+    window.clearTimeout(playbackStartTimer); scheduledCeremonyId = event.id;
+    playbackStartTimer = window.setTimeout(() => {
+      scheduledCeremonyId = '';
+      if (presentationPaused || playbackState?.current?.event?.id !== event.id) return;
+      playedCeremonies.add(event.id);
+      if (playedCeremonies.size > 500) playedCeremonies.delete(playedCeremonies.values().next().value);
+      triggerRitualVisuals({ ...event, startsAt: active.startsAt, endsAt: active.endsAt, elapsedMs: Math.max(0, Date.now() - active.startsAt) });
+    }, Math.max(0, active.startsAt - Date.now()));
+  }
 
   function updateUIState(st) {
+    if (!st) return;
+    st.serverConnected = true;
+    latestUIState = st;
+    presentationPaused = Boolean(st.settings?.presentationPaused);
+    audio.applyRemoteSettings(st.settings || {});
+    document.body.classList.toggle('presentation-paused', presentationPaused);
+    syncPlayback(st.playback);
+    syncLiveOperations(st);
     syncVoiceControls(st.tts || {}, st.settings?.ttsVoice, st.settings?.ttsVoiceRotation);
     syncMusicControls(st.settings);
     if (st.settings?.ttsVoice) audio.ttsVoice = st.settings.ttsVoice;
-    if (!st) return;
+    syncCentralCharacterSettings(st.settings || {});
 
     document.getElementById('statIncense').textContent = Number(st.totalIncense || 0).toLocaleString('vi-VN');
     document.getElementById('statMerit').textContent = Number(st.totalMerit || 0).toLocaleString('vi-VN');
@@ -383,20 +713,28 @@ initTabs();
     renderIncenseSticks(st.activeIncenseSticks || 9, st.settings?.smokeDensity);
 
     const lb = Array.isArray(st.leaderboard) ? st.leaderboard : [];
-    renderVipCushions(lb);
-    renderCongregationHall(lb);
-
-    // Đồng bộ tên Chủ Lễ mặc định theo người dẫn đầu thực tế nếu chưa có sự kiện mới
-    if (!hasInitializedRealLeader && lb.length > 0) {
-      hasInitializedRealLeader = true;
-      const topDev = lb[0];
-      updateCentralWorshipper(
-        topDev.name,
-        topDev.avatar,
-        `Công đức: ${Number(topDev.merit).toLocaleString('vi-VN')} CĐ`,
-        topDev.lastWish || 'Nam Mô A Di Đà Phật, cầu bình an cát tường',
-        false
-      );
+    const roomViewers = Array.isArray(st.roomViewers) ? st.roomViewers : [];
+    renderVipCushions(roomViewers);
+    renderCongregationHall(roomViewers);
+    syncRoomArrivals(roomViewers);
+    const simulationStatus = document.getElementById('simulatedViewersStatus');
+    if (simulationStatus) simulationStatus.textContent = st.simulatedViewerCount
+      ? `Đang có ${st.simulatedViewerCount} người test · ${roomViewers.length}/200 ghế đang dùng.`
+      : 'Chưa có người giả lập.';
+    const chatUser = document.getElementById('simulatedChatUser') as HTMLSelectElement | null;
+    if (chatUser) {
+      const selected = chatUser.value;
+      const simulated = roomViewers.filter(viewer => viewer.isSimulated);
+      const signature = simulated.map(viewer => viewer.uniqueId).join('|');
+      if (chatUser.dataset.users !== signature) {
+        chatUser.replaceChildren(...simulated.map(viewer => new Option(viewer.name, viewer.uniqueId)));
+        if (!simulated.length) chatUser.add(new Option('Tạo người test trước', ''));
+        if (simulated.some(viewer => viewer.uniqueId === selected)) chatUser.value = selected;
+        chatUser.dataset.users = signature;
+      }
+      chatUser.disabled = !simulated.length;
+      const send = document.getElementById('btnSimulateChat') as HTMLButtonElement | null;
+      if (send) send.disabled = !simulated.length;
     }
 
     // Cập nhật Bảng TẤM LÒNG THÀNH ở góc dưới phải (Top 4)
@@ -435,11 +773,13 @@ initTabs();
     const btnAutoSim = document.getElementById('btnToggleAutoSim');
     if (btnAutoSim && st.settings) {
       btnAutoSim.textContent = st.settings.autoSim
-        ? 'Giả lập người xem: BẬT'
-        : 'Giả lập người xem: TẮT';
+        ? 'Giả lập tương tác: BẬT'
+        : 'Giả lập tương tác: TẮT';
       btnAutoSim.classList.toggle('active-toggle', Boolean(st.settings.autoSim));
     }
     if (st.settings) {
+      const sfx = document.getElementById('sfxVolume') as HTMLInputElement | null;
+      if (sfx && typeof st.settings.sfxVolume === 'number') sfx.value = String(Math.round(st.settings.sfxVolume * 100));
       if (typeof st.settings.musicVolume === 'number') {
         audio.setMusicVolume(st.settings.musicVolume);
         const sMus = document.getElementById('sliderMusicVol') as HTMLInputElement | null;
@@ -504,14 +844,22 @@ initTabs();
   let grandTimer = null;
 
   function triggerRitualVisuals(ev) {
-    if (!ev) return;
+    if (!ev || presentationPaused) return;
+    if (typeof ev.centralCharacter === 'string') setCentralCharacter(ev.centralCharacter, true);
+    audio.stopTts();
+    if (ev.ttsText && (!ev.ttsPrepared || ev.ttsUrl)) {
+      audio.enqueueTts(ev.ttsText, { voice: ev.ttsVoice || 'maichi', url: ev.ttsUrl, startsAt: ev.startsAt });
+    }
+    if (ev.type === 'announcement') return;
+    if (ev.elapsedMs > 1000) {
+      updateCentralWorshipper(ev.user, ev.avatar, `Nghi thức đang diễn ra (+${ev.merit || 0} CĐ)`, ev.wish, false);
+      setCentralPose('kneel');
+      if (ev.type === 'drawFortune') showFortuneModal(ev.user, ev.fortune);
+      return;
+    }
     pulseHallBowing(ev.user);
 
-    if (ev.ttsText && ev.type !== 'drawFortune') {
-      audio.enqueueTts(ev.ttsText, { voice: ev.ttsVoice || 'maichi' });
-    }
-
-    switch (ev.type) {
+    switch (ev.presentation || ev.type) {
       case 'burnIncense': {
         audio.playIncenseChime();
         particles.spawnIncenseBurst(540, 680);
@@ -521,8 +869,9 @@ initTabs();
       }
 
       case 'strikeWoodenFish': {
-        for(let i=0;i<Math.min(12,Math.max(1,Number(ev.count)||1));i++)setTimeout(()=>audio.playWoodenFish(),i*220);
+        for(let i=0;i<Math.min(12,Math.max(1,Number(ev.count)||1));i++)effectLater(()=>{ void audio.playWoodenFish(); },i*220);
         particles.spawnFloatingMerit(`+${ev.merit} Công Đức`, 890, 935, '#ffd54f');
+        updateCentralWorshipper(ev.user, ev.avatar, `Gõ mõ (${ev.count} nhịp)`, ev.wish, false);
         break;
       }
 
@@ -553,7 +902,7 @@ initTabs();
 
       case 'grandCeremony': {
         audio.playTempleBell(1.2);
-        setTimeout(() => audio.playTempleBell(1.1), 900);
+        effectLater(() => audio.playTempleBell(1.1), 900);
         particles.spawnGrandCeremonyRain();
         showGrandCeremonyBanner(ev.user, ev.giftName, ev.merit);
         animateWalkerOnCarpet(ev.user, ev.avatar, `${ev.giftName} (+${ev.merit} CĐ)`, ev.wish);
@@ -562,34 +911,10 @@ initTabs();
 
       case 'drawFortune': {
         audio.playFortuneShake();
-        updateCentralWorshipper(
-          ev.user,
-          ev.avatar,
-          'Đang xin xăm...',
-          `Thí chủ ${ev.user} đang thành tâm xin quẻ...`,
-          false
-        );
-        // Chỉ hiển thị tờ Quẻ Xăm đúng thời điểm giọng đọc bắt đầu vang lên!
-        audio.enqueueTts(ev.ttsText || '', {
-          voice: ev.ttsVoice || 'maichi',
-          onStart: () => {
-            audio.playIncenseChime();
-            showFortuneModal(ev.user, ev.fortune);
-            updateCentralWorshipper(
-              ev.user,
-              ev.avatar,
-              `Quẻ số ${ev.fortune?.number} (${ev.fortune?.rank})`,
-              ev.fortune?.meaning || '',
-              true
-            );
-          },
-          onEnd: () => {
-            clearTimeout(fortuneTimer);
-            fortuneTimer = setTimeout(() => {
-              document.getElementById('fortuneModal')?.classList.remove('visible');
-            }, 1800);
-          }
-        });
+        showFortuneModal(ev.user, ev.fortune);
+        updateCentralWorshipper(ev.user, ev.avatar, `Quẻ số ${ev.fortune?.number} (${ev.fortune?.rank})`, ev.fortune?.meaning || '', true);
+        clearTimeout(fortuneTimer);
+        fortuneTimer = setTimeout(() => document.getElementById('fortuneModal')?.classList.remove('visible'), Math.max(5500, (ev.endsAt || Date.now() + 15000) - Date.now()));
         break;
       }
     }
@@ -677,25 +1002,45 @@ initTabs();
           updateUIState(msg.params);
         } else if (msg.method === 'temple.event') {
           if (msg.params?.state) updateUIState(msg.params.state);
-          if (msg.params?.event) triggerRitualVisuals(msg.params.event);
+          if (msg.params?.playback) syncPlayback({ ...playbackState, current: msg.params.playback });
+        } else if (msg.method === 'temple.playback') {
+          syncPlayback(msg.params);
+        } else if (msg.method === 'temple.viewerCount') {
+          if (latestUIState) {
+            latestUIState.tiktok.viewerCount = msg.params.viewerCount;
+            if (msg.params.liveSession) latestUIState.liveSession = msg.params.liveSession;
+            const text = document.getElementById('liveStatusText');
+            if (text && latestUIState.tiktok.connected) text.textContent = `LIVE @${latestUIState.tiktok.username} • ${msg.params.viewerCount} mắt`;
+            syncLiveOperations(latestUIState);
+          }
         } else if (msg.method === 'tts.status') {
           syncVoiceControls(msg.params || {});
         } else if (msg.method === 'temple.chat') {
-          showViewerChat(msg.params);
+          if (!presentationPaused) showViewerChat(msg.params);
         } else if (msg.method === 'temple.member') {
-          queueWelcome(msg.params);
+          if (!presentationPaused) queueWelcome(msg.params);
         } else if (msg.method === 'tts.play') {
-          if (msg.params?.url) {
+          if (msg.params?.url && !presentationPaused) {
             audio.enqueueTts(msg.params.text || 'Nam mô A Di Đà Phật', {
               voice: msg.params.voice || 'maichi',
               url: msg.params.url
             });
           }
         }
-      } catch (_) {}
+      } catch (error) { console.warn('[Live update]', error); }
     };
 
-    ws.onclose = () => {
+    ws.onclose = (event) => {
+      const interrupted = playbackState?.current?.event?.id;
+      if (interrupted) playedCeremonies.delete(interrupted);
+      stopPresentation();
+      if (latestUIState) { latestUIState.serverConnected = false; syncLiveOperations(latestUIState); }
+      if (event.code === 4401) {
+        window.TempleAuth?.logout();
+        const status = document.getElementById('authStatus');
+        if (status) status.textContent = 'Token không còn hợp lệ. Lấy token mới trong terminal rồi xác thực lại.';
+        return;
+      }
       setTimeout(connectWebSocket, window.TempleAuth?.getToken() ? 3000 : 5000);
     };
   }
@@ -734,7 +1079,7 @@ initTabs();
     const data = await res.json();
     if (data.error) toast(data.error.message || 'Không thực hiện được thao tác.');
     if (data?.result?.state) updateUIState(data.result.state);
-    if (data?.result?.event) triggerRitualVisuals(data.result.event);
+
     return data;
     } catch (error) { toast('Mất kết nối máy chủ. Kiểm tra cửa sổ npm run dev.'); return { error: { message: String(error) } }; }
   }
@@ -842,31 +1187,6 @@ initTabs();
     const username = (document.getElementById('inputTikTokUser') as HTMLInputElement | null)?.value.trim();
     if (!username) return;
     callRpc('live.connect', { username });
-  });
-
-  let autoSimState = false;
-  document.getElementById('btnToggleAutoSim')?.addEventListener('click', () => {
-    autoSimState = !autoSimState;
-    callRpc('live.setAutoSim', { enabled: autoSimState });
-  });
-
-  document.getElementById('btnToggleTts')?.addEventListener('click', (e) => {
-    audio.ttsEnabled = !audio.ttsEnabled;
-    const btn = e.currentTarget as HTMLButtonElement;
-    btn.textContent = `Giọng đọc: ${audio.ttsEnabled ? 'BẬT' : 'TẮT'}`;
-    btn.classList.toggle('active-toggle', audio.ttsEnabled);
-  });
-
-  document.getElementById('btnToggleMusic')?.addEventListener('click', (e) => {
-    audio.bgMusicEnabled = !audio.bgMusicEnabled;
-    if (audio.bgMusicEnabled) {
-      audio.startZenAmbience();
-    } else {
-      audio.stopZenAmbience();
-    }
-    const btn = e.currentTarget as HTMLButtonElement;
-    btn.textContent = `Nhạc nền: ${audio.bgMusicEnabled ? 'BẬT' : 'TẮT'}`;
-    btn.classList.toggle('active-toggle', audio.bgMusicEnabled);
   });
 
   // Khởi tạo và gắn sự kiện thanh trượt chỉnh âm lượng Nhạc nền & Giọng đọc

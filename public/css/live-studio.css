@@ -25,4 +25,17 @@ body>.studio-bar { position:relative; z-index:1; }
 body.obs-mode>.studio-bar { display:none; }
 body.obs-mode .app-workspace { min-height:0; height:100dvh; padding:0; }
 body.obs-mode .stage-wrapper { height:min(100dvh,177.7778vw); min-height:0; border:0; border-radius:0; }
+.quick-dock .character-rotation-toggle { display:flex; align-items:center; gap:9px; margin:13px 0 9px; color:#5f4b36; font-size:13px; font-weight:600; }
+.quick-dock .character-rotation-toggle input,.quick-dock .character-rotation-list input { width:17px; min-height:17px; flex:none; margin:0; accent-color:#8d382c; }
+.quick-dock .character-rotation-options { margin-top:8px; padding:11px 12px; border:1px solid #e4d6bf; border-radius:12px; background:#fffdf8a6; }
+.quick-dock .character-rotation-options summary { color:#6a4031; font-size:12px; font-weight:600; cursor:pointer; }
+.quick-dock .character-rotation-list { display:grid; gap:8px; margin-top:11px; }
+.quick-dock .character-rotation-list label { display:flex; align-items:center; gap:8px; color:#675540; font-size:12px; }
+.quick-dock #centralCharacterSyncStatus { min-height:16px; margin:8px 0 0; font-size:11px; }
+.quick-dock .room-simulation { margin:18px 0; padding:16px; border:1px solid #ddc79f; border-radius:16px; background:linear-gradient(135deg,#fffaf0,#f4ead7); }
+.quick-dock .room-simulation-heading { display:flex; align-items:center; justify-content:space-between; gap:8px; color:#6a4030; }
+.quick-dock .room-simulation-heading>span { padding:4px 7px; border-radius:6px; color:#937039; background:#ead9b6; font-size:9px; font-weight:800; letter-spacing:.06em; }
+.quick-dock .room-simulation-actions { display:grid; grid-template-columns:minmax(60px,.7fr) minmax(0,1.4fr) auto; gap:8px; margin-top:7px; }
+.quick-dock .room-simulation-actions input { min-width:0; }
+.quick-dock .room-simulation-actions .dock-btn { margin:0; padding:10px; font-size:12px; }
 @media(max-width:960px) { .app-workspace { height:auto; min-height:0; flex-direction:column; align-items:center; padding:20px 16px; gap:20px; }.stage-wrapper { height:auto; min-height:0; width:min(100%,390px); aspect-ratio:9/16; }.quick-dock { width:min(100%,500px); height:auto; max-height:none; overflow:visible; padding:18px; }.quick-dock .row { flex-wrap:wrap; }.quick-dock .row input { flex-basis:100%; }body.obs-mode .app-workspace { flex-direction:row; align-items:center; }body.obs-mode .stage-wrapper { width:auto; max-width:100vw; } }

@@ -7,6 +7,7 @@ type TtsQueueOptions = {
   url?: string | null;
   onStart?: () => void;
   onEnd?: () => void;
+  startsAt?: number;
 };
 
 type TtsApiResponse = {
@@ -23,6 +24,7 @@ type TtsQueueItem = {
   onStart: (() => void) | null;
   onEnd: (() => void) | null;
   fetchPromise: Promise<TtsApiResponse> | null;
+  startsAt?: number;
 };
 
 type TtsPlaybackState = {
@@ -49,6 +51,28 @@ class TempleAudioEngine {
   declare onTtsStateChange: ((state: TtsPlaybackState) => void) | null;
   declare sampleBuffers: Map<string, Promise<AudioBuffer>>;
   declare sfxVolume: number;
+  private ttsEpoch = 0;
+  private finishCurrentAudio: (() => void) | null = null;
+  private presentationPaused = false;
+
+  stopTts(): void {
+    this.ttsEpoch++; this.ttsQueue.length = 0; this.currentAudio?.pause();
+    this.finishCurrentAudio?.(); this.finishCurrentAudio = null; this.currentAudio = null;
+    this.ttsPlaying = false; this.setBgDucking(false);
+  }
+
+  applyRemoteSettings(settings: any): void {
+    const wasTts = this.ttsEnabled, wasMusic = this.bgMusicEnabled;
+    this.presentationPaused = Boolean(settings.presentationPaused);
+    this.ttsEnabled = settings.ttsEnabled !== false && !this.presentationPaused;
+    this.bgMusicEnabled = settings.bgMusicEnabled !== false && !this.presentationPaused;
+    this.sfxEnabled = settings.sfxEnabled !== false && !this.presentationPaused;
+    if ((wasTts && !this.ttsEnabled) || this.presentationPaused) this.stopTts();
+    if (!this.sfxEnabled && this.ctx) { const old = this.ctx; this.ctx = null; void old.close().catch(() => {}); }
+    if (!this.bgMusicEnabled) this.stopZenAmbience();
+    else if (!wasMusic && this.unlocked) this.startZenAmbience();
+    if (typeof settings.sfxVolume === 'number') this.sfxVolume = settings.sfxVolume;
+  }
 
   constructor() {
     this.ctx = null;
@@ -417,7 +441,8 @@ class TempleAudioEngine {
       url: options.url || null,
       onStart,
       onEnd,
-      fetchPromise: null
+      fetchPromise: null,
+      startsAt: options.startsAt
     };
 
     if (!item.url) {
@@ -449,6 +474,7 @@ class TempleAudioEngine {
     if (this.ttsPlaying || this.ttsQueue.length === 0) return;
     this.ttsPlaying = true;
     const item = this.ttsQueue.shift();
+    const epoch = this.ttsEpoch;
 
     try {
       let audioUrl = item.url;
@@ -459,23 +485,26 @@ class TempleAudioEngine {
         }
       }
 
+      if (epoch !== this.ttsEpoch) return;
       if (audioUrl) {
         this.setBgDucking(true);
         if (this.onTtsStateChange) {
           this.onTtsStateChange({ speaking: true, synthesizing: false, text: item.text });
         }
         if (item.onStart) item.onStart();
-        await this.playWavUrl(audioUrl);
-        if (item.onEnd) item.onEnd();
+        await this.playWavUrl(audioUrl, item.startsAt);
+        if (epoch === this.ttsEpoch && item.onEnd) item.onEnd();
       } else {
         if (item.onStart) item.onStart();
         if (item.onEnd) setTimeout(item.onEnd, 5500);
       }
     } catch (err) {
+      if (epoch !== this.ttsEpoch) return;
       console.warn('[ZeroTTS Playback Warning]', err);
       if (item.onStart) item.onStart();
       if (item.onEnd) item.onEnd();
     } finally {
+      if (epoch !== this.ttsEpoch) return;
       this.ttsPlaying = false;
       if (this.ttsQueue.length === 0) {
         this.setBgDucking(false);
@@ -488,7 +517,8 @@ class TempleAudioEngine {
     }
   }
 
-  async playWavUrl(url: string): Promise<void> {
+  async playWavUrl(url: string, startsAt?: number): Promise<void> {
+    const epoch = this.ttsEpoch;
     let audioUrl = url;
     let revokeUrl = false;
     try {
@@ -496,6 +526,7 @@ class TempleAudioEngine {
         audioUrl = await window.TempleAuth.fetchAudioBlobUrl(url);
         revokeUrl = true;
       }
+      if (epoch !== this.ttsEpoch) { if (revokeUrl) URL.revokeObjectURL(audioUrl); return; }
       await new Promise<void>((resolve) => {
         let finished = false;
         let audio = null;
@@ -503,12 +534,20 @@ class TempleAudioEngine {
           if (finished) return;
           finished = true;
           if (this.currentAudio === audio) this.currentAudio = null;
+          if (this.finishCurrentAudio === finish) this.finishCurrentAudio = null;
           if (revokeUrl) URL.revokeObjectURL(audioUrl);
           resolve();
         };
         try {
           audio = new Audio(audioUrl);
           this.currentAudio = audio;
+          this.finishCurrentAudio = finish;
+          audio.onloadedmetadata = () => {
+            if (!startsAt) return;
+            const elapsed = Math.max(0, (Date.now() - startsAt) / 1000);
+            if (Number.isFinite(audio.duration) && elapsed >= audio.duration) { audio.pause(); finish(); }
+            else audio.currentTime = elapsed;
+          };
           audio.volume = this.ttsVolume;
           audio.onended = finish;
           audio.onerror = finish;

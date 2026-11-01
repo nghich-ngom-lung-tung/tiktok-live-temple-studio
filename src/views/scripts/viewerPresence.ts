@@ -8,18 +8,68 @@ export function avatarMarkup(viewer:any):string {
 }
 document.addEventListener('error',e=>{const img=e.target as HTMLImageElement;if(img.tagName==='IMG'&&img.parentElement?.classList.contains('viewer-face'))img.hidden=true;},true);
 const bubbles=new Map<string,{element:HTMLElement;timer:number}>();
+let trackingFrame = 0;
+export function clearViewerChats(): void {
+  for (const key of [...bubbles.keys()]) removeBubble(key);
+  if (trackingFrame) cancelAnimationFrame(trackingFrame);
+  trackingFrame = 0;
+}
+function removeBubble(key: string): void {
+  const entry = bubbles.get(key);
+  if (!entry) return;
+  window.clearTimeout(entry.timer); entry.element.remove(); bubbles.delete(key);
+  document.querySelectorAll<HTMLElement>('[data-viewer]').forEach(seat => {
+    if (seat.dataset.viewer === key) seat.classList.remove('is-chatting');
+  });
+}
+
+function trackChatBubbles(): void {
+  trackingFrame = 0;
+  const stage = document.getElementById('stage9x16');
+  if (!stage || !bubbles.size) return;
+  const stageRect = stage.getBoundingClientRect();
+  const scale = stageRect.width / stage.offsetWidth;
+  if (scale <= 0) { trackingFrame = requestAnimationFrame(trackChatBubbles); return; }
+  const anchors = Array.from(stage.querySelectorAll<HTMLElement>('[data-viewer], [data-viewer-arrival]'));
+  const placed: {left:number;top:number;width:number;height:number}[] = [];
+  for (const [key, entry] of bubbles) {
+    const walker = anchors.find(el => el.dataset.viewerArrival === key && el.getBoundingClientRect().width > 0);
+    const seat = anchors.find(el => el.dataset.viewer === key);
+    const anchor = walker || seat;
+    if (!anchor) { entry.element.style.visibility = 'hidden'; continue; }
+    const rect = anchor.getBoundingClientRect();
+    const centerX = (rect.left + rect.width / 2 - stageRect.left) / scale;
+    const width = entry.element.offsetWidth, height = entry.element.offsetHeight;
+    const left = Math.max(18, Math.min(stage.offsetWidth - width - 18, centerX - width / 2));
+    let top = Math.max(100, (rect.top - stageRect.top) / scale - height - 20);
+    for (const previous of placed) {
+      if (left < previous.left + previous.width + 8 && left + width > previous.left - 8
+        && top < previous.top + previous.height + 8 && top + height > previous.top - 8) {
+        top = Math.max(100, previous.top - height - 14);
+      }
+    }
+    entry.element.style.left = `${left}px`;
+    entry.element.style.top = `${top}px`;
+    entry.element.style.setProperty('--bubble-tail-left', `${Math.max(20, Math.min(width - 35, centerX - left - 9))}px`);
+    entry.element.style.visibility = 'visible';
+    seat?.classList.add('is-chatting');
+    placed.push({ left, top, width, height });
+  }
+  trackingFrame = requestAnimationFrame(trackChatBubbles);
+}
+
 export function showViewerChat(data:any):void {
   if(!data?.comment)return;
   const stage=document.getElementById('stage9x16');if(!stage)return;
   const key=viewerKey(data);
-  const seat=Array.from(stage.querySelectorAll<HTMLElement>('[data-viewer]')).find(el=>el.dataset.viewer===key);
-  const existing=bubbles.get(key);if(existing){clearTimeout(existing.timer);existing.element.remove();bubbles.delete(key);}
-  if(bubbles.size>=4){const [oldKey,old]=bubbles.entries().next().value;clearTimeout(old.timer);old.element.remove();bubbles.delete(oldKey);}
+  if (!key) return;
+  removeBubble(key);
+  if(bubbles.size>=6){const oldest=bubbles.keys().next().value;if(oldest)removeBubble(oldest);}
   const bubble=document.createElement('div');bubble.className='viewer-chat-bubble';
-  bubble.style.left=`${Math.max(28,Math.min(742,Number(seat?.dataset.x)||385))}px`;
-  bubble.style.top=`${Math.max(850,(Number(seat?.dataset.y)||1110)-150)}px`;
+  bubble.style.visibility='hidden'; bubble.dataset.chatViewer=key;
+  bubble.setAttribute('role','status');
   const name=document.createElement('strong');name.textContent=String(data.user||'Thí chủ');
-  const text=document.createElement('span');text.textContent=String(data.comment).slice(0,120);bubble.append(name,text);stage.append(bubble);
-  seat?.classList.add('is-chatting');
-  const timer=window.setTimeout(()=>{bubble.remove();bubbles.delete(key);seat?.classList.remove('is-chatting');},6000);bubbles.set(key,{element:bubble,timer});
+  const text=document.createElement('span');text.textContent=String(data.comment).slice(0,240);bubble.append(name,text);stage.append(bubble);
+  const timer=window.setTimeout(()=>removeBubble(key),6500);bubbles.set(key,{element:bubble,timer});
+  if(!trackingFrame)trackChatBubbles();
 }

@@ -6,7 +6,7 @@ const paths:Record<string,string>={
  fortune:'<path d="M8 13h16l-2 17H10L8 13Zm4 0L10 3l4-1 2 11m1 0 2-11 4 1-3 10M12 20h8m-7 4h6"/>',
  lotus:'<path d="M16 28C6 26 2 20 3 13c6 0 10 3 13 8 3-5 7-8 13-8 1 7-3 13-13 15ZM16 24C9 20 10 10 16 4c6 6 7 16 0 20Z"/>',
  ceremony:'<path d="M5 27 3 12l7 5 6-13 6 13 7-5-2 15H5ZM8 31h16"/>',
- welcome:'<path d="M3 15 16 4l13 11M7 13v16h18V13M13 29V19h6v10"/>',
+ welcome:'<path d="M3 11c4-3 9-3 13-3s9 0 13 3M6 8h20M8 11v16M24 11v16M12 11v7h8v-7M4 27h24M12 15h8"/>',
  sound:'<path d="M4 13h5l7-6v18l-7-6H4zM21 11a7 7 0 0 1 0 10m3-14a12 12 0 0 1 0 18"/>',
  play:'<path d="m11 7 14 9-14 9z"/>'
 };

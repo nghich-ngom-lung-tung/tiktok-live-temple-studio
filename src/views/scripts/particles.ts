@@ -73,6 +73,7 @@ type FloatingText = {
 };
 
 class TempleParticleEngine {
+  paused = false;
   declare canvas: HTMLCanvasElement;
   declare ctx: CanvasRenderingContext2D;
   declare width: number;
@@ -293,7 +294,7 @@ class TempleParticleEngine {
   animate(timestamp: number) {
     requestAnimationFrame(this.animate);
 
-    if (document.hidden) return;
+    if (document.hidden || this.paused) return;
     if (timestamp - this.lastFrameTime < this.frameInterval) return;
     this.lastFrameTime = timestamp;
 

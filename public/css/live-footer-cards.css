@@ -1,0 +1,101 @@
+/* Footer plaques, drawn in the stage's 1080 × 1920 coordinate space. */
+#stage9x16 .bottom-hud-bar { height:232px; gap:16px; bottom:24px; }
+#stage9x16 .hud-left-col { gap:12px; }
+#stage9x16 .hud-active-notice {
+  height:56px; padding:8px 16px; border-radius:16px;
+  border:1px solid #d8b66d; background:linear-gradient(110deg,#87392b,#46150f);
+  box-shadow:0 8px 22px #230b0755,inset 0 1px #fff1cd33;
+}
+#stage9x16 .notice-mark { display:grid; place-items:center; width:34px; height:34px; margin:0; }
+#stage9x16 .notice-copy { gap:10px; }
+#stage9x16 .hud-gift-cards { gap:12px; min-height:0; }
+#stage9x16 .hud-gift-card {
+  --card-accent:#a23e2a; --card-tint:#f4ded0;
+  isolation:isolate; overflow:hidden; min-width:0; padding:16px 10px 15px; gap:7px;
+  border:1px solid #d7b977; border-radius:20px;
+  background:radial-gradient(ellipse at 50% 0,#ffffffdd,transparent 70%),linear-gradient(145deg,#fff9e9,#efddba);
+  box-shadow:0 9px 18px #230b074d,inset 0 0 0 4px #fff8e780,inset 0 -3px #c9a45c33;
+  transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease;
+}
+#stage9x16 #cardBlessing { --card-accent:#a17428; --card-tint:#f1e3bd; }
+#stage9x16 #cardLotus { --card-accent:#a23f60; --card-tint:#f3dbe1; }
+#stage9x16 .hud-gift-card::before {
+  content:''; position:absolute; inset:7px; z-index:-1; border:1px solid #b9914438; border-radius:14px; pointer-events:none;
+}
+#stage9x16 .hud-gift-card::after {
+  content:''; position:absolute; top:0; left:25%; right:25%; height:3px;
+  background:linear-gradient(90deg,transparent,var(--card-accent),transparent); pointer-events:none;
+}
+#stage9x16 .hud-gift-card .hud-icon {
+  display:grid; place-items:center; width:52px; height:52px; border-radius:50%; color:var(--card-accent);
+  border:1px solid #b18b4d55; background:linear-gradient(145deg,#fffdf4,var(--card-tint));
+  box-shadow:0 3px 7px #7b461b18,inset 0 1px #fff; margin:0 0 1px;
+}
+#stage9x16 .hud-gift-card .hud-icon svg { width:34px; height:34px; }
+#stage9x16 .hud-gift-card .gift-title { font:700 25px/1.35 'Noto Serif',serif; color:#592b20; white-space:nowrap; }
+#stage9x16 .hud-gift-card .gift-coin-tag { font-size:16px; line-height:1.45; color:#846746; font-weight:400; letter-spacing:0; white-space:nowrap; }
+#stage9x16 .hud-gift-card:hover { transform:translateY(-4px); border-color:#f0d38d; box-shadow:0 14px 24px #230b0766,inset 0 0 0 4px #fff8e780; }
+#stage9x16 .hud-gift-card:active { transform:translateY(-1px) scale(.98); }
+#stage9x16 .hud-gift-card:focus-visible { outline:3px solid #fff0bd; outline-offset:4px; }
+#stage9x16 .hud-right-leaderboard {
+  position:relative; overflow:hidden; padding:0 14px 12px; border:1px solid #d7b977; border-radius:20px;
+  background:radial-gradient(ellipse at 50% 100%,#e6c88d50,transparent 75%),linear-gradient(145deg,#fff9ec,#f3e4c9);
+  box-shadow:0 9px 22px #230b0755,inset 0 0 0 4px #fff8e780;
+}
+#stage9x16 .hud-lb-header {
+  margin:0 -14px 10px; padding:11px 8px; gap:9px; border:0; border-bottom:1px solid #d4b675;
+  color:#ffe9af; background:linear-gradient(110deg,#773226,#4c1b13); font:700 22px/1.4 'Noto Serif',serif;
+  box-shadow:inset 0 1px #fff3ce2b;
+}
+#stage9x16 .hud-lb-header .hud-icon { color:#e6c477; }
+#stage9x16 .hud-lb-header svg { width:25px; height:25px; }
+#stage9x16 .hud-lb-list { min-height:0; gap:5px; }
+#stage9x16 .leader-item { min-height:31px; padding:2px 4px; gap:7px; border-bottom:1px solid #b48d4e24; }
+#stage9x16 .leader-item:last-child { border-bottom:0; }
+#stage9x16 .leader-rank { width:25px; height:25px; margin:0; border-radius:8px; background:#dfc99f; color:#71522d; font-size:16px; }
+#stage9x16 .leader-item:first-child .leader-rank { background:linear-gradient(135deg,#ffe4a0,#b8832f); color:#623d16; box-shadow:0 2px 5px #a1742833; }
+#stage9x16 .leader-name { font-size:19px; font-weight:600; color:#64462d; }
+#stage9x16 .leader-merit { font-size:19px; color:#925a24; font-variant-numeric:tabular-nums; }
+#stage9x16 .leader-empty { margin:0; padding:3px 10px 0; text-align:center; font-size:18px; color:#96774d; }
+#stage9x16 .leader-empty::before { content:'✧'; display:block; margin-bottom:2px; color:#b38a44; font-size:42px; line-height:1.1; }
+#stage9x16 .hud-lb-list:empty::after { content:'Chờ tấm lòng đầu tiên'; margin:auto; text-align:center; font-size:18px; color:#96774d; }
+@media(prefers-reduced-motion:reduce) { #stage9x16 .hud-gift-card { transition:none; } }
+.room-arrival-layer { position:absolute; inset:0; z-index:24; pointer-events:none; }
+.room-arrival-walker { position:absolute; display:flex; flex-direction:column; align-items:center; width:100px; }
+.room-arrival-walker>img { display:block; width:86px; height:138px; object-fit:contain; }
+.room-arrival-name { display:flex; align-items:center; gap:5px; padding:4px 9px; border:1px solid #d1ac5e; border-radius:20px; background:#4b1d14ed; color:#fff0ce; white-space:nowrap; font-size:15px; box-shadow:0 3px 8px #1d090855; }
+.room-arrival-name>span { display:flex; }
+.room-arrival-name .viewer-face { position:static; transform:none; width:25px; height:25px; font-size:13px; margin:0; }
+.room-arrival-name strong { max-width:150px; overflow:hidden; text-overflow:ellipsis; }
+.hall-seat.is-entering,.vip-devotee-slot.is-entering { visibility:hidden; }
+.hall-seat,.vip-devotee-slot { pointer-events:auto; }
+#stage9x16 .vip-devotee-slot .devotee-sprite { width:80px; height:104px; }
+#stage9x16 .hall-seat .devotee-sprite { width:92px; height:120px; object-fit:contain; }
+#stage9x16 .hall-seat .seat-badge { gap:5px; padding:3px 8px 3px 4px; margin-top:-5px; box-shadow:0 3px 8px #230b0755; }
+#stage9x16 .hall-seat .seat-avatar { width:25px; height:25px; font-size:14px; flex:none; }
+#stage9x16 .hall-seat .seat-username { max-width:100px; font-size:16px; }
+#stage9x16 .hall-seat>.viewer-face { display:none; }
+#stage9x16 .viewer-chat-bubble { width:260px; padding:12px 15px; border-radius:16px; z-index:175; }
+#stage9x16 .viewer-chat-bubble::after { left:var(--bubble-tail-left,24px); }
+#stage9x16 .viewer-chat-bubble strong { font-size:17px; margin-bottom:6px; }
+#stage9x16 .viewer-chat-bubble>span { font-size:21px; line-height:1.45; }
+.quick-dock .room-chat-test { margin-top:12px; padding-top:12px; border-top:1px solid #ddc79f; }
+.quick-dock .room-chat-test summary { cursor:pointer; color:#6a4030; font-weight:600; font-size:13px; margin-bottom:10px; }
+.quick-dock .room-chat-test label { display:block; margin:10px 0 5px; font-size:12px; }
+.quick-dock .room-chat-test input { width:100%; }
+.quick-dock .room-chat-test>.dock-btn { margin-top:10px; width:100%; }
+.quick-dock .live-emergency { background:#fff1e8; border:1px solid #b66a49; color:#863c2a; font-weight:700; }
+.quick-dock .live-emergency.is-paused { background:#326b4c; color:#fff8e5; border-color:#326b4c; }
+.quick-dock .live-operations { margin:16px 0; padding:16px; background:#fffaf0; border:1px solid #ddc79f; border-radius:14px; }
+.quick-dock .live-operations summary { color:#703c2c; cursor:pointer; font-weight:700; }
+.quick-dock .live-operations h3 { margin:16px 0 10px; font-size:14px; color:#6b4030; }
+.quick-dock .live-operations label { display:block; margin:12px 0 5px; color:#806246; font-size:12px; }
+.quick-dock .live-operations input { width:100%; }
+.quick-dock .session-clock { font-size:28px; font-weight:700; color:#7b3829; font-variant-numeric:tabular-nums; }
+.quick-dock .session-history { padding-left:18px; color:#87694a; font-size:11px; line-height:1.7; }
+.quick-dock .gift-mapping-row { display:flex; gap:10px; align-items:center; justify-content:space-between; padding:9px 0; border-top:1px solid #dfcda9; font-size:12px; color:#6b4933; }
+.quick-dock .gift-mapping-row small { display:block; color:#98774b; margin-top:3px; }
+.quick-dock #liveConnectionError { color:#a14431; overflow-wrap:anywhere; }
+.presentation-paused #stage9x16 #templeCanvas,.presentation-paused .room-arrival-layer,.presentation-paused .viewer-chat-bubble,.presentation-paused .welcome-card { visibility:hidden!important; }
+.presentation-paused #stage9x16 * { animation-play-state:paused!important; }
+#stage9x16 .hall-seat.is-chatting .seat-badge { border-color:#fff0ae; box-shadow:0 0 12px #f3d37c88; }
