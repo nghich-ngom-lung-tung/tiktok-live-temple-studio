@@ -9,17 +9,17 @@ foreach ($commandName in @('node', 'npm', 'uv')) {
 
 Write-Host "Node.js: $(node --version)"
 Write-Host "uv: $(uv --version)"
-if (-not (Test-Path -LiteralPath (Join-Path $PSScriptRoot 'node_modules\vite'))) {
+$needsNpmInstall = -not (Test-Path -LiteralPath (Join-Path $PSScriptRoot 'node_modules\vite'))
+if ($needsNpmInstall) {
   Write-Host 'Installing JavaScript dependencies...'
   npm install
   if ($LASTEXITCODE -ne 0) { throw 'npm install failed.' }
 } else {
   Write-Host 'JavaScript dependencies are already installed.'
+  Write-Host 'Installing or checking ZeroTTS Python dependencies...'
+  npm run setup:python
+  if ($LASTEXITCODE -ne 0) { throw 'ZeroTTS dependency setup failed.' }
 }
-
-Write-Host 'Creating .venv and installing ZeroTTS from uv.lock...'
-uv sync --locked
-if ($LASTEXITCODE -ne 0) { throw 'uv sync --locked failed.' }
 
 $venvPython = Join-Path $PSScriptRoot '.venv\Scripts\python.exe'
 & $venvPython -c 'import numpy, onnxruntime, zerotts'

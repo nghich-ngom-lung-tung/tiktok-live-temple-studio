@@ -4,6 +4,8 @@
   "description": "Tam Thế Studio for TikTok Live (Node.js + ZeroTTS Vietnamese voices)",
   "main": "src/server.js",
   "scripts": {
+    "postinstall": "node scripts/setup-python.mjs",
+    "setup:python": "node scripts/setup-python.mjs",
     "dev": "node scripts/dev.mjs",
     "dev:client": "vite --host 127.0.0.1",
     "dev:server": "node --watch server.js",
