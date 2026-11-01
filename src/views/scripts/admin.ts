@@ -13,6 +13,16 @@ let stageBackgroundUrl=DEFAULT_STAGE_BACKGROUND, stagePreviewObjectUrl='', stage
 function setStagePreviewImages(url:string):void {
  document.querySelectorAll<HTMLImageElement>('.live-notice-stage-bg,.scene-preview img').forEach(image=>{if(image.getAttribute('src')!==url)image.src=url;});
 }
+function promptStageBackgroundAuthentication(status:HTMLElement):boolean {
+ if(window.TempleAuth.getToken())return true;
+ const gate=document.getElementById('authGate') as HTMLDetailsElement|null;
+ if(gate){gate.open=true;gate.scrollIntoView({behavior:'smooth',block:'center'});}
+ const tokenInput=document.getElementById('rpcTokenInput') as HTMLInputElement|null;
+ status.textContent='Cần xác thực RPC để lưu ảnh. Nhập token từ cửa sổ chạy server ở mục “Kết nối điều khiển” phía trên.';
+ toast('Hãy nhập RPC token ở phần Kết nối điều khiển rồi bấm tải ảnh lại.');
+ window.setTimeout(()=>tokenInput?.focus({preventScroll:true}),250);
+ return false;
+}
 function installStageBackgroundControls():void {
  const panel=document.querySelector<HTMLElement>('.live-preview-panel');if(!panel||document.getElementById('stageBackgroundFile'))return;
  const controls=document.createElement('div');controls.className='stage-background-controls';
@@ -21,7 +31,7 @@ function installStageBackgroundControls():void {
  const fileInput=$('stageBackgroundFile') as HTMLInputElement, applyButton=$('btnApplyStageBackground') as HTMLButtonElement, resetButton=$('btnResetStageBackground') as HTMLButtonElement, status=$('stageBackgroundStatus');
  enhanceFileInput(fileInput,'Chọn ảnh nền');
  let selectedFile:File|null=null;
- window.addEventListener('temple-auth-changed',()=>{applyButton.disabled=!selectedFile||!window.TempleAuth.getToken();resetButton.disabled=!window.TempleAuth.getToken();});
+ window.addEventListener('temple-auth-changed',()=>{applyButton.disabled=!selectedFile;resetButton.disabled=!window.TempleAuth.getToken();});
  fileInput.addEventListener('change',()=>{
   selectedFile=fileInput.files?.[0]||null;
   if(stagePreviewObjectUrl){URL.revokeObjectURL(stagePreviewObjectUrl);stagePreviewObjectUrl='';}
@@ -29,19 +39,19 @@ function installStageBackgroundControls():void {
   if(!['image/png','image/jpeg','image/webp'].includes(selectedFile.type)||selectedFile.size>8*1024*1024){status.textContent=selectedFile.size>8*1024*1024?'Ảnh phải nhỏ hơn 8 MB.':'Chỉ nhận ảnh PNG, JPG hoặc WebP.';selectedFile=null;fileInput.value='';fileInput.dispatchEvent(new Event('change'));stagePreviewLocked=false;setStagePreviewImages(stageBackgroundUrl);applyButton.disabled=true;return;}
   stagePreviewObjectUrl=URL.createObjectURL(selectedFile);stagePreviewLocked=true;setStagePreviewImages(stagePreviewObjectUrl);status.textContent='Đang kiểm tra ảnh xem trước…';applyButton.disabled=true;
   const previewUrl=stagePreviewObjectUrl, previewImage=new Image();
-  previewImage.onload=()=>{if(stagePreviewObjectUrl!==previewUrl)return;status.textContent=`Xem trước: ${selectedFile?.name}. Bấm “Tải lên và áp dụng” để đồng bộ.`;applyButton.disabled=!selectedFile||!window.TempleAuth.getToken();};
+  previewImage.onload=()=>{if(stagePreviewObjectUrl!==previewUrl)return;status.textContent=window.TempleAuth.getToken()?`Xem trước: ${selectedFile?.name}. Bấm “Tải lên và áp dụng” để đồng bộ.`:`Xem trước: ${selectedFile?.name}. Bạn vẫn cần RPC token để lưu ảnh; bấm nút tải lên để mở phần xác thực.`;applyButton.disabled=!selectedFile;};
   previewImage.onerror=()=>{if(stagePreviewObjectUrl!==previewUrl)return;URL.revokeObjectURL(previewUrl);stagePreviewObjectUrl='';selectedFile=null;fileInput.value='';fileInput.dispatchEvent(new Event('change'));stagePreviewLocked=false;setStagePreviewImages(stageBackgroundUrl);status.textContent='Không đọc được ảnh này. Hãy thử một tệp PNG, JPG hoặc WebP khác.';applyButton.disabled=true;};
   previewImage.src=previewUrl;
  });
  applyButton.addEventListener('click',async()=>{
-  if(!selectedFile)return;applyButton.disabled=true;resetButton.disabled=true;status.textContent='Đang tải ảnh lên…';
+  if(!selectedFile)return;if(!promptStageBackgroundAuthentication(status))return;applyButton.disabled=true;resetButton.disabled=true;status.textContent='Đang tải ảnh lên…';
   try{
    const response=await window.TempleAuth.fetch('/api/stage-background',{method:'POST',headers:{'Content-Type':selectedFile.type},body:selectedFile});
    const result=await response.json().catch(()=>({}));if(!response.ok||!result.ok)throw new Error(result.error||`Không tải được ảnh (${response.status}).`);
    stageBackgroundUrl=result.url;stagePreviewLocked=false;setStagePreviewImages(stageBackgroundUrl);status.textContent=`Đã áp dụng ảnh ${result.width} × ${result.height} px cho Phòng Live và OBS.`;toast('Đã đổi ảnh nền chánh điện.');
    if(stagePreviewObjectUrl){URL.revokeObjectURL(stagePreviewObjectUrl);stagePreviewObjectUrl='';}selectedFile=null;fileInput.value='';fileInput.dispatchEvent(new Event('change'));resetButton.hidden=false;resetButton.disabled=false;
   }catch(error){stagePreviewLocked=false;setStagePreviewImages(stageBackgroundUrl);status.textContent=error.message||'Không tải được ảnh.';toast(status.textContent);resetButton.disabled=false;}
-  finally{applyButton.disabled=!selectedFile||!window.TempleAuth.getToken();}
+  finally{applyButton.disabled=!selectedFile;}
  });
  resetButton.addEventListener('click',async()=>{
   resetButton.disabled=true;applyButton.disabled=true;status.textContent='Đang khôi phục ảnh mặc định…';
