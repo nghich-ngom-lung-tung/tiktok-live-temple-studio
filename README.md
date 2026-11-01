@@ -1,126 +1,212 @@
-# 🪷 Tam Thế Studio — TikTok Live Temple (9:16 Interactive Sanctuary)
+# 🪷 Tam Thế Studio — TikTok Live Interactive 9:16 Temple Sanctuary
 
-Hệ thống phát trực tiếp tương tác (**Interactive TikTok Live Stream & JSON-RPC 2.0**) chuẩn khung dọc **9:16 (`1080×1920`)** dành cho **OBS Studio / TikTok Live Studio**, chạy trên **Node.js** và tích hợp giọng đọc AI tiếng Việt **ZeroTTS (`zeroweight-ai/ZeroTTS`)**.
+[![Node.js](https://img.shields.io/badge/Node.js-20%2B%20%7C%2022%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Express.js](https://img.shields.io/badge/Express.js-4.19-000000?logo=express&logoColor=white)](https://expressjs.com/)
+[![WebSocket](https://img.shields.io/badge/WebSocket-ws%208.18-010101?logo=socketdotio&logoColor=white)](https://github.com/websockets/ws)
+[![Vite](https://img.shields.io/badge/Vite-8.3-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-7.0-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![Astral uv](https://img.shields.io/badge/uv-Fast%20Python%20Sync-DE5FE9?logo=astral&logoColor=white)](https://github.com/astral-sh/uv)
+[![ZeroTTS](https://img.shields.io/badge/ZeroTTS-Neural%20Vietnamese%20AI-FF6F00?logo=huggingface&logoColor=white)](https://huggingface.co/zeroweight-ai/ZeroTTS)
+[![OBS Studio](https://img.shields.io/badge/OBS%20Studio-9%3A16%20Overlay-302E31?logo=obsstudio&logoColor=white)](https://obsproject.com/)
 
-Người xem trên TikTok Live tương tác trực tiếp qua **Bình luận (Comment)**, **Thả tim (Like)**, **Chia sẻ / Follow** và **Tặng quà (Gift)** để thực hiện các nghi thức tâm linh trên màn hình Chánh Điện **Đức Phật A Di Đà**:
-- 🔥 **Thắp hương & Đảnh lễ Tam Bái (8-Frame Walking & Prostration)**: Nhân vật Phật tử mặc áo lam bước đi từng bước dọc thảm đỏ hoa sen lên trước Lư Hương Đỉnh Đồng, hạ gối quỳ và thực hiện 3 lạy Ngũ thể đầu địa hướng về Đức Phật A Di Đà.
-- 🏮 **Thả Đèn Hoa Đăng / Sớ Cầu Nguyện**: Bình luận lời khấn sẽ bay lên thành Đèn Hoa Đăng kèm giọng đọc AI đọc lời cầu nguyện.
-- 🎋 **Xin Xăm / Gieo Quẻ Đầu Năm (Đồng bộ Giọng đọc & Tờ Giải Quẻ)**: Tự động lắc ống xăm và mở tờ Giải Quẻ (Thượng Thượng Cát, Đại Cát, Thượng Cát...) đúng thời điểm giọng đọc bắt đầu vang lên.
-- 🪵 **Gõ Mõ & 🔔 Thỉnh Đại Hồng Chung**: Thả tim gõ mõ tích điểm Công Đức, chia sẻ/follow thỉnh chuông đồng lan tỏa sóng âm vàng và kích hoạt làn sóng vái lạy của 200 chỗ trong Đạo Tràng (194 chỗ thường và 6 VIP).
-- 📜 **Bảng Vàng Công Đức (`TẤM LÒNG THÀNH` & 6 Đệm Quỳ VIP)**: Vinh danh trực tiếp người xem thật có điểm Công Đức cao nhất trên 6 đệm quỳ gấm đỏ trước bàn thờ Phật.
+**Tam Thế Studio** là hệ thống phát sóng trực tiếp tương tác tâm linh Phật giáo thời gian thực (**Interactive TikTok Live Stream & JSON-RPC 2.0**) chuẩn khung hình dọc **9:16 (`1080×1920`)** chuyên biệt cho **OBS Studio** và **TikTok Live Studio**. Hệ thống vận hành trên nền tảng **Node.js + Vite + TypeScript**, tích hợp tiến trình AI độc lập **ZeroTTS** đọc sớ, lời khấn và giải quẻ bằng tiếng Việt đa vùng miền hoàn toàn tự động.
 
----
+Người xem trên TikTok tương tác qua **Thả tim (Like)**, **Bình luận (Comment)**, **Theo dõi / Chia sẻ (Follow / Share)**, và **Tặng quà (Gift)** để kích hoạt các nghi thức trang nghiêm tại Chánh Điện **Đức Phật A Di Đà**.
 
-## Demo
-
-Ảnh chụp màn hình đã được gỡ khỏi repo để tránh phát tán tên tài khoản và lời cầu nguyện của người xem.
-
-## ⚡ Kiến Trúc & Tối Ưu Hóa Hiệu Suất (Siêu Nhẹ CPU/GPU)
-
-- **Runtime**: Backend chạy trên **Node.js** (`~0.1% CPU` khi chờ).
-- **Canvas Particle Engine (`src/views/scripts/particles.ts`)**:
-  - Khóa tốc độ vẽ ở **30 FPS** ổn định, tự động tạm dừng khi ẩn tab (`document.hidden`).
-  - Pre-render toàn bộ Khói hương, Hạt vàng và Cánh hoa sen ra Offscreen Canvas 1 lần duy nhất lúc khởi tạo (`drawImage`), không gọi `createRadialGradient` hay `shadowBlur` trong vòng lặp frame.
-- **Zero-Flicker 8-Frame Sprite Stack (`src/views/scripts/live.ts` & `public/css/live.css`)**:
-  - Nạp sẵn cả 8 khung hình chuyển động (`walk1`, `walk2`, `kneelDown`, `kneel`, `forehead`, `bowMid`, `prostrate`, `prostrateDeep`) vào GPU với bóng đổ (drop-shadow) đã bake sẵn trong PNG, loại bỏ hoàn toàn hiện tượng nháy/mất hình khi chuyển tư thế.
-- **ZeroTTS Worker (`tts_worker.py`)**:
-  - Tiến trình Python thường trú nạp model cục bộ; tải từ Hugging Face chỉ chạy khi bật `ZEROTTS_ALLOW_HUB_DOWNLOAD=1` và dùng revision cố định `18d6681518a4becaed3c125ceb3c7db59905fe86`.
-  - Tổng hợp nguyên câu trong 1 lần gọi (`single-pass synthesis`), khử DC offset, chuẩn hóa đỉnh âm lượng (`peak <= 0.90`) và làm mượt 2 đầu sóng âm (`cosine fade-in/out`) chống xước/rè tiếng.
-- **Bộ Lọc Chặn Ký Tự Lạ & Spam (`server.js` & `tts_worker.py`)**:
-  - Chặn tự động các ký tự Cuneiform (`𒐫`), chữ Ả Rập gây lag, Braille, Zalgo, bình luận chỉ toàn dấu chấm (`...`) hoặc từ ngữ phản cảm.
-  - Tự động chuẩn hóa Unicode (`NFKC` → `NFC`) chuyển tên kiểu chữ toán học về tiếng Việt sạch trước khi đọc TTS.
+Xem [hướng dẫn vận hành Live](docs/live-operations.md) để thiết lập quyền phát, token, âm thanh, phòng giả lập và dữ liệu thử. Connector là thư viện không chính thức để nhận sự kiện; tài khoản vẫn cần quyền phát phù hợp của TikTok. Các kiểm tra tự động dùng dữ liệu mẫu, chưa thay thế một buổi thử TikTok thật trên thiết bị người xem.
 
 ---
 
-## 🚀 Hướng Dẫn Cài Đặt & Chạy Nhanh
+## 🛠️ Danh Mục Frameworks & Công Nghệ Sử Dụng (Tech Stack)
 
-### 1. Yêu cầu hệ thống
-- Node.js (`>= 20.19` hoặc `>= 22.12`, chạy Vite dev server và build giao diện)
-- Python `3.10+` & [`uv`](https://github.com/astral-sh/uv) (để tạo môi trường `.venv` chạy `zerotts`)
+Hệ thống được thiết kế theo mô hình lai (Hybrid Architecture) kết hợp giữa Node.js hiệu năng cao, tiến trình Python xử lý AI cục bộ và giao diện WebGL/Canvas siêu nhẹ cho OBS:
 
-### 2. Cài đặt thư viện
-```bash
-# Cài đặt dependencies JavaScript
-npm install
+### 1. Backend & Networking Runtime
+* **[Node.js](https://nodejs.org/) (`>= 20.19` hoặc `>= 22.12`)**: Môi trường runtime chính, non-blocking I/O, quản lý tiến trình con (child process) và vòng đời hệ thống.
+* **[Express.js](https://expressjs.com/) (v4.19)**: HTTP web server phục vụ Static Assets, REST API endpoints, Controller xử lý nghiệp vụ, Middleware bảo mật CORS và Rate Limiting.
+* **[ws](https://github.com/websockets/ws) (v8.18)**: Engine WebSocket thuần tốc độ cao, hỗ trợ đồng bộ hóa trạng thái hai chiều (Bi-directional Real-time Sync) giữa TikTok, Dashboard Admin và màn hình OBS.
+* **[JSON-RPC 2.0 Protocol](https://www.jsonrpc.org/specification)**: Chuẩn giao thức điều khiển đồng nhất trên cả hai kênh **HTTP (`POST /rpc`)** và **WebSocket (`ws://127.0.0.1:3000/ws`)**, có xác thực Bearer Token.
+* **[tiktok-live-connector](https://github.com/zerodytrash/TikTok-Live-Connector) (v2.1)**: Thư viện kết nối WebSocket trực tiếp đến hạ tầng TikTok Live để thu thập sự kiện phòng live (chat, like, gift, member join, share, follow) mà không cần session cookie rườm rà.
 
-# Tạo môi trường Python từ lockfile có hash
-uv sync --locked
-```
+### 2. Frontend & Build Tooling
+* **[Vite](https://vitejs.dev/) (v8.3)**: Dev server HMR (Hot Module Replacement) siêu tốc, quản lý Multi-Page App (`index.html` và `admin/index.html`), đóng gói production với Rolldown/Rollup engine.
+* **[TypeScript](https://www.typescriptlang.org/) (v5.8+)**: Kiểm tra kiểu dữ liệu nghiêm ngặt (`typecheck`), tái cấu trúc module hướng đối tượng cho toàn bộ logic client và render canvas.
+* **HTML5 Canvas 2D (Offscreen Canvas Engine)**: Bộ dựng hiệu ứng hạt (hương trầm, cánh hoa sen, tiền công đức, mưa hào quang) với kỹ thuật pre-render và giới hạn vẽ **30 FPS**. Mức sử dụng CPU phụ thuộc thiết bị và lượng hiệu ứng đang chạy.
+* **CSS3 Custom Design System & GPU Acceleration**: Giao diện mang tông màu ấm truyền thống (*Ngà voi `#f6f2e9`*, *Gỗ trầm `#352c23`*, *Đồng thau `#785c2e`*, *Chu sa `#752e27`*). Khử triệt để giật khung hình nhờ `will-change: transform`, `transform: translate3d` và nạp sẵn sprite vào VRAM GPU.
 
-Trên Windows, chạy `.\setup.ps1` trong PowerShell để cài hai nhóm dependency và kiểm tra import ZeroTTS. `.\start.ps1` sẽ tự setup nếu thiếu dependency, bật tải model và khởi động app.
+### 3. AI Neural Voice (Text-to-Speech)
+* **[Python](https://www.python.org/) (`3.10+`)**: Môi trường chạy mô hình suy luận âm thanh độc lập.
+* **[Astral uv](https://github.com/astral-sh/uv)**: Trình quản lý gói Python thế hệ mới viết bằng Rust, khóa version với `uv.lock`, tự động thiết lập và đồng bộ virtualenv `.venv` trong vài giây.
+* **[ZeroTTS](https://huggingface.co/zeroweight-ai/ZeroTTS) (v0.1.5)**: Mô hình mạng nơ-ron tổng hợp giọng nói tiếng Việt tự nhiên phát triển bởi zeroweight-ai, chạy qua ONNX Runtime, hỗ trợ 8 giọng đọc truyền cảm đa vùng miền.
+* **[NumPy](https://numpy.org/)**: Xử lý tín hiệu số (DSP), khử DC offset, chuẩn hóa biên độ âm đỉnh (`soft peak <= 0.90`) và làm mượt hai đầu sóng âm bằng hàm cosine (`fade-in / fade-out`) loại bỏ tiếng lách tách (click/pop).
 
-Vite transpile các file TypeScript, phục vụ giao diện khi phát triển và build hai trang vào `dist/` cho production. `npm run typecheck` kiểm tra kiểu; `npm run build` chạy kiểm tra này trước khi build.
-
-ZeroTTS dùng model cục bộ nếu có. Nếu muốn tải model đã ghim revision từ Hugging Face, bật rõ tùy chọn này khi chạy:
-
-```powershell
-$env:ZEROTTS_ALLOW_HUB_DOWNLOAD = "1"
-npm start
-```
-
-Model tải lần đầu khoảng **900 MB** và được cache bởi Hugging Face. Giữ biến môi trường này bật khi khởi chạy để worker lấy đúng revision từ cache; lần sau sẽ không tải lại các file đã có.
-
-Worker chỉ tải file phục vụ suy luận, lần lượt từng file. Sau khi tải thành công, model được chép vào `data/models/` để ONNX đọc được dữ liệu ngoài trên Windows. Các lần khởi động sau dùng bộ model đã kiểm tra trên ổ đĩa mà không cần kết nối Hugging Face. Thư mục này không được commit.
-
-Trên Windows, `.\start.ps1` tự đặt biến này rồi chạy `npm start`.
-
-Trên macOS/Linux: `ZEROTTS_ALLOW_HUB_DOWNLOAD=1 npm start`. Có thể dùng model đã tải sẵn bằng cách đặt `ZEROTTS_MODEL_PATH` trỏ tới thư mục chứa `config.json`.
-
-### 3. Khởi chạy Server
-```bash
-npm start
-```
-
-Khi phát triển, chạy một lệnh để mở cả backend, Vite và ZeroTTS:
-
-```bash
-npm run dev
-```
-
-Mở `http://127.0.0.1:5173` hoặc `http://127.0.0.1:5173/admin`. `Ctrl+C` dừng cả hai server và worker giọng đọc. Backend tự khởi động lại khi sửa mã server; Vite cập nhật giao diện khi sửa view. Dừng server cũ ở cổng 3000/5173 trước khi chạy. Nếu muốn chạy riêng, dùng `npm run dev:server` và `npm run dev:client` trong hai terminal.
-
-Vite chuyển tiếp `/api`, `/rpc`, `/ws` và `/tts-cache` tới backend. Mở `http://127.0.0.1:5173` hoặc `http://127.0.0.1:5173/admin`. Production dùng Express phục vụ các file đã build từ `dist/`.
-
-Server bind vào `127.0.0.1:3000` mặc định và in một RPC token ngẫu nhiên vào terminal. Nhập token này trong trang Admin hoặc thanh điều khiển. Token được lưu trong trình duyệt hiện tại. Với OBS Browser Source, mở URL dạng `http://127.0.0.1:3000/?obs=1#token=<URL_ENCODED_RPC_TOKEN>`; trang sẽ đổi token lấy quyền truy cập rồi xóa token khỏi thanh địa chỉ.
-
-Để dùng token cố định, đặt `TEMPLE_RPC_TOKEN` trước khi chạy; token phải có ít nhất 32 byte. Đặt `TIKTOK_AUTO_CONNECT=1` cùng `TIKTOK_USER=@username` nếu muốn tự kết nối TikTok khi khởi động. Mặc định không tự kết nối.
-
-Nếu cần mở server ra mạng, hãy cấu hình xác thực mạnh, HTTPS ở reverse proxy và `TEMPLE_CORS_ORIGINS` thành danh sách origin cụ thể. Không dùng `*` cho CORS.
-
-Mặc định server chạy tại cổng `3000`:
-- **Màn hình Live + Điều khiển nhanh**: [http://127.0.0.1:3000](http://127.0.0.1:3000)
-- **Màn hình OBS Browser Source (Sạch 9:16)**: [http://127.0.0.1:3000/?obs=1](http://127.0.0.1:3000/?obs=1) *(Đặt kích thước Browser Source trong OBS là `1080 × 1920`)*
-- **Bảng điều khiển Admin & RPC**: [http://127.0.0.1:3000/admin](http://127.0.0.1:3000/admin)
+### 4. Live Streaming & Production Engine
+* **[OBS Studio](https://obsproject.com/) / [TikTok Live Studio](https://www.tiktok.com/studio/download)**: Tích hợp qua Browser Source chuẩn dọc 9:16 (`1080×1920`), tương thích phần cứng tăng tốc đồ họa (Hardware Acceleration).
+* **Web Audio API**: Bộ giải mã và phát âm thanh đa luồng, hỗ trợ cơ chế giảm âm thông minh (**Audio Ducking** - tự động hạ nhạc thiền nền khi giọng đọc AI bắt đầu vang lên).
 
 ---
 
-## Đạo tràng 200 chỗ
+## 🏛️ Sơ Đồ Kiến Trúc Hệ Thống (Architecture Flow)
 
-Ảnh nền chánh điện Tam Thế ở `public/assets/tam-the-sanctuary-stage.png` là phần phông tĩnh; giao diện dựng thêm 194 vị trí thường và 6 vị trí VIP. Con số 200 là sức chứa hiển thị của cảnh, không phải số người xem TikTok. API gửi tối đa 200 người trong bảng công đức; số người xem Live lấy riêng từ TikTok.
+```mermaid
+flowchart TD
+    subgraph TikTokPlatform ["TikTok Live Network"]
+        TT["TikTok Live Stream"]
+    end
+
+    subgraph Backend ["Node.js Core (Express + WebSocket + RPC)"]
+        TTC["tiktok-live-connector<br/>(Event Scraper)"]
+        COM["commentService / tiktokService<br/>(Sanitizer & Unicode Normalizer)"]
+        RIT["ritualService<br/>(Business Logic & Queue)"]
+        MER["meritState<br/>(Leaderboard & VIP Seats)"]
+        RPC["RPC Controller<br/>(JSON-RPC 2.0 Auth)"]
+        WSS["WebSocket Hub<br/>(ws://127.0.0.1:3000/ws)"]
+    end
+
+    subgraph AIPipeline ["Python ZeroTTS Daemon (IPC)"]
+        WORKER["tts_worker.py<br/>(ONNX Runtime + NumPy DSP)"]
+        CACHE[("Audio WAV Cache<br/>data/tts-cache")]
+    end
+
+    subgraph Clients ["Giao Diện Trực Quan (Frontend)"]
+        OBS["OBS Browser Source (9:16)<br/>Chánh Điện 1080×1920"]
+        ADMIN["Admin Dashboard Studio<br/>Quản trị & RPC Controller"]
+    end
+
+    TT -->|Live Events: Chat, Gift, Like| TTC
+    TTC --> COM
+    COM --> RIT
+    RIT --> MER
+    RIT -->|IPC Stdout/Stdin| WORKER
+    WORKER -->|WAV Audio & Timestamps| CACHE
+    CACHE -->|HTTP /tts-cache| OBS
+    RIT -->|Broadcast Event| WSS
+    WSS -->|State Sync Frame| OBS
+    WSS -->|Realtime Update| ADMIN
+    ADMIN -->|JSON-RPC Commands| RPC
+    RPC --> RIT
+```
+
+---
+
+## ✨ Các Tính Năng Nổi Bật
+
+### 1. Diễn Hoạt Nhân Vật 8 Khung Hình Khớp Xương (Zero-Flicker Sprite Stack)
+* Nhân vật Phật tử sải bước chân dọc thảm đỏ hoa sen tiến lên trước Lư Hương Đỉnh Đồng, hạ gối quỳ xuống bồ đoàn và thực hiện đầy đủ nghi thức **Tam Bái (Ngũ thể đầu địa - 3 lạy trán chạm đệm)**.
+* 8 tư thế được nạp sẵn vào VRAM: `walk1`, `walk2`, `kneelDown`, `kneel`, `forehead`, `bowMid`, `prostrate`, `prostrateDeep`. Bóng đổ được tính toán sẵn trong ảnh PNG, chuyển động tức thì 0ms, không lag giật trên OBS.
+
+### 2. Đạo Tràng 200 Chỗ Ngồi & 6 Đệm Quỳ VIP Gấm Đỏ
+* **194 Chỗ Thường**: Chia đều 2 bên chánh điện, tự động hiển thị Avatar thật của người xem TikTok khi họ bình luận hoặc tương tác.
+* **6 Vị Trí VIP Bảng Vàng**: 6 đệm gấm đỏ thêu hoa sen vàng ngay trước Phật đài, vinh danh trực tiếp Top 6 thí chủ có điểm Công Đức cao nhất trong buổi phát sóng.
+* **Làn Sóng Đạo Tràng**: Mỗi khi có tiếng chuông đại hồng chung hoặc đại lễ, toàn bộ hàng trăm Phật tử trên sàn gỗ đồng loạt cúi lạy tạo hiệu ứng uy nghiêm, xúc động.
+
+### 3. Đọc Sớ & Lời Khấn Tự Động Bằng AI (ZeroTTS 8 Giọng Đọc)
+* 8 giọng đọc AI tiếng Việt chân thực: *Bảo Trang, Gia Huy, Hà My, Hữu Đức, Kim Oanh, Mai Chi, Quang Minh, Tiến Đạt*.
+* Hỗ trợ chế độ **Luân phiên giọng đọc**: Mỗi tương tác sử dụng một giọng kế tiếp nhau, tạo cảm giác như có nhiều vị Phật tử cùng đọc lời khấn.
+* Hệ thống 30 câu dẫn nghi thức sáng tác riêng biệt cho từng hành động tâm linh.
+
+### 4. Xin Xăm / Gieo Quẻ Đầu Năm (100 Thẻ Chiêm Nghiệm)
+* Bộ 100 quẻ chiêm nghiệm Phật giáo nguyên bản chia đều theo 5 chủ đề: *Bình an, Tài lộc, Gia đạo, Trí tuệ, Duyên lành*.
+* Hiệu ứng lắc ống xăm tre kèm âm thanh sống động; tờ Giải Quẻ tự động bung mở đồng bộ chính xác với thời điểm giọng đọc AI cất lên.
+
+### 5. Bộ Lọc Bảo Mật & Khử Spam Cấp Cao
+* **Sanitizer Chống Crash OBS**: Tự động loại bỏ hoàn toàn ký tự nêm Cuneiform (`𒐫`), chữ Ả Rập gây tràn bộ đệm, mã Zalgo, Braille, bình luận toàn dấu chấm (`...`) hoặc từ ngữ phản cảm.
+* **Unicode Normalization**: Chuyển đổi mã Unicode phức tạp (`NFKC` $\rightarrow$ `NFC`), đưa tên kiểu chữ nghệ thuật về chữ cái tiếng Việt chuẩn trước khi chuyển sang mô hình TTS.
+* **Cơ Chế Giảm Tải**: Hàng đợi (queue) giới hạn 12 mục cùng cooldown 3.5s/người giúp buổi Live không bao giờ bị nghẽn lệnh.
+
+---
 
 ## 🎮 Bảng Quy Tắc Tương Tác TikTok Live
 
-Trong trang Admin hoặc bảng điều khiển nhanh, mục **Giọng đọc cho các tương tác Live** liệt kê các giọng model đang hỗ trợ: Bảo Trang, Gia Huy, Hà My, Hữu Đức, Kim Oanh, Mai Chi, Quang Minh và Tiến Đạt. Chọn giọng sẽ lưu ngay cho các tương tác tiếp theo, kể cả sau khi khởi động lại. Nút **Nghe thử** chỉ phát tại trình duyệt hiện tại. Các câu đã xếp hàng vẫn giữ giọng lúc tạo câu.
-
-| Sự kiện TikTok Live | Điều kiện / Từ khóa | Nghi thức trên Chánh Điện | Điểm Công Đức |
+| Sự kiện TikTok Live | Điều kiện / Từ khóa nhận diện | Nghi thức tương ứng trên Chánh Điện | Điểm Công Đức |
 | :--- | :--- | :--- | :---: |
-| **Thả tim (Like)** | Mỗi đợt thả tim | Gõ mõ gỗ tụng kinh + Làn sóng Phật tử vái lạy | `+1` / tim |
-| **Follow / Share** | Theo dõi hoặc chia sẻ | Thỉnh Đại Hồng Chung ngân vang + Sóng âm vàng | `+10` |
-| **Bình luận Thắp hương** | `thắp hương`, `dâng hương`, `bái phật`, `lạy phật` | Phật tử bước dọc thảm đỏ lên trước Lư Hương, quỳ đảnh lễ 3 lạy + Đọc tên khấn | `+15` |
-| **Bình luận Cầu nguyện** | `cầu ...`, `nguyện ...`, `nam mô`, `a di đà phật`, `bình an`, `chúc ...` | Bước lên đảnh lễ + Thả Đèn Hoa Đăng mang lời khấn bay lên trời + Đọc lời cầu nguyện | `+10` |
-| **Bình luận Xin xăm** | `xin xăm`, `gieo quẻ`, `rút quẻ`, `quẻ` | Lắc ống xăm + Mở tờ Giải Quẻ đồng bộ đúng lúc giọng đọc bắt đầu vang lên | `+10` |
-| **Tặng quà Nhỏ (1–4 xu)** | Hoa hồng (Rose), Heart Me... | Bước lên dâng Đài Hoa Sen Vàng + Thắp 3 nén hương + Đọc lời cảm tạ | `+20` / xu |
-| **Tặng quà Vừa (5–99 xu)** | Đèn lưu ly, Mâm ngũ quả... | Dâng Đèn Lưu Ly / Mâm Ngũ Quả + Thỉnh Chuông + Đọc lời chúc phúc | `+30` / xu |
-| **Tặng quà Lớn (≥ 100 xu)** | Quà ≥ 100 xu | **Đại Lễ Kim Long Chầu Phật**: Mưa hoa sen vàng, Hào quang vạn trượng, Chuông đồng ngân vang | `+50` / xu |
+| **Thả tim (Like)** | Từng đợt like từ người xem | Gõ mõ gỗ trầm tụng kinh + Làn sóng Phật tử vái lạy | `+1` / tim |
+| **Theo dõi (Follow) / Chia sẻ (Share)** | Thao tác follow hoặc share buổi live | Thỉnh Đại Hồng Chung ngân vang + Tỏa sóng âm vàng | `+10` |
+| **Bình luận Thắp hương** | `thắp hương`, `dâng hương`, `bái phật`, `lạy phật`, `hương` | Phật tử bước lên thảm đỏ, quỳ đảnh lễ 3 lạy + Đọc tên & lời khấn | `+15` |
+| **Bình luận Cầu nguyện** | `cầu ...`, `nguyện ...`, `nam mô`, `a di đà phật`, `bình an`, `chúc ...` | Bước lên đảnh lễ + Thả Đèn Hoa Đăng mang sớ khấn bay lên trời | `+10` |
+| **Bình luận Xin xăm** | `xin xăm`, `gieo quẻ`, `rút quẻ`, `quẻ` | Lắc ống xăm tre + Mở tờ Giải Quẻ đồng bộ giọng đọc AI | `+10` |
+| **Tặng quà Nhỏ (1–4 xu)** | Hoa hồng, Heart Me, Nốt nhạc... | Dâng Đài Hoa Sen Vàng + Thắp 3 nén hương + Đọc cảm tạ | `+20` / xu |
+| **Tặng quà Vừa (5–99 xu)** | Đèn lưu ly, Mâm ngũ quả, Chuông gió... | Dâng Mâm Quả / Đèn Lưu Ly + Thỉnh chuông đồng ngân vang | `+30` / xu |
+| **Tặng quà Lớn ($\ge$ 100 xu)** | Quà đặc biệt $\ge$ 100 xu | **Đại Lễ Kim Long Chầu Phật**: Mưa hoa sen vàng, Hào quang vạn trượng, Chuông ngân vang | `+50` / xu |
 
 ---
 
-## 🔌 Giao Thức JSON-RPC 2.0 (`POST /rpc` & `ws://localhost:3000/ws`)
+## 🚀 Hướng Dẫn Cài Đặt & Vận Hành
 
-Các API cần header `Authorization: Bearer <RPC_TOKEN>`. Token được in trong terminal lúc server khởi động hoặc đọc từ biến môi trường `TEMPLE_RPC_TOKEN`.
+### 1. Yêu Cầu Hệ Thống
+* **Hệ điều hành**: Windows 10/11, macOS, hoặc Ubuntu Linux.
+* **Node.js**: Phiên bản `>= 20.19.0` hoặc `>= 22.12.0` (khuyên dùng Node.js 22 LTS).
+* **Python**: Phiên bản `3.10+` kèm công cụ [`uv`](https://github.com/astral-sh/uv).
+* **OBS Studio**: Bản 29+ (khuyên dùng bản 30+).
+
+### 2. Cài Đặt Trong 1 Bước
+Mở terminal tại thư mục dự án và chạy:
 
 ```bash
-# 1. Thắp hương cầu an
+npm install
+```
+> Lệnh `npm install` sẽ tự động kích hoạt script `setup-python.mjs`, tải và đồng bộ môi trường ảo `.venv` cùng toàn bộ thư viện Python thông qua `uv.lock`.
+
+*(Tùy chọn trên Windows PowerShell: Bạn có thể chạy script `.\setup.ps1` để tự động kiểm tra và cấu hình toàn bộ).*
+
+### 3. Tải Model Giọng Đọc ZeroTTS
+ZeroTTS hỗ trợ tải model đã ghim revision trực tiếp từ Hugging Face Hub:
+
+* **Trên Windows PowerShell**:
+  ```powershell
+  $env:ZEROTTS_ALLOW_HUB_DOWNLOAD = "1"
+  npm start
+  ```
+* **Trên macOS / Linux**:
+  ```bash
+  ZEROTTS_ALLOW_HUB_DOWNLOAD=1 npm start
+  ```
+Model (`~900 MB`) sẽ được lưu vào cache cục bộ `data/models/` cho các lần chạy sau mà không cần tải lại.
+
+### 4. Khởi Chạy Hệ Thống
+
+#### Chế độ Phát triển (Development - Hot Reload):
+Chạy đồng thời Backend Node.js, Frontend Vite và AI Voice Worker:
+```bash
+npm run dev
+```
+* Giao diện Live xem trước: [http://127.0.0.1:5173](http://127.0.0.1:5173)
+* Bảng điều khiển Admin Studio: [http://127.0.0.1:5173/admin](http://127.0.0.1:5173/admin)
+
+#### Chế độ Vận hành Thực tế (Production):
+Build giao diện tối ưu hóa và khởi chạy server production:
+```bash
+npm start
+```
+* **Màn hình OBS Browser Source**: [http://127.0.0.1:3000/?obs=1](http://127.0.0.1:3000/?obs=1)
+* **Màn hình Điều khiển & Giám sát**: [http://127.0.0.1:3000](http://127.0.0.1:3000)
+* **Bảng Quản trị Admin**: [http://127.0.0.1:3000/admin](http://127.0.0.1:3000/admin)
+
+---
+
+## 🎥 Hướng Dẫn Tích Hợp Vào OBS Studio
+
+1. Mở **OBS Studio**, tạo một Scene mới.
+2. Trong hộp **Sources**, bấm dấu **`+`** $\rightarrow$ chọn **Browser** (Trình duyệt).
+3. Đặt các thông số cấu hình như sau:
+   * **URL**: `http://127.0.0.1:3000/?obs=1` *(hoặc kèm token: `http://127.0.0.1:3000/?obs=1#token=<RPC_TOKEN>`)*.
+   * **Width**: `1080`
+   * **Height**: `1920`
+   * **Control audio via OBS**: Đánh dấu tích chọn (để điều chỉnh âm lượng Chánh Điện trực tiếp trên bàn mixer của OBS).
+   * **Shutdown source when not visible**: Bỏ chọn (để duy trì kết nối liên tục khi chuyển scene).
+4. Bấm **OK**. Sân khấu Chánh Điện 9:16 sẽ hiển thị vừa khít khung dọc livestream TikTok.
+
+---
+
+## 🔌 Đặc Tả Giao Thức JSON-RPC 2.0
+
+Server hỗ trợ đầy đủ các lệnh điều khiển thông qua chuẩn JSON-RPC 2.0 có xác thực `Authorization: Bearer <RPC_TOKEN>`.
+
+### Ví dụ gọi lệnh qua cURL:
+
+#### 1. Thắp hương & Đọc lời khấn:
+```bash
 curl -X POST http://127.0.0.1:3000/rpc \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer <RPC_TOKEN>" \
@@ -131,11 +217,13 @@ curl -X POST http://127.0.0.1:3000/rpc \
     "params": {
       "user": "Thí Chủ Minh Tâm",
       "count": 3,
-      "wish": "Cầu gia đình bình an, vạn sự cát tường như ý"
+      "wish": "Cầu gia đạo bình an, sức khỏe dồi dào, vạn sự hanh thông"
     }
   }'
+```
 
-# 2. Xin xăm / Gieo quẻ đầu năm
+#### 2. Gieo quẻ xin xăm:
+```bash
 curl -X POST http://127.0.0.1:3000/rpc \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer <RPC_TOKEN>" \
@@ -144,12 +232,14 @@ curl -X POST http://127.0.0.1:3000/rpc \
     "id": 2,
     "method": "temple.drawFortune",
     "params": {
-      "user": "Thí Chủ Minh Tâm",
-      "topic": "Cầu tài lộc và gia đạo bình an"
+      "user": "Phật tử Diệu Thiện",
+      "topic": "Cầu bình an và công danh sự nghiệp"
     }
   }'
+```
 
-# 3. Kết nối bằng @username hoặc URL hồ sơ TikTok HTTPS trực tiếp
+#### 3. Kết nối phòng TikTok Live:
+```bash
 curl -X POST http://127.0.0.1:3000/rpc \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer <RPC_TOKEN>" \
@@ -158,77 +248,84 @@ curl -X POST http://127.0.0.1:3000/rpc \
     "id": 3,
     "method": "live.connect",
     "params": {
-      "username": "@your_username"
+      "username": "@tai_khoan_tiktok"
     }
   }'
 ```
 
-WebSocket cần nhận frame xác thực đầu tiên trước khi gửi JSON-RPC:
-
-```json
-{"jsonrpc":"2.0","method":"auth","params":{"token":"<RPC_TOKEN>"}}
-```
-
-Link rút gọn TikTok không được nhận; server không tải URL do người gọi cung cấp.
-
-### Danh sách JSON-RPC Methods hỗ trợ:
-- `temple.getState`: Lấy toàn bộ trạng thái Chánh Điện và Bảng Vàng Công Đức.
-- `temple.burnIncense`: Thắp nhang & bước lên đảnh lễ (`user`, `avatar`, `count`, `wish`).
-- `temple.sendPrayer`: Thả đèn hoa đăng cầu nguyện (`user`, `avatar`, `wish`).
-- `temple.drawFortune`: Lắc ống xăm & gieo quẻ (`user`, `avatar`, `topic`).
-- `temple.strikeWoodenFish`: Gõ mõ tích công đức (`user`, `count`).
-- `temple.ringBell`: Thỉnh Đại Hồng Chung (`user`, `count`, `wish`).
-- `temple.offerGift`: Dâng lễ vật (`user`, `giftType`: `lotus` | `fruit` | `lamp` | `dragon`, `coins`, `giftName`).
-- `temple.grandCeremony`: Kích hoạt Đại Lễ Kim Long Chầu Phật (`user`, `coins`, `giftName`).
-- `temple.updateSettings`: Cập nhật âm lượng nhạc nền (`musicVolume`), giọng đọc (`ttsVolume`), bật/tắt TTS.
-- `temple.resetMerit`: Đặt lại bảng thống kê Công Đức.
-- `live.connect` / `live.disconnect`: Kết nối / Ngắt kết nối phòng TikTok Live.
+### Danh Sách Các Phương Thức Hỗ Trợ:
+* `temple.getState`: Truy xuất toàn bộ dữ liệu trạng thái Chánh Điện và bảng xếp hạng.
+* `temple.burnIncense`: Kích hoạt đảnh lễ thắp hương (`user`, `avatar`, `count`, `wish`).
+* `temple.sendPrayer`: Thả đèn hoa đăng cầu an (`user`, `avatar`, `wish`).
+* `temple.drawFortune`: Lắc xăm và gieo quẻ chiêm nghiệm (`user`, `avatar`, `topic`).
+* `temple.strikeWoodenFish`: Gõ mõ tụng kinh (`user`, `count`).
+* `temple.ringBell`: Thỉnh Đại Hồng Chung (`user`, `count`, `wish`).
+* `temple.offerGift`: Dâng cúng vật phẩm (`user`, `giftType`, `coins`, `giftName`).
+* `temple.grandCeremony`: Kích hoạt Đại Lễ Kim Long Chầu Phật (`user`, `coins`, `giftName`).
+* `temple.updateSettings`: Cập nhật âm lượng nhạc nền, âm lượng giọng đọc, cấu hình danh sách giọng.
+* `temple.resetMerit`: Đặt lại bảng thống kê Công Đức.
+* `live.connect` / `live.disconnect`: Quản lý kết nối luồng TikTok Live.
 
 ---
 
-## 📁 Cấu Trúc Thư Mục
+## 📂 Cấu Trúc Thư Mục Dự Án
 
 ```text
-├── server.js                    # Entry point tương thích, gọi src/server.js
-├── src/
-│   ├── app.js                   # Cấu hình Express và static views
-│   ├── server.js                # Lắp các module, khởi động HTTP/WebSocket
-│   ├── config.js                # Cổng, host, token và thư mục runtime
-│   ├── controllers/             # HTTP, RPC, trạng thái, TTS và WebSocket
-│   ├── routes/httpRoutes.js     # Ánh xạ endpoint vào controller
-│   ├── middleware/              # Xác thực, CORS origin và rate limit
-│   ├── models/                  # Trạng thái công đức và lưu file
-│   ├── services/                # Nghi thức, comment, TikTok, TTS, RPC, realtime, giả lập
-│   ├── data/fortuneDeck.js      # Bộ nội dung quẻ
-│   ├── utils/                   # Chuẩn hóa tên và lời cầu nguyện
-│   └── views/
-│       ├── index.html           # View Chánh Điện 9:16
-│       ├── admin/index.html     # View điều khiển JSON-RPC
-│       └── scripts/             # TypeScript và entry của từng trang
-├── tts_worker.py                # Tiến trình Python ZeroTTS thường trú
-├── pyproject.toml               # Dependency Python trực tiếp
-├── uv.lock                      # Dependency Python đã khóa kèm hash
-├── data/                        # State runtime và TTS cache, không commit
-├── public/
-│   ├── css/live.css             # Stylesheet
-│   └── assets/                  # Hình nền và sprite
-├── dist/                        # Build output của Vite, không commit
-├── vite.config.mjs              # Dev server, proxy và multi-page build
-└── docs/                        # README và tài liệu thiết kế
+tiktok-live-temple-rpc/
+├── package.json                 # Cấu hình dự án Node.js, dependencies & scripts
+├── vite.config.mjs              # Cấu hình Vite MPA server, proxy & rolldown
+├── tsconfig.json                # Cấu hình TypeScript compiler
+├── pyproject.toml               # Khai báo dependency Python (ZeroTTS)
+├── uv.lock                      # Khóa phiên bản gói Python mã hóa SHA256
+├── tts_worker.py                # Tiến trình daemon Python AI ZeroTTS thường trú
+├── server.js                    # Entry point khởi động ứng dụng
+├── start.ps1 / setup.ps1        # Script tự động hóa khởi động & cài đặt trên Windows
+│
+├── src/                         # Mã nguồn cốt lõi hệ thống
+│   ├── app.js                   # Cấu hình Express application & static routing
+│   ├── server.js                # Khởi tạo HTTP Server, WebSocket Hub & Worker IPC
+│   ├── config.js                # Biến môi trường, port, host & path configs
+│   ├── controllers/             # Bộ điều phối HTTP, RPC, State, TTS & WebSocket
+│   ├── middleware/              # Xác thực Token, CORS, Rate-limit & Body parser
+│   ├── models/                  # Quản lý State công đức (in-memory & json storage)
+│   ├── services/                # Dịch vụ nghi thức, TikTok scraper, TTS, Audio
+│   │   ├── ritualService.js     # Xử lý chuỗi nghi thức thắp hương, thả hoa đăng, gieo quẻ
+│   │   ├── tiktokService.js     # Lắng nghe & chuyển tiếp sự kiện TikTok Live
+│   │   ├── commentService.js    # Phân tích cú pháp lời bình luận & sớ khấn
+│   │   ├── ttsService.js        # Giao tiếp IPC với Python worker, quản lý hàng đợi âm thanh
+│   │   └── realtimeService.js   # Điều phối phát sóng WebSocket tới OBS và Admin
+│   ├── data/
+│   │   └── fortuneDeck.js       # Bộ dữ liệu 100 quẻ chiêm nghiệm Phật giáo
+│   ├── utils/                   # Bộ lọc ký tự rác, chuẩn hóa Unicode & tên người xem
+│   └── views/                   # Giao diện người dùng (Frontend)
+│       ├── index.html           # View Chánh Điện 9:16 (Overlay phát sóng OBS)
+│       ├── admin/index.html     # View Bảng điều khiển Studio Quản trị
+│       └── scripts/             # TypeScript modules
+│           ├── live.ts          # Logic Chánh Điện: 200 chỗ, di chuyển thảm đỏ, lạy Tam Bái
+│           ├── particles.ts     # Canvas 2D Particle Engine hiệu năng cao (30 FPS)
+│           ├── adminEntry.ts    # Logic bảng điều khiển Admin Studio
+│           └── liveCardPreviews.ts
+│
+├── public/                      # Static assets tĩnh
+│   ├── assets/                  # Ảnh nền Chánh Điện, sprite nhân vật áo lam 8 pose
+│   │   ├── music/               # 6 bản nhạc thiền ambient tổng hợp (WAV 48s)
+│   │   ├── devotee.png          # Sprite nhân vật quỳ chắp tay
+│   │   ├── devotee_walk.png     # Sprite bước chân 1 & 2
+│   │   └── devotee_prostrate.png# Sprite cúi lạy sát đất
+│   └── css/                     # Stylesheet tùy biến theo hệ thống thiết kế Studio
+│
+├── scripts/                     # Tooling scripts hỗ trợ
+│   ├── dev.mjs                  # Script chạy song song Node backend & Vite dev server
+│   ├── setup-python.mjs         # Script tự động đồng bộ uv Python
+│   └── test-studio.cjs          # Bộ kiểm thử tích hợp (Integration Tests)
+│
+└── data/                        # Runtime database & cache âm thanh (Được ignore khỏi Git)
+    ├── tts-cache/               # Cache file âm thanh WAV đã tổng hợp từ ZeroTTS
+    └── models/                  # Thư mục chứa trọng số model ZeroTTS cục bộ
 ```
 
-File trạng thái runtime, audio cache và `.env` được loại khỏi Git; chỉ file mẫu cấu hình được chia sẻ.
+---
 
-## Studio mới: lời dẫn, nhạc và 200 chỗ
+## 📜 Giấy Phép & Bản Quyền
 
-Chạy `npm run dev`, mở URL Vite in trong terminal. Vào `/admin`, mở **Kết nối điều khiển** và nhập RPC token của phiên server.
-
-- **Tổng quan**: kết nối tài khoản đang Live, thử nghi thức và bảng chào người vào phòng.
-- **Lời dẫn**: 8 giọng ZeroTTS, 30 câu dẫn tự động; mỗi dòng là một biến thể. Sửa rồi bấm **Lưu lời dẫn**. Thông báo tự nhập nằm trong phần mở rộng, không cần dùng khi vận hành bình thường.
-- **Nhạc thiền**: 6 bản ambient nguyên bản, chọn bài, nghe thử, chuyển bài tự động. Chọn nhạc chung ở Admin; mở Phòng Live và bấm **Bật âm thanh buổi Live** để phát. File riêng chỉ phát ở tab được chọn, không tự chuyển sang OBS.
-- **Thư viện quẻ**: 100 nội dung chiêm nghiệm sáng tác, tìm kiếm, lọc 5 chủ đề, nghe lời giải; không phải bản xăm cổ.
-- Phòng Live có 200 chỗ hiển thị và bảng chào nhỏ theo tên người mới vào phòng; bản sạch cho OBS ở `/?obs=1`.
-
-Kiểm tra nhanh: `node scripts/test-studio.cjs` và `npm run build`. Chi tiết thiết kế, nguồn skill và kiểm thử: [docs/studio-ui.md](docs/studio-ui.md).
-
-Avatar người xem hiện trên nhân vật; chat hợp lệ hiện thành bong bóng tại chỗ ngồi trong 6 giây (tối đa 4 cùng lúc). Trong **Phòng Live → Giọng đọc → Âm thanh pháp khí**, bấm **Nghe thử tiếng mõ** và chỉnh âm lượng tiếng mõ. Các nút nghi thức có phản hồi khi bấm; thiết lập giảm chuyển động của hệ điều hành được tôn trọng.
+Dự án phát triển phục vụ mục đích xây dựng không gian trực tuyến trang nghiêm, thanh tịnh cho cộng đồng Phật tử và người mến mộ đạo Phật trên nền tảng phát trực tiếp TikTok Live. Toàn bộ hình ảnh, âm thanh và lời dẫn được biên soạn theo tinh thần từ bi, hướng thiện.
