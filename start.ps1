@@ -1,3 +1,4 @@
+param([switch]$Https)
 $ErrorActionPreference = 'Stop'
 Set-Location -LiteralPath $PSScriptRoot
 
@@ -15,5 +16,5 @@ $env:HF_HUB_DISABLE_XET = '1'
 Write-Host 'ZeroTTS will use the pinned model revision from Hugging Face.'
 Write-Host 'The first run may download about 900 MB.'
 Write-Host 'Building the UI and starting the server...'
-npm start
+if ($Https) { npm run start:https } else { npm start }
 if ($LASTEXITCODE -ne 0) { throw 'Server exited with an error.' }

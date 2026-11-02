@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { spawn } = require('child_process');
+const { spawn, spawnSync } = require('child_process');
 
 class ZeroTtsManager {
   constructor({ rootDir, workerPath, stateModel, broadcastNotification }) {
@@ -21,7 +21,12 @@ class ZeroTtsManager {
     this.synthesisTail = Promise.resolve();
     this.reqCounter = 0;
     this.buffer = '';
-    process.once('exit', () => { this.proc?.kill(); });
+    process.once('exit', () => {
+      if (!this.proc?.pid || this.proc.exitCode !== null) return;
+      if (process.platform === 'win32') {
+        spawnSync('taskkill', ['/PID', String(this.proc.pid), '/T', '/F'], { windowsHide: true, stdio: 'ignore' });
+      } else this.proc.kill();
+    });
     this.startWorker();
   }
 
