@@ -51,7 +51,7 @@ function createApplication() {
   };
 
   const buddhistQueue = createCeremonyQueue({ stateModel, realtime: buddhistRealtime, ttsManager, profileId: 'phat-giao' });
-  const christianQueue = createCeremonyQueue({ stateModel: christianStateModel, realtime: christianRealtime, ttsManager: ttsAdapters['thien-chua-giao'], profileId: 'thien-chua-giao', prefetchSpeech: true, speechTimeoutMs: 180_000 });
+  const christianQueue = createCeremonyQueue({ stateModel: christianStateModel, realtime: christianRealtime, ttsManager: ttsAdapters['thien-chua-giao'], profileId: 'thien-chua-giao', prefetchSpeech: true, nonBlockingSpeech: true });
   const ritualService = createRitualService({ stateModel, realtime: buddhistRealtime, ttsManager, fortuneDeck, ceremonyQueue: buddhistQueue });
   const autoSimulationService = createAutoSimulationService({ stateModel, ritualService });
   ritualService.setAutoSimulationController(autoSimulationService.configureAutoSim);
