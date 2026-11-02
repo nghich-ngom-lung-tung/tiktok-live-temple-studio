@@ -1,0 +1,20 @@
+{
+  "tool": "Built-in image_gen",
+  "createdDate": "2026-11-02",
+  "poses": [
+    {
+      "key": "male",
+      "path": "D:/nghich ngợm lung tung/toptop/tiktok-live-temple-rpc/public/assets/thien-chua-giao/characters/tin-huu-nam.png",
+      "prompt": "Edit target: the attached existing male game sprite. Produce ONE full-body alternate animation pose on a genuinely transparent background. Identity and registration lock: preserve the exact same young Vietnamese man, short dark hair, brown crew-neck sweater with white shirt collar, brown trousers and shoes, rear three-quarter view facing upper-right, same camera, same proportions, same full-body framing and feet placement as reference. Change ONLY the prayer posture: chin clearly lowered toward clasped prayer hands, head bowed forward about 35 degrees at the neck, shoulders gently lowered, upper back inclined forward subtly about 10 degrees. Keep him STANDING on both feet in exactly the original place, legs and shoes unchanged. Hands remain joined at chest. This is a reverent Christian bowed-head prayer, no kneeling, no prostration, no waist-deep bow. Match the existing realistic 3D-rendered illustration style and warm light. Preserve canvas aspect and center-bottom registration; keep all feet visible. No scenery, glow backdrop, text, labels, frames, duplicate figures or contact sheet. This is a single production-ready transparent PNG cutout to crossfade with the original standing sprite."
+    },
+    {
+      "key": "female",
+      "path": "D:/nghich ngợm lung tung/toptop/tiktok-live-temple-rpc/public/assets/thien-chua-giao/characters/tin-huu-nu.png",
+      "prompt": "Edit target: the attached existing female game sprite. Produce ONE full-body alternate animation pose on a genuinely transparent background. Identity and registration lock: preserve the exact same Vietnamese woman with half-up long wavy dark hair, dusty-pink knit sweater over white blouse, long brown skirt and brown flat shoes, rear three-quarter view facing upper-right, same camera, same proportions, same full-body framing and feet placement as reference. Change ONLY the prayer posture: chin clearly lowered toward clasped prayer hands, head bowed forward about 35 degrees at the neck, shoulders gently lowered, upper back inclined forward subtly about 10 degrees. Keep her STANDING on both feet in exactly the original place, skirt hem, lower legs and shoes unchanged. Hands remain joined at chest. This is a reverent Christian bowed-head prayer, no kneeling, no prostration, no deep waist bow. Hair should naturally follow the lowered head, without changing hairstyle or clothing. Match the realistic 3D-rendered illustration style and warm light. Preserve canvas aspect and center-bottom registration; keep all feet visible. Remove any surrounding background glow: actual transparent alpha outside the person. No scenery, text, labels, frames, duplicate figures or contact sheet. A single production-ready transparent PNG cutout to crossfade with the original standing sprite."
+    }
+  ],
+  "outputs": {
+    "male": "public/assets/thien-chua-giao/characters/tin-huu-nam-cui-dau-v1.png",
+    "female": "public/assets/thien-chua-giao/characters/tin-huu-nu-cui-dau-v1.png"
+  }
+}

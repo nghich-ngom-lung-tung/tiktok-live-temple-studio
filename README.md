@@ -16,6 +16,19 @@ Người xem trên TikTok tương tác qua **Thả tim (Like)**, **Bình luận 
 
 Xem [hướng dẫn vận hành Live](docs/live-operations.md) để thiết lập quyền phát, token, âm thanh, phòng giả lập và dữ liệu thử. Connector là thư viện không chính thức để nhận sự kiện; tài khoản vẫn cần quyền phát phù hợp của TikTok. Các kiểm tra tự động dùng dữ liệu mẫu, chưa thay thế một buổi thử TikTok thật trên thiết bị người xem.
 
+### Hồ sơ Live
+
+Studio có hai hồ sơ độc lập, dùng chung bộ máy TikTok Live, OBS và ZeroTTS:
+
+| Hồ sơ | Quản lý | Nguồn Live / OBS | Tài nguyên và dữ liệu |
+| --- | --- | --- | --- |
+| Phật giáo | `/admin?profile=phat-giao` | `/?profile=phat-giao` | `public/assets/phat-giao/`, trạng thái cũ trong `data/merit-state.json` |
+| Thiên Chúa giáo | `/admin?profile=thien-chua-giao` | `/?profile=thien-chua-giao` | `public/assets/thien-chua-giao/`, dữ liệu trong `data/profiles/thien-chua-giao/` |
+
+Thêm `&obs=1` vào đường dẫn Live để mở khung sạch cho OBS Browser Source. Ảnh nền tải lên và danh sách trạng thái của từng hồ sơ được lưu riêng. Mỗi thời điểm chỉ một hồ sơ giữ kết nối tới phòng TikTok để tránh xử lý trùng sự kiện.
+
+Hồ sơ Thiên Chúa giáo có tab **Nội dung & giọng đọc**: [100 lời suy ngẫm theo 10 chủ đề](docs/christian-reflections.md), chọn ngẫu nhiên tránh lặp, chỉnh lời và nghe thử bằng cùng cài đặt ZeroTTS trước khi chia sẻ lên Live.
+
 ---
 
 ## 🛠️ Danh Mục Frameworks & Công Nghệ Sử Dụng (Tech Stack)
