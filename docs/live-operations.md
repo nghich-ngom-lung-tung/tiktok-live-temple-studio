@@ -22,7 +22,7 @@
 
 Tương tác được ghi nhận khi nhận sự kiện. Các hồ sơ dùng chung đồng hồ bắt đầu/kết thúc để các màn Live, Admin và OBS đồng bộ; mỗi hồ sơ xử lý lượt theo thứ tự và không chạy chồng hoạt ảnh.
 
-**Thiên Chúa giáo:** hoạt ảnh bắt đầu ngay khi lượt được phát. ZeroTTS tổng hợp ở nền; khi xong, lời đọc được ghép vào lượt hiện tại mà không phát lại hoạt ảnh. Các cảnh cầu nguyện/hiệp thông vẫn giữ thời lượng cần thiết cho nhân vật đi lên, cúi đầu và trở về. Nếu màn Live kết nối lại, nó tiếp tục từ trạng thái và mốc thời gian máy chủ hiện tại.
+**Thiên Chúa giáo:** hoạt ảnh bắt đầu ngay khi lượt được phát. ZeroTTS tổng hợp ở nền và dùng mốc bắt đầu tiếng riêng; tải lại sẽ tua theo mốc tiếng. Worker chưa sẵn sàng được thử lại, tổng thời gian chờ tiếng của lượt tối đa 30 giây. Quá hạn thì báo lỗi và tiếp tục bằng hình, bỏ kết quả tiếng đến trễ. Các cảnh cầu nguyện/hiệp thông vẫn giữ thời lượng cần thiết cho nhân vật đi lên, cúi đầu và trở về. Lịch máy chủ dành thêm 2,6 giây để người thực hiện về chỗ trước khi chạy người tiếp theo. Nếu màn Live kết nối lại, nó tiếp tục từ trạng thái và mốc thời gian máy chủ hiện tại.
 
 **Phật giáo:** máy chủ chờ tối đa 12 giây để chuẩn bị giọng trước khi bắt đầu nghi thức. Nếu giọng chưa sẵn sàng, lượt vẫn phát hình ảnh và trạng thái hàng đợi báo lỗi giọng đọc.
 

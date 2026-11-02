@@ -1,12 +1,14 @@
 # Rà soát Live Thiên Chúa giáo — 02/11/2026
 
+> Ghi chép lịch sử của các lần sửa trước. Hành vi hiện tại và các lỗi phát hiện tiếp theo được cập nhật trong [báo cáo rà soát mới](christian-review-2026-11-02.md).
+
 ## Các lỗi đã xử lý
 
 - RPC kết nối/ngắt TikTok gọi sai giao diện của `profileLiveCoordinator`.
 - Quản lý chỉ lấy trạng thái mỗi 6 giây; đã nhận WebSocket theo hồ sơ, có polling dự phòng.
 - Live chưa đọc `christian.playback`, bỏ qua mốc bắt đầu/kết thúc, không khôi phục lượt đang phát khi tải lại. Đã dùng lịch server, chống phát trùng và truyền thời điểm bắt đầu xuống audio để bù vị trí đọc.
 - Tạm dừng chưa xóa hàng đợi. Đã hủy lượt hiện tại/lượt chờ, chặn kết quả TTS đến trễ và dừng hiệu ứng/âm thanh.
-- TTS chỉ tạo khi đến lượt, bỏ tiếng nếu vượt 12 giây. Riêng hồ sơ Thiên Chúa giáo chuẩn bị trước một lượt kế tiếp; thời hạn chờ khớp 180 giây của worker. Tốc độ tạo tiếng lần đầu vẫn phụ thuộc máy và độ dài nội dung.
+- TTS chỉ tạo khi đến lượt, bỏ tiếng nếu vượt 12 giây. Riêng hồ sơ Thiên Chúa giáo chuẩn bị trước một lượt kế tiếp; luồng này sau đó đã được thay bằng giọng không chặn hoạt ảnh, có mốc tiếng riêng và giới hạn chờ 30 giây (xem báo cáo mới). Tốc độ tạo tiếng lần đầu vẫn phụ thuộc máy và độ dài nội dung.
 - Thông điệp phát Live từng tạo TTS ngoài hàng đợi, có thể đổi thứ tự. Nay nhận lệnh vào cùng hàng đợi; nghe thử vẫn chỉ phát trên máy đang thao tác.
 - Thẻ nến/chuông/đại lễ/bình an từng dùng chung lệnh cầu nguyện. Đã tách hành động, lời dẫn, hiệu ứng SVG/CSS và tiếng nhạc cụ tổng hợp. Đây chưa phải bộ hoạt cảnh nhân vật 8 tư thế mới hay bản thu hợp xướng.
 - Tri ân thủ công không còn tạo quà/xu giả; bảng người tặng của phiên không còn cộng doanh số từ các phiên trước.

@@ -146,13 +146,17 @@ flowchart TD
 
 | Bình luận nhận diện | Hoạt động |
 | --- | --- |
-| `cầu nguyện`, `xin cầu`, `xin cầu nguyện` | Ghi lời nguyện và đưa sự kiện cầu nguyện vào Live. |
-| `Kinh Thánh`, `Lời Chúa`, `suy ngẫm`, `xin kinh` | Chia sẻ đoạn suy ngẫm; có thể nêu tên sách/câu hoặc chủ đề. |
+| `cầu nguyện`, `xin cầu`, `cầu bình an`, `xin Chúa` | Ghi lời nguyện và đưa sự kiện cầu nguyện vào Live. |
+| `Kinh Thánh`, `Lời Chúa`, `suy ngẫm`, `xin kinh` | Chọn suy ngẫm theo chủ đề hoặc tham chiếu có trong thư viện. Tham chiếu ngoài thư viện sẽ được báo chưa hỗ trợ. |
 | `thắp nến` | Thắp nến tạ ơn. |
 | `đổ chuông`, `rung chuông` | Đổ chuông thánh đường. |
 | `hiệp thông`, `đại lễ` | Hiệp thông đại lễ. |
 | `tạ ơn`, `tri ân` | Dâng lời tri ân. |
 | `bình an` (không kèm lời cầu/nguyện) | Gửi lời chúc bình an. |
+
+Bình luận kích hoạt thao tác cách nhau ít nhất 3,5 giây/người; nếu gửi nhanh hơn, Live hiện thông báo chờ. Bình luận thường vẫn hiện bong bóng. Like/Follow/Share cập nhật thống kê và thông báo có tên/avatar; các sự kiện này dùng tương tác nhẹ. Khách mới có thẻ chào lần lượt kèm tên, avatar và lời chào. Hồ sơ không dùng điểm Công Đức.
+
+Các cảnh nghi thức chạy tuần tự: nhóm cầu nguyện/nến/hiệp thông/bình an/tri ân giữ ít nhất 10 giây cho động tác, rồi 2,6 giây trở về chỗ đứng. Giọng đọc có mốc riêng và được chuẩn bị trước khi có thể; nếu worker đang khởi động, lượt hiện tại thử chờ tối đa 30 giây mà vẫn phát hình. Khi quá hạn, giao diện báo lượt chỉ phát hình; tiếng đến sau hạn bị bỏ. Người xem mới mở OBS sẽ tiếp tục ở đúng vị trí âm thanh theo mốc tiếng.
 
 Các thao tác cũng có thể được khởi chạy từ **Thao tác phụng vụ nhanh** trong giao diện. Hồ sơ này thống kê lời cầu nguyện, chia sẻ Kinh Thánh, tri ân và quà; không dùng điểm Công Đức của hồ sơ Phật giáo. Sự kiện TikTok có thể thay đổi theo phiên bản connector và dữ liệu thực tế của phòng.
 
