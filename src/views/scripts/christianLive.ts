@@ -120,8 +120,12 @@ function resolveRitualReturnTarget(event: Record<string, any>): { x: number; y: 
     };
   }
 
-  const occupied = new Set(Array.from(attendeeNodes.values(), node => `${node.dataset.x}:${node.dataset.y}`));
-  const seatCount = Math.min(CHRISTIAN_CAPACITY, Math.max(2, attendeeNodes.size + 1));
+  const restingActors = Array.from(stage?.querySelectorAll<HTMLElement>('.ritual-actor.is-resting') || []);
+  const occupied = new Set([
+    ...Array.from(attendeeNodes.values(), node => `${node.dataset.x}:${node.dataset.y}`),
+    ...restingActors.map(node => `${node.dataset.homeX || node.style.left}:${node.dataset.homeY || node.style.top}`)
+  ]);
+  const seatCount = Math.min(CHRISTIAN_CAPACITY, Math.max(2, attendeeNodes.size + restingActors.length + 1));
   const seat = christianLayoutForCount(seatCount).find(candidate => !occupied.has(`${candidate.x}:${candidate.y}`));
   if (seat) return { x: seat.x, y: seat.y, scale: Math.min(1, Math.max(.55, seat.height / 360)) };
   return { x: 540, y: 1580, scale: .7 };

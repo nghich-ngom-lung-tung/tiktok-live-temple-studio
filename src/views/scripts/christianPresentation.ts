@@ -22,15 +22,38 @@ export function createChristianPresentation(stage: HTMLElement | null) {
   let currentEvent: Record<string, any> | null = null;
   let hiddenAttendee: HTMLElement | null = null;
   let returnAnimation: Animation | null = null;
+  let currentReturnTarget: { x: number; y: number; scale: number; attendee?: HTMLElement | null } | null = null;
   const animations = new Set<Animation>();
+  const restingActors = new Set<HTMLElement>();
   const prayerMotion = createChristianPrayerMotion(stage);
-  function clear() {
+  function park(node: HTMLElement, target: { x: number; y: number; scale: number }) {
     returnAnimation?.cancel(); returnAnimation = null;
+    node.style.left = `${target.x}px`;
+    node.style.top = `${target.y}px`;
+    node.style.transform = `translate(-50%,-100%) scale(${target.scale})`;
+    node.style.opacity = '1';
+    node.dataset.homeX = String(target.x);
+    node.dataset.homeY = String(target.y);
+    node.classList.remove('is-returning');
+    node.classList.add('has-arrived', 'is-resting');
+    restingActors.add(node);
+    actor = null;
+    currentReturnTarget = null;
+    if (restingActors.size > 200) {
+      const oldest = restingActors.values().next().value;
+      if (oldest) { oldest.remove(); restingActors.delete(oldest); }
+    }
+  }
+  function clear() {
+    if (actor?.classList.contains('is-returning') && !hiddenAttendee?.isConnected && currentReturnTarget) park(actor, currentReturnTarget);
+    else if (actor?.classList.contains('is-resting')) { restingActors.add(actor); actor = null; }
+    else { actor?.remove(); actor = null; }
+    returnAnimation?.cancel(); returnAnimation = null;
+    currentReturnTarget = null;
     prayerMotion.clear();
     for (const animation of animations) animation.cancel();
     animations.clear();
     hiddenAttendee?.classList.remove('is-ritual-hidden'); hiddenAttendee = null;
-    actor?.remove(); actor = null;
     person?.remove(); person = null;
     currentEvent = null;
     card?.classList.remove('is-ritual-active');
@@ -50,6 +73,7 @@ export function createChristianPresentation(stage: HTMLElement | null) {
 
     const target = resolveReturnTarget(event);
     if (!target) { clear(); return; }
+    currentReturnTarget = target;
     hiddenAttendee = target.attendee?.isConnected ? target.attendee : null;
     hiddenAttendee?.classList.add('is-ritual-hidden');
     node.classList.remove('has-arrived', 'is-resting');
@@ -61,12 +85,10 @@ export function createChristianPresentation(stage: HTMLElement | null) {
       hiddenAttendee = null;
       if (attendee?.isConnected) {
         attendee.classList.remove('is-ritual-hidden');
-        node.remove(); actor = null;
+        node.remove(); actor = null; currentReturnTarget = null; returnAnimation = null;
       } else {
-        node.classList.remove('is-returning');
-        node.classList.add('has-arrived', 'is-resting');
+        park(node, target);
       }
-      returnAnimation = null;
     };
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       node.style.left = `${target.x}px`;
