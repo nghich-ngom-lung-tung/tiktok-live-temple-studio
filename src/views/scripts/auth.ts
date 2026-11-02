@@ -57,8 +57,12 @@
       const hadToken = Boolean(getToken());
       localStorage.removeItem(TOKEN_KEY);
       setAuthenticatedUI(false);
-      updateStatus('Token hết hạn hoặc không đúng. Hãy nhập lại token từ cửa sổ server.', true);
-      if (hadToken) emitAuthChanged();
+      if (hadToken) {
+        updateStatus('Token hết hạn hoặc không đúng. Hãy nhập lại token từ cửa sổ server.', true);
+        emitAuthChanged();
+      } else {
+        updateStatus('Chưa xác thực.', false);
+      }
     }
     return response;
   }

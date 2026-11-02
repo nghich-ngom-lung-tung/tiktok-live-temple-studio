@@ -1,5 +1,7 @@
+const profileFromUrl = new URLSearchParams(window.location.search).get('profile');
+export const ACTIVE_PROFILE_ID = profileFromUrl === 'thien-chua-giao' || window.location.pathname.includes('/thien-chua-giao') || window.location.pathname.startsWith('/christian/') ? 'thien-chua-giao' : 'phat-giao';
 export async function rpc(method: string, params: Record<string, unknown> = {}): Promise<any> {
-  const res = await window.TempleAuth.fetch('/rpc', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({jsonrpc:'2.0',id:Date.now(),method,params}) });
+  const res = await window.TempleAuth.fetch('/rpc', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({jsonrpc:'2.0',id:Date.now(),method,params:{...params,profileId:ACTIVE_PROFILE_ID}}) });
   const data = await res.json();
   if (!res.ok || data.error) throw new Error(data.error?.message || data.error || `Lỗi kết nối (${res.status})`);
   if (data.result?.ok === false) throw new Error(data.result.error || 'Không thực hiện được yêu cầu.');
@@ -22,7 +24,9 @@ export function initTabs(): void {
       button.addEventListener('click',()=>activate(button));
       button.addEventListener('keydown',e=>{ if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return; e.preventDefault(); const next=e.key==='Home'?0:e.key==='End'?buttons.length-1:(index+(e.key==='ArrowRight'?1:-1)+buttons.length)%buttons.length; activate(buttons[next]); buttons[next].focus(); });
     });
-    if(buttons[0])activate(buttons[0]);
+    const requestedTab = new URLSearchParams(window.location.search).get('tab') || window.location.hash.replace('#', '');
+    const initialButton = (requestedTab ? buttons.find(b => b.dataset.tab === requestedTab) : null) || buttons[0];
+    if (initialButton) activate(initialButton);
   });
 }
 export const escapeHtml=(value:unknown)=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));

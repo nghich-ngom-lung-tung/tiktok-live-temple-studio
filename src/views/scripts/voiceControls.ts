@@ -1,7 +1,5 @@
-const names: Record<string, string> = {
-  baotrang: 'Bảo Trang', giahuy: 'Gia Huy', hamy: 'Hà My', huuduc: 'Hữu Đức',
-  kimoanh: 'Kim Oanh', maichi: 'Mai Chi', quangminh: 'Quang Minh', tiendat: 'Tiến Đạt'
-};
+import { TTS_VOICE_NAMES } from './ttsVoiceNames';
+
 const select = document.getElementById('ttsVoiceSelect') as HTMLSelectElement | null;
 const status = document.getElementById('ttsVoiceStatus');
 const preview = document.getElementById('btnVoicePreview') as HTMLButtonElement | null;
@@ -33,7 +31,7 @@ function renderRotationOptions(): void {
     input.checked = selectedRotation.includes(voice);
     input.disabled = saving;
     const caption = document.createElement('span');
-    caption.textContent = names[voice] || voice;
+    caption.textContent = TTS_VOICE_NAMES[voice] || voice;
     label.append(input, caption);
     rotationList.append(label);
   }
@@ -57,7 +55,7 @@ export function syncVoiceControls(
   const voicesChanged = JSON.stringify(nextVoices) !== JSON.stringify(availableVoices);
   if (voicesChanged) {
     availableVoices = nextVoices;
-    select.replaceChildren(...availableVoices.map(voice => new Option(names[voice] || voice, voice)));
+    select.replaceChildren(...availableVoices.map(voice => new Option(TTS_VOICE_NAMES[voice] || voice, voice)));
   }
   if (status && ready && !wasReady) status.textContent = 'ZeroTTS sẵn sàng. Chọn giọng mặc định hoặc bật luân phiên.';
   if (!saving) {
@@ -91,7 +89,7 @@ select?.addEventListener('change', async () => {
     const data = await res.json();
     if (!res.ok || data.error) throw new Error(data.error?.message || data.error || 'Không lưu được giọng đọc.');
     savedVoice = data.result.settings.ttsVoice;
-    if (status) status.textContent = `Đã lưu giọng mặc định ${names[savedVoice] || savedVoice}.`;
+    if (status) status.textContent = `Đã lưu giọng mặc định ${TTS_VOICE_NAMES[savedVoice] || savedVoice}.`;
   } catch (error) {
     select.value = savedVoice;
     if (status) status.textContent = error instanceof Error ? error.message : 'Không lưu được giọng đọc.';
@@ -109,7 +107,7 @@ rotationList?.addEventListener('change', async event => {
     .filter(input => input.checked).map(input => input.value);
   if (nextRotation.length === 1) {
     draftRotation = nextRotation;
-    if (status) status.textContent = `Đã chọn ${names[nextRotation[0]] || nextRotation[0]}. Chọn thêm một giọng nữa để lưu và bật xoay vòng.`;
+    if (status) status.textContent = `Đã chọn ${TTS_VOICE_NAMES[nextRotation[0]] || nextRotation[0]}. Chọn thêm một giọng nữa để lưu và bật xoay vòng.`;
     renderRotationOptions();
     return;
   }
@@ -128,8 +126,8 @@ rotationList?.addEventListener('change', async event => {
     savedRotation = data.result.settings.ttsVoiceRotation || [];
     savedRotationKey = JSON.stringify(savedRotation);
     if (status) status.textContent = savedRotation.length
-      ? `Đang xoay vòng: ${savedRotation.map(voice => names[voice] || voice).join(' → ')}.`
-      : `Đã tắt xoay vòng. Đang dùng ${names[savedVoice] || savedVoice}.`;
+      ? `Đang xoay vòng: ${savedRotation.map(voice => TTS_VOICE_NAMES[voice] || voice).join(' → ')}.`
+      : `Đã tắt xoay vòng. Đang dùng ${TTS_VOICE_NAMES[savedVoice] || savedVoice}.`;
   } catch (error) {
     draftRotation = null;
     if (status) status.textContent = error instanceof Error ? error.message : 'Không lưu được danh sách giọng.';

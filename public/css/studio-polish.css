@@ -329,6 +329,11 @@ body.studio-page {
   box-shadow: inset 0 1px 2px rgba(60, 30, 15, 0.04);
   transition: border-color .18s ease, box-shadow .18s ease, background-color .18s ease;
 }
+.studio-page select option,
+.quick-dock select option {
+  background: #fffaf1;
+  color: #34241d;
+}
 .studio-page :is(input, select, textarea):focus,
 .quick-dock :is(input:not([type=range]), select, textarea):focus {
   outline: none;
@@ -366,7 +371,14 @@ body.studio-page {
   transition: transform .18s ease, background-color .18s ease, border-color .18s ease, color .18s ease;
 }
 .ritual-action .ritual-icon svg { width: 25px; height: 25px; }
+.ritual-label {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
 .ritual-label strong {
+  display: block;
   font-family: 'Noto Serif', serif;
   font-size: 14.5px;
   font-weight: 700;
@@ -374,11 +386,12 @@ body.studio-page {
   line-height: 1.35;
 }
 .ritual-label small {
+  display: block;
   font-family: 'Be Vietnam Pro', sans-serif;
   font-size: 11.5px;
   color: #79624b;
 }
-.ritual-arrow { color: #b58d4a; font-size: 14px; font-weight: 500; }
+.ritual-arrow { margin-left: auto; color: #b58d4a; font-size: 14px; font-weight: 500; }
 
 .studio-page .ritual-action:hover, .quick-dock .ritual-action:hover {
   transform: translateY(-2px);
@@ -396,8 +409,13 @@ body.studio-page {
 /* Distinctive spiritual badge colors for each ritual action's emblem */
 .ritual-action[data-ritual=incense] .ritual-icon { background: #fbeee8; border-color: #ddb2a6; color: #8e2f25; }
 .ritual-action[data-ritual=prayer] .ritual-icon { background: #fbf3e5; border-color: #e5cb9e; color: #b86c1f; }
+.ritual-action[data-ritual=scripture] .ritual-icon { background: #fbf0ee; border-color: #ddb2a6; color: #8e2f25; }
+.ritual-action[data-ritual=candle] .ritual-icon { background: #fdf3d8; border-color: #e4c987; color: #9b7228; }
 .ritual-action[data-ritual=fish] .ritual-icon { background: #f7ede0; border-color: #dac2a1; color: #845a27; }
 .ritual-action[data-ritual=bell] .ritual-icon { background: #fdf3d8; border-color: #e4c987; color: #9b7228; }
+.ritual-action[data-ritual=thanks] .ritual-icon { background: #fbeef1; border-color: #e1b4be; color: #9d3f52; }
+.ritual-action[data-ritual=choir] .ritual-icon { background: #faf0d8; border-color: #e2c583; color: #a97725; }
+.ritual-action[data-ritual=peace] .ritual-icon { background: #f3f5e9; border-color: #cbd3a9; color: #5d6e32; }
 .ritual-action[data-ritual=fortune] .ritual-icon { background: #f3f5e9; border-color: #cbd3a9; color: #5d6e32; }
 .ritual-action[data-ritual=lotus] .ritual-icon { background: #fbeef1; border-color: #e1b4be; color: #9d3f52; }
 .ritual-action[data-ritual=ceremony] .ritual-icon { background: #faf0d8; border-color: #e2c583; color: #a97725; }

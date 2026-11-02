@@ -8,7 +8,7 @@ initTabs();
 const $=(id:string)=>document.getElementById(id);
 const value=(id:string)=>($(id) as HTMLInputElement).value.trim();
 let refreshing=false, deck:any[]=[], libraryLoaded=false, authCollapsed=false;
-const DEFAULT_STAGE_BACKGROUND='/assets/tam-the-sanctuary-stage.png';
+const DEFAULT_STAGE_BACKGROUND='/assets/phat-giao/backgrounds/chinh-dien-phat-giao.png';
 let stageBackgroundUrl=DEFAULT_STAGE_BACKGROUND, stagePreviewObjectUrl='', stagePreviewLocked=false;
 function setStagePreviewImages(url:string):void {
  document.querySelectorAll<HTMLImageElement>('.live-notice-stage-bg,.scene-preview img').forEach(image=>{if(image.getAttribute('src')!==url)image.src=url;});
@@ -24,11 +24,12 @@ function promptStageBackgroundAuthentication(status:HTMLElement):boolean {
  return false;
 }
 function installStageBackgroundControls():void {
- const panel=document.querySelector<HTMLElement>('.live-preview-panel');if(!panel||document.getElementById('stageBackgroundFile'))return;
- const controls=document.createElement('div');controls.className='stage-background-controls';
- controls.innerHTML='<div class="field"><label for="stageBackgroundFile">Đổi ảnh nền chánh điện</label><input id="stageBackgroundFile" type="file" accept="image/png,image/jpeg,image/webp"><p class="helper">Nhận PNG, JPG hoặc WebP · tối đa 8 MB. Khuyên dùng ảnh dọc 9:16; ảnh ngang sẽ được cắt cho vừa khung. Nhân vật và các thẻ Live vẫn hiển thị phía trước.</p></div><div class="row stage-background-actions"><button class="btn primary" id="btnApplyStageBackground" type="button" disabled>Tải lên và áp dụng</button><button class="btn" id="btnResetStageBackground" type="button" hidden>Ảnh mặc định</button></div><p class="helper" id="stageBackgroundStatus" role="status">Ảnh nền hiện tại được đồng bộ sang Phòng Live và OBS.</p>';
- panel.append(controls);
- const fileInput=$('stageBackgroundFile') as HTMLInputElement, applyButton=$('btnApplyStageBackground') as HTMLButtonElement, resetButton=$('btnResetStageBackground') as HTMLButtonElement, status=$('stageBackgroundStatus');
+ const fileInput=$('stageBackgroundFile') as HTMLInputElement | null;
+ if(!fileInput)return;
+ const applyButton=$('btnApplyStageBackground') as HTMLButtonElement | null;
+ const resetButton=$('btnResetStageBackground') as HTMLButtonElement | null;
+ const status=$('stageBackgroundStatus') as HTMLElement | null;
+ if(!applyButton || !resetButton || !status)return;
  enhanceFileInput(fileInput,'Chọn ảnh nền');
  let selectedFile:File|null=null;
  window.addEventListener('temple-auth-changed',()=>{applyButton.disabled=!selectedFile;resetButton.disabled=!window.TempleAuth.getToken();});
@@ -46,7 +47,7 @@ function installStageBackgroundControls():void {
  applyButton.addEventListener('click',async()=>{
   if(!selectedFile)return;if(!promptStageBackgroundAuthentication(status))return;applyButton.disabled=true;resetButton.disabled=true;status.textContent='Đang tải ảnh lên…';
   try{
-   const response=await window.TempleAuth.fetch('/api/stage-background',{method:'POST',headers:{'Content-Type':selectedFile.type},body:selectedFile});
+   const response=await window.TempleAuth.fetch('/api/stage-background?profile=phat-giao',{method:'POST',headers:{'Content-Type':selectedFile.type},body:selectedFile});
    const result=await response.json().catch(()=>({}));if(!response.ok||!result.ok)throw new Error(result.error||`Không tải được ảnh (${response.status}).`);
    stageBackgroundUrl=result.url;stagePreviewLocked=false;setStagePreviewImages(stageBackgroundUrl);status.textContent=`Đã áp dụng ảnh ${result.width} × ${result.height} px cho Phòng Live và OBS.`;toast('Đã đổi ảnh nền chánh điện.');
    if(stagePreviewObjectUrl){URL.revokeObjectURL(stagePreviewObjectUrl);stagePreviewObjectUrl='';}selectedFile=null;fileInput.value='';fileInput.dispatchEvent(new Event('change'));resetButton.hidden=false;resetButton.disabled=false;
@@ -56,7 +57,7 @@ function installStageBackgroundControls():void {
  resetButton.addEventListener('click',async()=>{
   resetButton.disabled=true;applyButton.disabled=true;status.textContent='Đang khôi phục ảnh mặc định…';
   try{
-   const response=await window.TempleAuth.fetch('/api/stage-background/reset',{method:'POST'});const result=await response.json().catch(()=>({}));if(!response.ok||!result.ok)throw new Error(result.error||`Không khôi phục được ảnh (${response.status}).`);
+   const response=await window.TempleAuth.fetch('/api/stage-background/reset?profile=phat-giao',{method:'POST'});const result=await response.json().catch(()=>({}));if(!response.ok||!result.ok)throw new Error(result.error||`Không khôi phục được ảnh (${response.status}).`);
    stageBackgroundUrl=result.url;stagePreviewLocked=false;setStagePreviewImages(stageBackgroundUrl);resetButton.hidden=true;status.textContent='Đã khôi phục ảnh nền mặc định và đồng bộ sang Phòng Live/OBS.';toast('Đã khôi phục ảnh nền mặc định.');
    if(stagePreviewObjectUrl){URL.revokeObjectURL(stagePreviewObjectUrl);stagePreviewObjectUrl='';}selectedFile=null;fileInput.value='';fileInput.dispatchEvent(new Event('change'));
   }catch(error){status.textContent=error.message||'Không khôi phục được ảnh.';toast(status.textContent);resetButton.disabled=false;}

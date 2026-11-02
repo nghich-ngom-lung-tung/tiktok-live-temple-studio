@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"><script>if(new URLSearchParams(window.location.search).get('profile')==='phat-giao'){window.location.replace('/'+window.location.search);}</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4ebe0">
+  <link rel="preload" as="image" href="/assets/thien-chua-giao/characters/tin-huu-nam-cui-dau-v1.png">
+  <link rel="preload" as="image" href="/assets/thien-chua-giao/characters/tin-huu-nu-cui-dau-v1.png">
+  <title>Thiên Chúa giáo · Live Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Noto+Serif:wght@600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/live.css">
+  <link rel="stylesheet" href="/css/studio.css">
+  <link rel="stylesheet" href="/css/live-studio.css">
+  <link rel="stylesheet" href="/css/studio-polish.css">
+  <link rel="stylesheet" href="/css/christian-live.css">
+</head>
+<body class="studio-page christian-live-page">
+  <header class="studio-bar">
+    <a class="brand" href="/admin?profile=thien-chua-giao" aria-label="Tam Thế Studio">
+      <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M16 3v26M10 11h12"/><path d="M7 29V14c0-5 4-9 9-9s9 4 9 9v15"/></svg>Tam Thế <span class="muted">Studio</span>
+    </a>
+    <nav class="studio-links" aria-label="Điều hướng chính">
+      <a href="/admin?profile=thien-chua-giao">Quản lý</a>
+      <a href="/?profile=thien-chua-giao" aria-current="page">Phòng Live</a>
+      <a href="/?profile=phat-giao" title="Chuyển sang phòng Live Phật giáo">Phật giáo</a>
+      <a href="/?profile=thien-chua-giao&amp;obs=1" target="_blank" rel="noopener">OBS ↗</a>
+    </nav>
+  </header>
+
+  <main class="app-workspace">
+    <div class="stage-wrapper" id="stageWrapper" aria-label="Phòng Live Thiên Chúa giáo">
+      <div class="stage-9x16 christian-stage" id="stage9x16">
+        <img class="christian-stage-bg" id="stageBackground" src="/assets/thien-chua-giao/backgrounds/nha-tho-live.png" alt="Nhà thờ ấm sáng với thánh giá và Kinh Thánh" fetchpriority="high">
+        <div class="christian-stage-vignette" aria-hidden="true"></div>
+        <div class="cathedral-light-rays" aria-hidden="true"></div>
+        <header class="christian-topbar">
+          <div class="christian-live-title"><span class="live-led" id="liveLed"></span><span>GÓC CẦU NGUYỆN · THIÊN CHÚA GIÁO</span></div>
+          <div class="christian-live-stats"><span id="statPrayer">0 lời nguyện</span><i></i><span id="statViewers">0 người xem</span></div>
+        </header>
+
+        <section class="scripture-card" id="scriptureCard" aria-live="polite">
+          <span class="scripture-kicker" id="messageKicker">LỜI SUY NGẪM</span>
+          <strong id="messageTitle">Bình an và hy vọng</strong>
+          <span id="messageBody">Cùng nhau dành một phút tĩnh lặng, gửi lời cầu nguyện cho người thân yêu.</span>
+        </section>
+
+        <div class="christian-attendees" id="attendeeLayer" aria-label="Người đang tham dự"></div>
+        <figure class="prayer-figure is-praying" id="prayerFigure" aria-label="Nhân vật đang cầu nguyện">
+          <div class="prayer-ground-shadow" aria-hidden="true"></div>
+          <img id="prayerPerson" src="/assets/thien-chua-giao/characters/tin-huu-nam.png" alt="">
+          <figcaption class="prayer-name-tag" id="prayerNameTag" hidden>
+            <span class="prayer-avatar christian-icon" id="centralPrayerAvatar" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M7 8h10"/></svg>
+            </span>
+            <span><small id="centralPrayerAction">ĐANG CẦU NGUYỆN</small><strong id="centralPrayerName"></strong></span>
+          </figcaption>
+        </figure>
+
+        <div class="christian-chat-layer" id="chatLayer" aria-live="polite"></div>
+        <div class="member-arrival" id="memberArrival" role="status" aria-live="polite">
+          <span class="arrival-avatar christian-icon" id="arrivalAvatar" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M7 8h10"/></svg>
+          </span>
+          <span><small>CHÀO MỪNG</small><strong id="arrivalName"></strong></span>
+        </div>
+
+        <footer class="christian-bottom-hud">
+          <div class="christian-now-praying">
+            <span class="cross-seal" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2v20M6 8h12"/></svg>
+            </span>
+            <div><small id="activeKicker">CÙNG HIỆP THÔNG</small><strong id="activeUser">Đang chờ lời cầu nguyện</strong></div>
+            <span class="prayer-live-mark">BÌNH AN</span>
+          </div>
+          <div class="christian-hud-body">
+            <div class="christian-actions" aria-label="Các hoạt động">
+              <div class="christian-action-card">
+                <span class="christian-hud-badge" data-badge="prayer"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 28S4 21 4 12a6 6 0 0 1 12-2 6 6 0 0 1 12 2c0 9-12 16-12 16Z"/></svg></span>
+                <strong>Lời cầu nguyện</strong>
+                <small id="hudPrayerCount">0 lời nguyện</small>
+              </div>
+              <div class="christian-action-card">
+                <span class="christian-hud-badge" data-badge="scripture"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 5v21a2 2 0 0 0 2 2h18V6a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2Z"/><path d="M6 24h18M14 9v8M11 12h6"/></svg></span>
+                <strong>Lời Kinh Thánh</strong>
+                <small id="hudScriptureCount">0 chia sẻ</small>
+              </div>
+              <div class="christian-action-card">
+                <span class="christian-hud-badge" data-badge="thanks"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 14h10v14H11Z"/><path d="M16 4c-2 3-2 5 0 7 2-2 2-4 0-7Z"/><path d="M16 11v3"/><path d="M8 28h16"/></svg></span>
+                <strong>Lời cảm tạ</strong>
+                <small id="hudGiftCount">0 lời cảm ơn</small>
+              </div>
+            </div>
+            <section class="christian-supporters" aria-label="Người gửi quà">
+              <h2>
+                <span class="christian-supporters-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l2.4 7.2h7.6l-6.1 4.5 2.3 7.3-6.2-4.6-6.2 4.6 2.3-7.3-6.1-4.5h7.6z"/></svg></span>
+                Tấm lòng sẻ chia
+              </h2>
+              <ol id="supporterList"><li class="supporter-empty">Cảm ơn bạn đã hiện diện</li></ol>
+            </section>
+          </div>
+        </footer>
+      </div>
+    </div>
+
+    <aside class="quick-dock" id="quickDock" aria-label="Bảng điều khiển Phòng Live">
+      <div class="dock-header"><div><span class="eyebrow">Tam Thế Studio · Thiên Chúa giáo</span><h1>Phòng Live</h1></div><a class="dock-link" href="/?profile=thien-chua-giao&amp;obs=1" target="_blank" rel="noopener">OBS ↗</a></div>
+      <button class="dock-btn primary full" id="btnUnlockAudio" type="button">Bật âm thanh buổi Live</button>
+      <button class="dock-btn full live-emergency" id="btnPausePresentation" type="button">Tạm dừng hiệu ứng / âm thanh</button>
+      <p class="helper" id="liveConnectionStatus" role="status">Đang chờ kết nối TikTok.</p>
+      <p class="helper" id="liveConnectionError" role="status"></p>
+      <p class="helper" id="playbackStatus" role="status">Sẵn sàng nhận tương tác.</p>
+      <nav class="tabs" data-tab-group role="tablist" aria-label="Điều khiển Live">
+        <button data-tab="christianRitual">Nghi thức</button>
+        <button data-tab="christianVoice">Giọng đọc</button>
+        <button data-tab="christianMusic">Nhạc</button>
+        <button data-tab="christianConnect">Kết nối</button>
+      </nav>
+
+      <section id="christianRitual" role="tabpanel">
+        <div class="field"><label for="prayerUser">Tên người cầu nguyện</label><input id="prayerUser" maxlength="80" value="Khách hữu duyên"></div>
+        <div class="field"><label for="christianPrayerPreset">Ý nguyện mẫu</label><select id="christianPrayerPreset"><option value="">Chọn một ý nguyện</option><option value="family">Gia đình bình an</option><option value="health">Sức khỏe</option><option value="wisdom">Xin ơn soi sáng</option><option value="comfort">An ủi người khó khăn</option><option value="remembrance">Tưởng nhớ người thân</option><option value="gratitude">Tạ ơn</option></select></div>
+        <div class="field"><label for="prayerWish">Lời cầu nguyện</label><textarea id="prayerWish" maxlength="240" rows="3">Xin Chúa gìn giữ gia đình trong bình an, yêu thương và hiệp nhất.</textarea></div>
+        <button class="dock-btn primary full" id="btnSendPrayer" type="button">Đưa lời cầu nguyện lên Live</button>
+
+        <div class="dock-section">
+          <div class="dock-section-head">
+            <h2>Thao tác phụng vụ nhanh</h2>
+            <span class="eyebrow">Trực tiếp</span>
+          </div>
+          <div class="quick-action-grid">
+            <button class="btn ritual-action" id="btnQuickPrayer" data-ritual="prayer" type="button">
+              <span class="ritual-icon"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 3v26M7 11h18"/></svg></span>
+              <span class="ritual-label"><strong>Cầu nguyện bình an</strong><small>Dâng lời khẩn cầu</small></span>
+              <span class="ritual-arrow" aria-hidden="true">↗</span>
+            </button>
+            <button class="btn ritual-action" id="btnQuickScripture" data-ritual="scripture" type="button">
+              <span class="ritual-icon"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 5v21a2 2 0 0 0 2 2h18V6a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2Z"/><path d="M6 24h18M14 9v8M11 12h6"/></svg></span>
+              <span class="ritual-label"><strong>Chia sẻ Lời Chúa</strong><small>Câu Kinh Thánh suy ngẫm</small></span>
+              <span class="ritual-arrow" aria-hidden="true">↗</span>
+            </button>
+            <button class="btn ritual-action" id="btnQuickCandle" data-ritual="candle" type="button">
+              <span class="ritual-icon"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 14h10v14H11Z"/><path d="M16 4c-2 3-2 5 0 7 2-2 2-4 0-7Z"/><path d="M16 11v3"/><path d="M8 28h16"/></svg></span>
+              <span class="ritual-label"><strong>Thắp nến tạ ơn</strong><small>Ngọn nến dâng hồng ân</small></span>
+              <span class="ritual-arrow" aria-hidden="true">↗</span>
+            </button>
+            <button class="btn ritual-action" id="btnQuickBell" data-ritual="bell" type="button">
+              <span class="ritual-icon"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 4a8 8 0 0 0-8 8v7l-3 4h22l-3-4v-7a8 8 0 0 0-8-8Z"/><path d="M13 27a3 3 0 0 0 6 0M16 2v2"/></svg></span>
+              <span class="ritual-label"><strong>Đổ chuông thánh đường</strong><small>Chuông ngân vang đại lễ</small></span>
+              <span class="ritual-arrow" aria-hidden="true">↗</span>
+            </button>
+            <button class="btn ritual-action" id="btnQuickThanks" data-ritual="thanks" type="button">
+              <span class="ritual-icon"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 27s-10-6.5-12.5-12.5C1 8.5 6 4 11.5 6c2.5 1 4.5 3 4.5 3s2-2 4.5-3C26 4 31 8.5 28.5 14.5 26 20.5 16 27 16 27Z"/></svg></span>
+              <span class="ritual-label"><strong>Tri ân hồng ân</strong><small>Cảm tạ phúc lành</small></span>
+              <span class="ritual-arrow" aria-hidden="true">↗</span>
+            </button>
+            <button class="btn ritual-action" id="btnQuickChoir" data-ritual="choir" type="button">
+              <span class="ritual-icon"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="16" cy="16" r="6"/><path d="M16 3v4M16 25v4M3 16h4M25 16h4M7 7l3 3M22 22l3 3M7 25l3-3M22 10l3-3"/></svg></span>
+              <span class="ritual-label"><strong>Hiệp thông đại lễ</strong><small>Hòa chung lời tụng ca</small></span>
+              <span class="ritual-arrow" aria-hidden="true">↗</span>
+            </button>
+            <button class="btn ritual-action" id="btnQuickPeace" data-ritual="peace" type="button">
+              <span class="ritual-icon"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 7c3-4 8-4 10-1s0 8-3 10l-7 7-3-3 4-5-6-1c-3 0-5-2-5-5 4 0 7-1 10-2Z"/></svg></span>
+              <span class="ritual-label"><strong>Bình an cho bạn</strong><small>Lời chúc bình an</small></span>
+              <span class="ritual-arrow" aria-hidden="true">↗</span>
+            </button>
+            <button class="btn ritual-action" id="btnQuickWelcome" data-ritual="welcome" type="button">
+              <span class="ritual-icon"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 28V14c0-6 4.5-11 10-11s10 5 10 11v14"/><path d="M16 3v25M11 14h10M4 28h24"/></svg></span>
+              <span class="ritual-label"><strong>Chào đón tân khách</strong><small>Đón người hữu duyên</small></span>
+              <span class="ritual-arrow" aria-hidden="true">↗</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="dock-section"><h2>Suy ngẫm Kinh Thánh</h2>
+          <div class="field"><label for="scriptureCategory">Chủ đề suy ngẫm</label><select id="scriptureCategory"><option value="all">Tất cả chủ đề</option></select></div>
+          <button class="dock-btn" id="btnRandomScripture" type="button" disabled>Chọn ngẫu nhiên trong chủ đề</button>
+          <p class="helper" id="scriptureCatalogCount" role="status">100 lời suy ngẫm · 10 chủ đề.</p>
+          <div class="field"><label for="scriptureReference">Đoạn Kinh Thánh</label><select id="scriptureReference"><option value="Thi Thiên 23:1">Thi Thiên 23:1 · Được chở che</option><option value="Ma-thi-ơ 11:28">Ma-thi-ơ 11:28 · Nghỉ ngơi</option><option value="Phi-líp 4:6–7">Phi-líp 4:6–7 · Bình an</option><option value="Giăng 14:27">Giăng 14:27 · Hy vọng</option></select></div>
+          <div class="field"><label for="scriptureReflection">Lời suy ngẫm</label><textarea id="scriptureReflection" maxlength="240" rows="3" placeholder="Một phút cùng nhau suy ngẫm…"></textarea></div>
+          <button class="dock-btn" id="btnResetScriptureReflection" type="button">Dùng lại lời mẫu</button>
+          <p class="helper">100 lời suy ngẫm theo 10 chủ đề và tham chiếu, không phải nguyên văn câu Kinh Thánh. Bạn có thể chỉnh lời trước khi chia sẻ.</p>
+          <button class="dock-btn full" id="btnShareScripture" type="button">Chia sẻ lên Live</button>
+        </div>
+
+        <div class="room-simulation">
+          <div class="room-simulation-heading"><strong>Giả lập người trong room</strong><span>CHẾ ĐỘ TEST</span></div>
+          <p class="helper">Tạo khách test để xem nhân vật, tên và avatar hiển thị trên khung 9:16. Tối đa 200 người.</p>
+          <label for="simulatedViewerCount">Số người giả lập</label>
+          <div class="room-simulation-actions"><input id="simulatedViewerCount" type="number" min="0" max="200" step="1" value="0"><button class="dock-btn" id="btnSimulateViewers" type="button">Tạo người test</button><button class="dock-btn" id="btnClearSimulatedViewers" type="button">Xóa</button></div>
+          <p class="helper" id="simulatedViewersStatus" role="status">Chưa có người giả lập.</p>
+          <button class="dock-btn full" id="btnPreviewMember" type="button">Thử người mới vào phòng</button>
+          <details class="room-chat-test"><summary>Thử bong bóng chat</summary>
+            <label for="simulatedChatUser">Người gửi</label><select id="simulatedChatUser" disabled><option value="">Tạo người test trước</option></select>
+            <label for="simulatedChatText">Bình luận thử</label><input id="simulatedChatText" maxlength="240" value="Xin bình an đến mọi người">
+            <button class="dock-btn full" id="btnSimulateChat" type="button" disabled>Gửi chat thử</button><p class="helper" id="simulatedChatStatus" role="status"></p>
+          </details>
+        </div>
+        <p class="helper" id="ritualStatus" role="status"></p>
+        <div class="dock-section"><h2>Hoạt động gần đây</h2><div class="event-feed" id="eventFeed"><p class="helper">Chưa có hoạt động.</p></div></div>
+      </section>
+
+      <section id="christianVoice" role="tabpanel" hidden>
+        <div class="field"><label for="christianVoiceSelect">Giọng đọc</label><select id="christianVoiceSelect" disabled><option>Đang tải giọng đọc…</option></select></div>
+        <button class="dock-btn full" id="btnToggleTts" type="button">Giọng đọc: BẬT</button>
+        <label for="christianTtsVolume">Âm lượng giọng đọc <strong id="christianTtsVolumeValue">95%</strong></label><input id="christianTtsVolume" type="range" min="0" max="100" value="95">
+        <div class="dock-section"><h2>Lời đọc riêng</h2>
+          <label for="christianSpeechText">Nội dung · tối đa 1.000 ký tự</label><textarea id="christianSpeechText" maxlength="1000" rows="4" placeholder="Nhập lời nhắn hoặc lời cầu nguyện…"></textarea>
+          <div class="dock-grid-2"><button class="dock-btn" id="btnPreviewSpeech" type="button">Nghe thử riêng</button><button class="dock-btn primary" id="btnBroadcastSpeech" type="button">Đọc trên Live</button></div>
+          <audio id="christianSpeechPreview" controls aria-label="Nghe thử giọng đọc" hidden></audio><p class="helper" id="voiceStatus" role="status">Giọng đọc tự phát theo lời cầu nguyện và Kinh Thánh.</p>
+        </div>
+      </section>
+
+      <section id="christianMusic" role="tabpanel" hidden>
+        <div class="field"><label for="christianMusicTrack">Nhạc nền Thiên Chúa giáo</label><select id="christianMusicTrack"><option value="sanctuary">Đàn organ nhà nguyện</option><option value="morning-grace">Bình minh ân sủng</option><option value="candlelight">Tĩnh lặng bên ánh nến</option></select><p class="helper">Ba bản nhạc nền riêng của hồ sơ Thiên Chúa giáo.</p></div>
+        <button class="dock-btn full" id="btnToggleMusic" type="button">Nhạc nền: TẮT</button>
+        <label class="row"><input type="checkbox" id="christianMusicAutoRotate"> Tự chuyển bản khi hết</label>
+        <div class="dock-grid-2"><button class="dock-btn" id="btnPreviewMusic" type="button">Nghe thử</button><button class="dock-btn" id="btnNextMusic" type="button">Bài tiếp theo</button></div>
+        <audio id="christianMusicPreview" controls aria-label="Nghe thử nhạc nền" hidden></audio>
+        <label for="christianMusicVolume">Âm lượng nhạc <strong id="christianMusicVolumeValue">18%</strong></label><input id="christianMusicVolume" type="range" min="0" max="50" value="18">
+        <p class="helper" id="musicStatus" role="status">Bật âm thanh trong trình duyệt để nghe nhạc. Nhạc giảm nhẹ khi lời đọc phát.</p>
+      </section>
+
+      <section id="christianConnect" role="tabpanel" hidden>
+        <h2>Kết nối TikTok Live</h2>
+        <p id="tiktokStatus" class="helper" role="status">Chưa kết nối TikTok.</p>
+        <p id="tiktokError" class="helper" role="status"></p>
+        <div class="field"><label for="tiktokUsername">Tài khoản đang phát Live</label><input id="tiktokUsername" autocomplete="off" placeholder="@username"></div>
+        <div class="dock-grid-2"><button class="dock-btn primary" id="btnConnectTikTok" type="button">Kết nối TikTok</button><button class="dock-btn" id="btnDisconnectTikTok" type="button">Ngắt kết nối</button></div>
+        <p class="helper">Kết nối đọc sự kiện từ phòng TikTok đang phát; đây không phải nút phát Live.</p>
+
+        <div class="dock-section live-operations"><h2>Phiên Live và thống kê</h2>
+          <div class="christian-session-stats"><div><small>Thời lượng</small><strong id="liveSessionDuration">0:00:00</strong></div><div><small>Người xem cao nhất</small><strong id="liveSessionViewers">0</strong></div><div><small>Tương tác</small><strong id="liveSessionInteractions">0</strong></div><div><small>Xu quà tặng</small><strong id="liveSessionCoins">0</strong></div></div>
+          <p class="helper" id="liveSessionStats">Thống kê chỉ tính phiên TikTok thật.</p>
+          <button class="dock-btn full" id="btnNewLiveSession" type="button" disabled>Mở phiên thống kê mới</button>
+          <h3>Lịch sử phiên</h3><ul id="liveSessionHistory" class="session-history"><li class="helper">Chưa có phiên trước.</li></ul>
+        </div>
+
+        <details class="auth-details auth-gate" id="authGate"><summary>Kết nối điều khiển</summary>
+          <label for="rpcTokenInput">RPC token trong terminal</label><div class="row"><input type="password" id="rpcTokenInput" autocomplete="off" placeholder="Dán token để bắt đầu"><button class="btn" id="btnAuthenticate" type="button">Xác thực</button></div>
+          <p id="authStatus" class="helper" role="status">Chưa xác thực.</p><button class="btn" id="btnLogout" type="button" hidden>Xóa token</button>
+        </details>
+      </section>
+    </aside>
+  </main>
+
+  <script type="module" src="/scripts/auth.ts"></script>
+  <script type="module" src="/scripts/christianLive.ts"></script>
+</body>
+</html>

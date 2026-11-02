@@ -1,0 +1,194 @@
+:root { --christian-wine:#6f2922; --christian-gold:#c39a54; --christian-ivory:#fff4df; }
+.scripture-card.is-ritual-active { top:160px; left:140px; width:800px; min-height:260px; padding:22px 32px 28px; gap:12px; border-color:#e8c786; background:linear-gradient(145deg,#fffaf0fa,#f3e3c6fa); }
+.ritual-card-person { display:flex; align-items:center; gap:12px; width:100%; padding-bottom:14px; margin-bottom:3px; border-bottom:1px solid #d8bf8c; text-align:left; }
+.ritual-card-icon { display:grid; place-items:center; width:44px; height:44px; color:#8e5d27; }
+.ritual-card-icon svg { width:40px; height:40px; }
+.ritual-card-avatar { display:grid; place-items:center; flex:0 0 48px; height:48px; overflow:hidden; border:2px solid #bc914e; border-radius:50%; background:#e8d7b7; color:#743b2c; font:700 22px 'Be Vietnam Pro',sans-serif; }
+.ritual-card-avatar img { width:100%; height:100%; object-fit:cover; }
+.ritual-card-person strong { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font:700 24px 'Be Vietnam Pro',sans-serif; }
+.ritual-card-status { margin-left:auto; flex-shrink:0; color:#886531; font:600 12px 'Be Vietnam Pro',sans-serif; letter-spacing:1px; }
+.scripture-card.is-ritual-active>span:last-child { font-size:23px; line-height:1.5; max-width:720px; }
+.scripture-card[data-ritual="peace"] { border-color:#b8c88f; }
+.scripture-card[data-ritual="thanksgiving"],.scripture-card[data-ritual="gift"] { border-color:#d5a293; }
+.scripture-card[data-ritual="communion"] { box-shadow:0 0 60px #efca6d70,0 14px 36px #2b100c69; }
+.ritual-actor { position:absolute; z-index:18; left:540px; top:1020px; width:245px; height:360px; transform:translate(-50%,-100%) scale(.75); transform-origin:center bottom; pointer-events:none; filter:drop-shadow(0 12px 16px #24100e90); }
+.ritual-actor-walk { position:absolute; inset:0; background-repeat:no-repeat; background-size:400% 200%; animation:attendeeWalkCycle .88s steps(1,end) infinite; }
+.ritual-actor-stand,.ritual-actor-bow { display:none; position:absolute; inset:0; width:100%; height:100%; object-fit:contain; object-position:center bottom; }
+.ritual-actor-bow { opacity:0; }
+.attendee-bow-sprite { position:absolute; inset:0; width:100%; height:100%; object-fit:contain; object-position:center bottom; opacity:0; pointer-events:none; }
+.ritual-actor.has-arrived .ritual-actor-walk { display:none; }
+.ritual-actor.has-arrived .ritual-actor-stand,.ritual-actor.has-arrived .ritual-actor-bow { display:block; }
+.ritual-actor-shadow { position:absolute; left:20%; right:20%; bottom:0; height:22px; border-radius:50%; background:#30160e60; filter:blur(8px); }
+.ritual-actor-name { position:absolute; left:50%; bottom:calc(100% + 12px); transform:translateX(-50%); display:flex; align-items:center; gap:9px; max-width:300px; padding:5px 14px 5px 5px; border:1px solid #e7c982; border-radius:25px; background:#3b2118ed; color:#fff4df; }
+.ritual-actor-name>span { display:grid; place-items:center; flex:0 0 32px; height:32px; border-radius:50%; background:#e8d7b7; color:#743b2c; overflow:hidden; }
+.ritual-actor-name img { width:100%; height:100%; object-fit:cover; }
+.ritual-actor-name strong { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font:600 18px 'Be Vietnam Pro',sans-serif; }
+.ritual-actor-candle.has-arrived,.ritual-actor-communion.has-arrived { filter:drop-shadow(0 0 22px #ffe3a460); }
+@media (prefers-reduced-motion:reduce) { .ritual-actor * { animation:none !important; } }
+.christian-ritual-effect { position:absolute; inset:420px 50px 430px; z-index:15; pointer-events:none; color:#ffe4a7; overflow:hidden; }
+.ritual-emblem { position:absolute; top:70px; left:calc(50% - 105px); width:210px; height:240px; display:grid; place-items:center; filter:drop-shadow(0 4px 9px #32170f) drop-shadow(0 0 20px #ffcf75); animation:christianEmblemIn .6s ease-out both; }
+.ritual-emblem svg { width:100%; height:100%; }
+.ritual-aureole { position:absolute; top:0; left:calc(50% - 230px); width:460px; height:460px; border-radius:50%; background:radial-gradient(circle,#ffdc8370,transparent 68%); animation:christianAureole 3s ease-in-out infinite alternate; }
+.effect-candle .ritual-emblem { top:95px; height:300px; }
+.effect-candle .candle-flame { fill:#ffdc79; transform-origin:50px 44px; animation:christianFlame 1.4s ease-in-out infinite alternate; }
+.effect-prayer .ritual-emblem { animation:christianPrayerLight 3s ease-in-out infinite alternate; }
+.effect-scripture .ritual-emblem { animation:christianBookReveal 1.2s cubic-bezier(.16,.8,.25,1) both; }
+.effect-thanksgiving .ritual-emblem,.effect-gift .ritual-emblem { animation:christianGratitude 2.4s ease-in-out infinite alternate; }
+.effect-welcome .ritual-emblem { animation:christianWelcomeDoor 1.2s ease-out both; }
+.effect-bell .cathedral-bell { transform-origin:50px 5px; animation:christianBell 1.6s ease-in-out 3; }
+.bell-wave { stroke-width:.65; animation:christianBellWave 1.6s ease-out 3; transform-origin:center; }
+.effect-communion .ritual-aureole { width:850px; height:850px; top:-150px; left:calc(50% - 425px); }
+.effect-peace .ritual-emblem { animation:christianDove 4s ease-in-out infinite alternate; color:#fff9e8; }
+.ritual-light-mote { position:absolute; left:var(--x); bottom:0; width:6px; height:6px; border-radius:50%; background:#fff0bc; box-shadow:0 0 13px #ffe09a; animation:christianMote 5.6s linear var(--delay) infinite; }
+.christian-stage[data-action="communion"] .attendee-seat-sprite { animation:christianCongregation 2.4s ease-in-out infinite alternate; }
+.presentation-paused .christian-stage * { animation-play-state:paused !important; }
+@keyframes christianEmblemIn { from { opacity:0; transform:translateY(25px) scale(.85); } to { opacity:1; transform:none; } }
+@keyframes christianAureole { from { opacity:.5; transform:scale(.9); } to { opacity:1; transform:scale(1.08); } }
+@keyframes christianFlame { from { transform:scaleX(.88) rotate(-3deg); } to { transform:scaleX(1.08) rotate(3deg); } }
+@keyframes christianBell { 0%,100% { transform:rotate(0); } 25% { transform:rotate(12deg); } 75% { transform:rotate(-12deg); } }
+@keyframes christianBellWave { from { opacity:.8; transform:scale(.55); } to { opacity:0; transform:scale(1.2); } }
+@keyframes christianDove { from { transform:translate(-25px,15px) rotate(-5deg); } to { transform:translate(25px,-15px) rotate(4deg); } }
+@keyframes christianMote { 0% { opacity:0; transform:translateY(0); } 15%,80% { opacity:.9; } 100% { opacity:0; transform:translateY(-750px); } }
+@keyframes christianPrayerLight { from { opacity:.7; filter:drop-shadow(0 0 12px #ffe19b); } to { opacity:1; filter:drop-shadow(0 0 35px #ffe19b); } }
+@keyframes christianBookReveal { from { opacity:0; transform:perspective(600px) rotateY(-65deg) scale(.8); } to { opacity:1; transform:perspective(600px) rotateY(0) scale(1); } }
+@keyframes christianGratitude { from { transform:scale(.93); } to { transform:scale(1.07); } }
+@keyframes christianWelcomeDoor { from { opacity:0; transform:translateY(25px) scaleX(.65); } to { opacity:1; transform:none; } }
+@keyframes christianCongregation { from { filter:brightness(1); } to { filter:brightness(1.2) drop-shadow(0 0 5px #ffdc8b); } }
+@media (prefers-reduced-motion:reduce) { .christian-ritual-effect *, .christian-stage[data-action="communion"] .attendee-seat-sprite { animation:none !important; } .ritual-light-mote { display:none; } }
+.christian-live-page .stage-wrapper { border-color:rgba(183,139,71,.72); box-shadow:0 18px 50px #4823112e; }
+.christian-live-page:not(.obs-mode) { height:100vh; overflow:hidden; }
+.christian-live-page:not(.obs-mode) .app-workspace { height:calc(100dvh - 65px); }
+body.christian-live-page.obs-mode>.studio-bar { display:none; }
+body.christian-live-page.obs-mode .app-workspace { width:100vw; height:100dvh; min-height:0; padding:0; gap:0; }
+body.christian-live-page.obs-mode .stage-wrapper { width:auto; max-width:100vw; height:100dvh; aspect-ratio:9/16; }
+.christian-stage { background:#29170f; color:#fff7eb; isolation:isolate; }
+.christian-live-page .christian-icon[data-icon] { display:inline-flex; align-items:center; justify-content:center; vertical-align:middle; }
+.christian-live-page .christian-icon svg { display:block; width:1em; height:1em; }
+.christian-stage-bg { position:absolute; inset:0; z-index:0; width:1080px; height:1920px; object-fit:cover; object-position:center; pointer-events:none; }
+.christian-stage-vignette { position:absolute; inset:0; z-index:1; pointer-events:none; background:linear-gradient(180deg,#20110b55 0%,transparent 22%,transparent 65%,#200e0ac9 100%); }
+.cathedral-light-rays { position:absolute; inset:0; z-index:2; pointer-events:none; background:radial-gradient(ellipse 65% 45% at 50% 12%,rgba(255,230,160,0.22) 0%,rgba(245,205,120,0.06) 55%,transparent 75%),linear-gradient(135deg,rgba(255,240,190,0.12) 0%,transparent 45%),linear-gradient(225deg,rgba(255,240,190,0.12) 0%,transparent 45%); mix-blend-mode:screen; }
+.christian-topbar { position:absolute; z-index:18; top:34px; left:34px; right:34px; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 18px; border:1px solid #ebcd926b; border-radius:28px; background:#32180fd9; box-shadow:0 5px 20px #1b0c0b66; font:600 18px/1.2 'Be Vietnam Pro',sans-serif; }
+.christian-live-title { display:flex; align-items:center; gap:10px; min-width:0; letter-spacing:.5px; }
+.live-led { flex:0 0 10px; width:10px; height:10px; border-radius:50%; background:#d8a650; box-shadow:0 0 13px #edb74d; }
+.christian-live-page.is-connected .live-led { background:#ed5141; box-shadow:0 0 14px #f44; animation:livePulse 1.5s infinite; }
+.christian-live-stats { display:flex; align-items:center; gap:11px; color:#f3d8a0; font-size:15px; white-space:nowrap; }
+.christian-live-stats i { width:1px; height:18px; background:#bb895a; }
+.scripture-card { position:absolute; z-index:16; top:210px; left:180px; width:720px; min-height:165px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; padding:25px 38px; text-align:center; border:2px solid #dfbb75; border-radius:18px; background:linear-gradient(135deg,#fff8e8f5,#f2dfbff2); color:#542920; box-shadow:0 14px 36px #2b100c69; transition:transform .45s, opacity .45s; }
+.scripture-kicker { color:#9d6e30; font:700 14px/1.2 'Be Vietnam Pro',sans-serif; letter-spacing:2px; }
+.scripture-card strong { font:700 28px/1.3 'Noto Serif',serif; }
+.scripture-card>span:last-child { max-width:650px; font:500 19px/1.45 'Be Vietnam Pro',sans-serif; }
+.christian-attendees { position:absolute; z-index:8; inset:0; pointer-events:none; }
+.attendee { position:absolute; display:block; pointer-events:auto; transition:left .35s ease,top .35s ease,width .35s ease,height .35s ease; transform-origin:center bottom; filter:drop-shadow(0 5px 8px #160c0b80); opacity:0; }
+.attendee.is-entering { visibility:hidden; }
+.attendee.is-standing { visibility:visible; opacity:1; animation:attendeeStand .46s cubic-bezier(.18,.75,.26,1.12) both; }
+.attendee-seat-sprite { display:block; width:100%; height:100%; object-fit:contain; object-position:center bottom; }
+.attendee-walk-sprite { display:block; width:100%; height:100%; background-repeat:no-repeat; background-position:0 0; background-size:400% 200%; }
+.attendee-identity { position:absolute; left:50%; bottom:calc(100% + 1px); display:flex; align-items:center; gap:4px; max-width:112px; padding:2px 5px 2px 2px; transform:translateX(-50%); border:1px solid #e7c982; border-radius:18px; background:#3b2118ed; color:#fff3df; box-shadow:0 3px 8px #160c0b60; white-space:nowrap; }
+.attendee-name { display:block; max-width:58px; overflow:hidden; color:#fff3df; text-overflow:ellipsis; white-space:nowrap; font:600 9px/1.2 'Be Vietnam Pro',sans-serif; }
+.attendee-avatar { flex:0 0 20px; width:20px; height:20px; display:grid; place-items:center; overflow:hidden; border:1px solid #f4d28a; border-radius:50%; background:#fff3df; color:#79382c; font:700 9px/1 'Be Vietnam Pro',sans-serif; }
+.attendee-avatar img,.arrival-avatar img { width:100%; height:100%; object-fit:cover; }
+.attendee.is-crowded { filter:none; pointer-events:auto; cursor:help; }
+.attendee.is-crowded:hover { z-index:1000 !important; }
+.attendee.is-crowded .attendee-identity { visibility:hidden; opacity:0; bottom:calc(100% + 2px); width:14px; height:14px; justify-content:center; gap:0; max-width:none; padding:0; overflow:hidden; border:0; border-radius:50%; background:transparent; box-shadow:none; }
+.attendee.is-crowded .attendee-avatar { flex:0 0 14px; width:14px; height:14px; border-width:1px; font-size:7px; }
+.attendee.is-crowded .attendee-name { display:none; }
+.attendee.is-crowded:hover .attendee-identity,.attendee.is-crowded:focus-visible .attendee-identity,.attendee.is-crowded.is-chatting .attendee-identity { visibility:visible; opacity:1; bottom:calc(100% + 2px); width:auto; height:auto; justify-content:flex-start; gap:4px; max-width:112px; padding:2px 5px 2px 2px; overflow:visible; border:1px solid #e7c982; border-radius:18px; background:#3b2118ed; box-shadow:0 3px 8px #160c0b60; }
+.attendee.is-crowded:hover .attendee-avatar,.attendee.is-crowded:focus-visible .attendee-avatar,.attendee.is-crowded.is-chatting .attendee-avatar { flex:0 0 20px; width:20px; height:20px; font-size:9px; }
+.attendee.is-crowded:hover .attendee-name,.attendee.is-crowded:focus-visible .attendee-name,.attendee.is-crowded.is-chatting .attendee-name { display:block; }
+.attendee-walker { position:absolute; z-index:13; display:block; opacity:0; transform-origin:center bottom; filter:drop-shadow(0 7px 10px #160c0b85); pointer-events:none; }
+.attendee-walker.is-crowded { filter:none; }
+.attendee-walker.is-crowded .attendee-identity { visibility:hidden; bottom:calc(100% + 2px); width:14px; height:14px; justify-content:center; gap:0; max-width:none; padding:0; overflow:hidden; border:0; border-radius:50%; background:transparent; box-shadow:none; }
+.attendee-walker.is-crowded .attendee-avatar { flex:0 0 14px; width:14px; height:14px; border-width:1px; font-size:7px; }
+.attendee-walker.is-crowded .attendee-name { display:none; }
+.attendee-walker .attendee-walk-sprite { animation:attendeeWalkCycle .88s steps(1,end) infinite; }
+.attendee-walker .attendee-identity { z-index:1; }
+.prayer-figure { position:absolute; z-index:10; left:390px; bottom:230px; width:300px; height:540px; margin:0; opacity:.96; pointer-events:none; filter:drop-shadow(0 13px 16px #1a0b0b80); transform-origin:50% 100%; }
+.prayer-figure { display:none; }
+.prayer-ground-shadow { position:absolute; bottom:0; left:50%; width:240px; height:38px; transform:translateX(-50%); border-radius:50%; background:radial-gradient(ellipse at center,rgba(16,7,5,0.75) 0%,rgba(20,9,6,0.45) 45%,transparent 72%); filter:blur(4px); pointer-events:none; z-index:-1; }
+.prayer-figure img { width:100%; height:100%; object-fit:contain; object-position:center bottom; }
+.prayer-figure.is-walking { animation:walkIn 2.2s cubic-bezier(.2,.65,.25,1) both; }
+.prayer-figure.is-praying { animation:prayerBreath 3.6s ease-in-out infinite; }
+.prayer-name-tag { position:absolute; z-index:2; left:50%; top:-64px; display:flex; align-items:center; gap:9px; width:max-content; max-width:300px; padding:8px 14px 8px 8px; border:1px solid #e7c982; border-radius:28px; background:#43261ded; color:#fff4df; box-shadow:0 5px 18px #160b0a77; transform:translateX(-50%); }
+.prayer-name-tag[hidden] { display:none; }
+.prayer-avatar { display:grid; place-items:center; flex:0 0 34px; width:34px; height:34px; overflow:hidden; border:1px solid #e4c17d; border-radius:50%; background:#fff2db; color:#74342c; font:700 15px/1 'Be Vietnam Pro',sans-serif; }
+.christian-live-page .prayer-avatar svg { width:16px; height:16px; }
+.prayer-avatar img { display:block; width:100%; height:100%; object-fit:cover; }
+.prayer-name-tag small,.prayer-name-tag strong { display:block; max-width:230px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.prayer-name-tag small { color:#edca84; font:700 9px/1.3 'Be Vietnam Pro',sans-serif; letter-spacing:.07em; }
+.prayer-name-tag strong { font:600 12px/1.35 'Be Vietnam Pro',sans-serif; }
+.christian-chat-layer { position:absolute; z-index:22; inset:0; display:block; pointer-events:none; }
+.christian-chat-bubble { position:absolute; display:flex; align-items:flex-start; gap:9px; width:max-content; max-width:470px; padding:10px 14px; border:1px solid #e6c37f; border-radius:17px 17px 17px 4px; background:#3a211be8; color:#fff7e9; box-shadow:0 6px 18px #130b0a55; font:500 16px/1.4 'Be Vietnam Pro',sans-serif; animation:chatIn .3s both; }
+.christian-chat-bubble.is-attached { border-radius:17px 17px 4px 17px; }
+.chat-avatar { flex:0 0 30px; width:30px; height:30px; display:grid; place-items:center; overflow:hidden; border:1px solid #e7c982; border-radius:50%; background:#fff2db; color:#79382c; font-size:12px; font-weight:700; }
+.chat-avatar img { width:100%; height:100%; object-fit:cover; }
+.chat-copy { min-width:0; }
+.christian-chat-bubble strong { display:block; margin-bottom:3px; color:#efd08e; font-size:13px; }
+.member-arrival { position:absolute; z-index:26; top:145px; left:50%; display:flex; align-items:center; gap:12px; min-width:270px; padding:12px 20px; border:1px solid #edcd8e; border-radius:30px; background:#3c2119ed; opacity:0; transform:translate(-50%,-12px); box-shadow:0 8px 26px #13090866; transition:opacity .3s, transform .3s; }
+.member-arrival.visible { opacity:1; transform:translate(-50%,0); }
+.arrival-avatar { width:42px; height:42px; display:grid; place-items:center; overflow:hidden; flex:0 0 42px; border-radius:50%; background:#fff2db; color:#74342c; font-size:22px; }
+.member-arrival small,.member-arrival strong { display:block; }.member-arrival small { color:#e6bf77; font-size:11px; letter-spacing:1px; }.member-arrival strong { font-size:16px; }
+.christian-bottom-hud { position:absolute; z-index:20; left:28px; right:28px; bottom:26px; overflow:hidden; border:2px solid #d5ab67; border-radius:24px; background:linear-gradient(135deg,#fff5e4f2,#f5e4c8f5); color:#4a2921; box-shadow:0 14px 35px #170d0d60; }
+.christian-now-praying { min-height:84px; display:flex; align-items:center; gap:13px; padding:13px 20px; background:linear-gradient(100deg,#582820,#7b3c2d); color:#fff5e4; }
+.cross-seal { flex:0 0 46px; width:46px; height:46px; display:grid; place-items:center; border:1px solid #e4c17d; border-radius:50%; color:#f2d79e; font-size:24px; }
+.christian-live-page .cross-seal svg { width:23px; height:23px; }
+.christian-now-praying small { display:block; color:#efcd8b; font-size:12px; letter-spacing:1px; }.christian-now-praying strong { display:block; max-width:570px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:20px; }
+.prayer-live-mark { margin-left:auto; padding:6px 10px; border:1px solid #e8c886; border-radius:15px; color:#f8dfa8; font-size:12px; letter-spacing:1px; }
+.christian-hud-body { display:grid; grid-template-columns:1.45fr .8fr; gap:14px; padding:14px; }
+.christian-actions { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+.christian-action-card { min-height:108px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; padding:10px 8px; border:1px solid #e0c18a; border-radius:14px; background:#fffaf0; text-align:center; transition:transform .2s,border-color .2s; }
+.christian-action-card:hover { transform:translateY(-2px); border-color:#c99a4c; }
+.christian-action-card strong { color:#663e25; font:700 15px/1.3 'Noto Serif',serif; }
+.christian-action-card small { color:#88715b; font-size:12px; }
+.christian-hud-badge { display:inline-flex; align-items:center; justify-content:center; width:44px; height:44px; border-radius:12px; margin-bottom:4px; flex-shrink:0; }
+.christian-hud-badge svg { width:24px; height:24px; }
+.christian-hud-badge[data-badge="prayer"] { background:#fbeef1; border:1px solid #e1b4be; color:#9d3f52; }
+.christian-hud-badge[data-badge="scripture"] { background:#fbf0ee; border:1px solid #ddb2a6; color:#8e2f25; }
+.christian-hud-badge[data-badge="thanks"] { background:#fdf3d8; border:1px solid #e4c987; color:#9b7228; }
+.christian-supporters-icon { display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; color:#ba8d4a; margin-right:6px; vertical-align:-2px; }
+.christian-supporters-icon svg { width:18px; height:18px; }
+.christian-supporters { min-height:108px; border:1px solid #e0c18a; border-radius:14px; overflow:hidden; background:#fffaf0; }
+.christian-supporters h2 { min-height:37px; padding:8px 12px; border-bottom:1px solid #ead9ba; color:#795330; font:700 15px/1.4 'Be Vietnam Pro',sans-serif; display:flex; align-items:center; }
+.christian-supporters ol { margin:0; padding:7px 10px; color:#6e5943; font-size:12px; list-style:none; }.christian-supporters li { display:flex; align-items:center; gap:7px; min-width:0; padding:3px 0; }.christian-supporters li::marker { color:#ba8d4a; font-weight:700; }.supporter-avatar { flex:0 0 22px; width:22px; height:22px; display:grid; place-items:center; overflow:hidden; border:1px solid #e2c78f; border-radius:50%; background:#f4e4c8; color:#795330; font-size:10px; font-weight:700; }.supporter-avatar img { width:100%; height:100%; object-fit:cover; }.christian-supporters li span:not(.supporter-avatar) { display:inline-block; min-width:0; max-width:65%; overflow:hidden; text-overflow:ellipsis; vertical-align:bottom; white-space:nowrap; }.christian-supporters li b { margin-left:auto; color:#966734; font-weight:600; white-space:nowrap; }.christian-supporters .supporter-empty { justify-content:center; padding-top:15px; text-align:center; color:#98836d; }
+.quick-action-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin:10px 0 14px; }
+.quick-action-grid .ritual-action { padding:8px 10px; min-height:54px; }
+.quick-action-grid .ritual-action .ritual-icon { width:34px; height:34px; }
+.quick-action-grid .ritual-action .ritual-icon svg { width:20px; height:20px; }
+.quick-action-grid .ritual-label strong { font-size:13px; }
+.quick-action-grid .ritual-label small { font-size:11px; }
+.dock-section-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:4px; }
+.dock-section-head .eyebrow { color:#946f3d; font-size:11px; font-weight:600; letter-spacing:.08em; }
+.christian-live-page .quick-dock { min-width:0; overflow-x:hidden !important; overflow-y:auto; scrollbar-color:#c39a54 #f4ebe0; }
+.christian-live-page .quick-dock :is(.dock-header,.field,.room-simulation,.dock-section,.auth-gate,#christianRitual,#christianVoice,#christianMusic,#christianConnect) { min-width:0; max-width:100%; }
+.christian-live-page .quick-dock .tabs.gooey-nav { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:2px; min-width:0; overflow:hidden; }
+.christian-live-page .quick-dock .tabs.gooey-nav > button { width:100%; min-width:0; flex:none; padding:8px 2px; font-size:12px; line-height:1.2; white-space:nowrap; }
+.christian-live-page .quick-dock .dock-section { padding-top:18px; margin-top:18px; }
+.christian-live-page .quick-dock .dock-grid-2 { gap:8px; }
+.christian-live-page .quick-dock .room-simulation { padding:14px; }
+.christian-live-page .quick-dock .room-chat-test { margin-top:12px; border-top:1px solid #e3d2b6; }
+.christian-live-page .quick-dock .auth-gate { margin:20px 0 0; padding:14px; }
+.christian-live-page .quick-dock .session-history { margin:8px 0 0; padding-left:20px; color:#6f5c4b; font-size:12px; }
+.christian-session-stats { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; margin:12px 0; }
+.christian-session-stats>div { padding:10px; border:1px solid #e6d5b9; border-radius:10px; background:#fffaf1; }
+.christian-session-stats small { display:block; color:#796c5b; font-size:11px; }
+.christian-session-stats strong { color:#6f2922; font:700 18px/1.4 'Noto Serif',serif; font-variant-numeric:tabular-nums; }
+.christian-live-page .live-emergency { border-color:#d8b590; background:#f9eee6; color:#73332a; }
+.christian-live-page #tiktokStatus[data-state=ok],.christian-live-page #voiceStatus[data-state=ok] { color:#376b4c; }
+.christian-live-page #tiktokError[data-state=error],.christian-live-page #liveConnectionError[data-state=error] { color:#aa3535; }
+@keyframes livePulse { 50% { opacity:.45; box-shadow:0 0 3px #f44; } }
+@keyframes attendeeStand { 0% { opacity:0; transform:translate(-50%,-100%) scale(.86) translateY(9px); } 100% { opacity:1; transform:translate(-50%,-100%) scale(1); } }
+@keyframes attendeeWalkCycle {
+  0% { background-position:0 0; }
+  12.5% { background-position:33.333% 0; }
+  25% { background-position:66.667% 0; }
+  37.5% { background-position:100% 0; }
+  50% { background-position:0 100%; }
+  62.5% { background-position:33.333% 100%; }
+  75% { background-position:66.667% 100%; }
+  87.5% { background-position:100% 100%; }
+  100% { background-position:0 0; }
+}
+@keyframes walkIn { 0% { opacity:0; transform:translateY(270px) scale(.75); } 72% { opacity:1; transform:translateY(-12px) scale(1.04); } 100% { opacity:.96; transform:translateY(0) scale(1); } }
+@keyframes prayerBreath { 50% { transform:translateY(-7px); } }
+@keyframes chatIn { from { opacity:0; transform:translateX(-16px) translateY(8px); } to { opacity:1; transform:translateX(0) translateY(0); } }
+@media(max-width:960px) { .christian-live-page:not(.obs-mode) { height:auto; min-height:100vh; overflow-y:auto; }.christian-live-page:not(.obs-mode) .app-workspace { height:auto; min-height:0; }.christian-live-page:not(.obs-mode) .studio-bar { position:relative; min-height:58px; padding:6px 12px; gap:6px; }.christian-live-page:not(.obs-mode) .brand { gap:7px; font-size:13px; }.christian-live-page:not(.obs-mode) .brand svg { width:24px; height:24px; }.christian-live-page:not(.obs-mode) .studio-links { gap:0; font-size:11px; }.christian-live-page:not(.obs-mode) .studio-links a { padding:8px 5px; } }
+@media(prefers-reduced-motion:reduce) { .christian-stage *, .christian-stage *::before, .christian-stage *::after { animation-duration:.01ms!important; animation-iteration-count:1!important; scroll-behavior:auto!important; } }

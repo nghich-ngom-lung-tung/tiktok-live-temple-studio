@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"><script>if(new URLSearchParams(window.location.search).get('profile')==='phat-giao'){window.location.replace('/admin/'+window.location.search);}</script><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f4ebe0"><title>Thiên Chúa giáo · Quản lý Live</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Noto+Serif:wght@600;700;900&display=swap" rel="stylesheet">
+  <link href="/css/studio.css" rel="stylesheet"><link rel="stylesheet" href="/css/studio-polish.css"><link rel="stylesheet" href="/css/christian-admin.css">
+</head>
+<body class="studio-page christian-admin-page">
+  <header class="studio-bar">
+    <a class="brand" href="/admin?profile=thien-chua-giao"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M16 3v26M10 11h12"/><path d="M7 29V14c0-5 4-9 9-9s9 4 9 9v15"/></svg>Tam Thế <span class="muted">Studio</span></a>
+    <nav class="studio-links" aria-label="Điều hướng chính"><a href="/admin?profile=thien-chua-giao" aria-current="page">Quản lý</a><a href="/?profile=thien-chua-giao">Phòng Live</a><a href="/admin?profile=phat-giao" title="Chuyển sang hồ sơ Phật giáo">Phật giáo</a><a href="/?profile=thien-chua-giao&amp;obs=1" target="_blank" rel="noopener">OBS ↗</a></nav>
+  </header>
+  <main class="studio-main">
+    <div class="page-heading"><div><h1>Quản lý buổi Live</h1><p class="muted">Thiên Chúa giáo · Lời cầu nguyện, suy ngẫm Kinh Thánh và tri ân người xem.</p></div><span class="connection" id="serverStatus" role="status">Đang kết nối</span></div>
+
+    <details class="auth-details auth-gate" id="authGate" open><summary>Kết nối điều khiển</summary><div class="auth-content"><label for="rpcTokenInput">RPC token trong cửa sổ chạy server</label><div class="row"><input type="password" id="rpcTokenInput" autocomplete="off" placeholder="Dán token để bắt đầu"><button class="btn" id="btnAuthenticate" type="button">Xác thực</button></div><div class="auth-footer"><p id="authStatus" class="helper" role="status">Chưa xác thực.</p><button class="btn" id="btnLogout" type="button" hidden>Xóa token</button></div></div></details>
+
+    <nav class="tabs" data-tab-group role="tablist" aria-label="Quản lý hồ sơ Thiên Chúa giáo">
+      <button data-tab="overview">Tổng quan</button><button data-tab="content">Nội dung &amp; giọng đọc</button><button data-tab="musicSettings">Nhạc</button><button data-tab="background">Ảnh nền</button>
+    </nav>
+
+    <section id="overview" role="tabpanel">
+      <section class="stats christian-stats" aria-label="Thống kê hồ sơ">
+        <div class="stat"><span>Lời cầu nguyện</span><strong id="totalPrayers">0</strong></div>
+        <div class="stat"><span>Chia sẻ Kinh Thánh</span><strong id="totalScriptures">0</strong></div>
+        <div class="stat"><span>Lời cảm tạ quà tặng</span><strong id="totalThanks">0</strong></div>
+      </section>
+      <div class="christian-admin-grid">
+        <div class="stack">
+          <section class="panel">
+            <div class="panel-head"><div><p class="eyebrow">PHỤNG VỤ &amp; TRI ÂN</p><h2>Điều khiển nghi thức</h2></div><span class="christian-seal christian-icon" data-icon="cross" aria-hidden="true"></span></div>
+            <div class="two-col"><div class="field"><label for="viewerName">Tên người xem</label><input id="viewerName" value="Khách Demo" maxlength="80"></div><div class="field"><label for="christianPrayerPreset">Ý nguyện mẫu</label><select id="christianPrayerPreset"><option value="">Chọn ý nguyện</option><option value="family">Gia đình bình an</option><option value="health">Sức khỏe</option><option value="wisdom">Xin ơn soi sáng</option><option value="comfort">An ủi người khó khăn</option><option value="remembrance">Tưởng nhớ người thân</option><option value="gratitude">Tạ ơn</option></select></div></div>
+            <div class="field"><label for="prayerWish">Lời cầu nguyện</label><input id="prayerWish" value="Xin Chúa gìn giữ gia đình trong bình an, yêu thương và hiệp nhất." maxlength="240"></div>
+            <p class="helper" id="playbackStatus" role="status">Sẵn sàng nhận tương tác.</p>
+            <div class="action-grid">
+              <button class="btn ritual-action" id="btnPrayer" data-ritual="prayer" type="button">
+                <span class="ritual-icon"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 3v26M9 10h14"/></svg></span>
+                <span class="ritual-label"><strong>Cầu nguyện bình an</strong><small>Dâng lời khẩn cầu</small></span>
+                <span class="ritual-arrow" aria-hidden="true">↗</span>
+              </button>
+              <button class="btn ritual-action" id="btnScriptureQuick" data-ritual="scripture" type="button">
+                <span class="ritual-icon"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 5v21a2 2 0 0 0 2 2h18V6a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2Z"/><path d="M6 24h18M14 9v8M11 12h6"/></svg></span>
+                <span class="ritual-label"><strong>Chia sẻ Lời Chúa</strong><small>Câu Kinh Thánh suy ngẫm</small></span>
+                <span class="ritual-arrow" aria-hidden="true">↗</span>
+              </button>
+              <button class="btn ritual-action" id="btnCandle" data-ritual="candle" type="button">
+                <span class="ritual-icon"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 14h10v14H11Z"/><path d="M16 4c-2 3-2 5 0 7 2-2 2-4 0-7Z"/><path d="M16 11v3"/><path d="M8 28h16"/></svg></span>
+                <span class="ritual-label"><strong>Thắp nến tạ ơn</strong><small>Ngọn nến dâng hồng ân</small></span>
+                <span class="ritual-arrow" aria-hidden="true">↗</span>
+              </button>
+              <button class="btn ritual-action" id="btnCathedralBell" data-ritual="bell" type="button">
+                <span class="ritual-icon"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 4a8 8 0 0 0-8 8v7l-3 4h22l-3-4v-7a8 8 0 0 0-8-8Z"/><path d="M13 27a3 3 0 0 0 6 0M16 2v2"/></svg></span>
+                <span class="ritual-label"><strong>Đổ chuông thánh đường</strong><small>Chuông ngân vang đại lễ</small></span>
+                <span class="ritual-arrow" aria-hidden="true">↗</span>
+              </button>
+              <button class="btn ritual-action" id="btnThanks" data-ritual="thanks" type="button">
+                <span class="ritual-icon"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 27s-10-6.5-12.5-12.5C1 8.5 6 4 11.5 6c2.5 1 4.5 3 4.5 3s2-2 4.5-3C26 4 31 8.5 28.5 14.5 26 20.5 16 27 16 27Z"/></svg></span>
+                <span class="ritual-label"><strong>Tri ân hồng ân</strong><small>Cảm tạ phúc lành</small></span>
+                <span class="ritual-arrow" aria-hidden="true">↗</span>
+              </button>
+              <button class="btn ritual-action" id="btnChoir" data-ritual="choir" type="button">
+                <span class="ritual-icon"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="16" cy="16" r="6"/><path d="M16 3v4M16 25v4M3 16h4M25 16h4M7 7l3 3M22 22l3 3M7 25l3-3M22 10l3-3"/></svg></span>
+                <span class="ritual-label"><strong>Hiệp thông đại lễ</strong><small>Hòa chung lời tụng ca</small></span>
+                <span class="ritual-arrow" aria-hidden="true">↗</span>
+              </button>
+              <button class="btn ritual-action" id="btnPeace" data-ritual="peace" type="button">
+                <span class="ritual-icon"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 7c3-4 8-4 10-1s0 8-3 10l-7 7-3-3 4-5-6-1c-3 0-5-2-5-5 4 0 7-1 10-2Z"/></svg></span>
+                <span class="ritual-label"><strong>Bình an cho bạn</strong><small>Lời chúc bình an</small></span>
+                <span class="ritual-arrow" aria-hidden="true">↗</span>
+              </button>
+              <button class="btn ritual-action" id="btnPreviewMember" data-ritual="welcome" type="button">
+                <span class="ritual-icon"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 28V14c0-6 4.5-11 10-11s10 5 10 11v14"/><path d="M16 3v25M11 14h10M4 28h24"/></svg></span>
+                <span class="ritual-label"><strong>Chào đón tân khách</strong><small>Đón người hữu duyên</small></span>
+                <span class="ritual-arrow" aria-hidden="true">↗</span>
+              </button>
+            </div>
+            <p class="helper" id="actionStatus" role="status">Các thao tác sẽ đồng bộ sang Phòng Live Thiên Chúa giáo và OBS.</p>
+          </section>
+        </div>
+        <aside class="stack">
+          <section class="panel live-preview-panel">
+            <div class="panel-head"><h2>Nhà thờ Thiên Chúa giáo</h2></div>
+            <div class="scene-preview"><img id="stagePreview" src="/assets/thien-chua-giao/backgrounds/nha-tho-live.png" alt="Ảnh nền nhà thờ hiện tại"><span>Khung dọc 9:16</span></div>
+            <div class="preview-meta"><span>200 chỗ hiển thị</span><span>1080 × 1920</span></div>
+            <a class="btn primary full" href="/?profile=thien-chua-giao">Mở phòng Live ↗</a>
+          </section>
+          <section class="panel">
+            <div class="panel-head"><h2>Hoạt động gần đây</h2></div><ul class="event-list" id="recentActivity"><li>Chưa có tương tác trong phiên này.</li></ul>
+          </section>
+        </aside>
+      </div>
+    </section>
+
+    <section id="content" role="tabpanel" hidden>
+      <div class="work-grid">
+        <div class="stack">
+          <section class="panel">
+            <div class="panel-head"><div><p class="eyebrow">NỘI DUNG SOẠN SẴN</p><h2>Kho lời suy ngẫm</h2></div><span class="christian-seal christian-icon" data-icon="bible" aria-hidden="true"></span></div>
+            <p class="muted">Chọn lời mẫu hoặc sửa thành lời của bạn, nghe thử bằng giọng bên cạnh rồi chia sẻ lên Live.</p>
+            <div class="field"><label for="scriptureCategory">Chủ đề suy ngẫm</label><select id="scriptureCategory"><option value="all">Tất cả chủ đề</option></select></div>
+            <div class="field"><label for="scriptureSelect">Lời suy ngẫm</label><select id="scriptureSelect"><option value="">Đang tải kho nội dung…</option></select></div>
+            <button class="btn" id="btnRandomScripture" type="button" disabled>Chọn ngẫu nhiên trong chủ đề</button>
+            <p class="helper" id="scriptureCatalogCount" role="status">100 lời suy ngẫm · 10 chủ đề.</p>
+            <div class="field"><label for="scriptureReflection">Nội dung sẽ đọc</label><textarea id="scriptureReflection" maxlength="240" rows="4" placeholder="Chọn lời mẫu hoặc viết lời suy ngẫm của bạn, tối đa 240 ký tự"></textarea></div>
+            <div class="row"><button class="btn" id="btnResetScriptureReflection" type="button">Dùng lại lời mẫu</button><button class="btn primary" id="btnScripture" type="button">Chia sẻ lên Live</button></div>
+            <p class="helper" id="scriptureStatus" role="status"></p>
+            <p class="helper">Lời suy ngẫm được biên soạn theo tham chiếu, không phải trích nguyên văn. Tên người chia sẻ lấy từ tab Tổng quan; bạn có thể chỉnh lời trước khi đọc.</p>
+          </section>
+          <section class="panel">
+            <details><summary>Lời dẫn tự động cho tương tác</summary>
+              <p class="helper">Khi người xem gửi ý nguyện, hệ thống ghép tên và nội dung của họ vào một trong các lời dẫn bên dưới. Các lời dẫn dùng cùng cài đặt giọng đọc.</p>
+              <div class="field"><label for="prayerTemplate">Lời dẫn cầu nguyện · mỗi dòng một câu</label><textarea id="prayerTemplate" rows="5" maxlength="600"></textarea></div>
+              <p class="helper">{user}: tên người xem · {wish}: lời cầu nguyện. Bấm “Lưu cài đặt đọc” để áp dụng lời dẫn đã sửa.</p>
+            </details>
+          </section>
+        </div>
+        <aside class="stack">
+          <section class="panel christian-settings">
+            <div class="panel-head"><div><p class="eyebrow">GIỌNG ĐỌC</p><h2>Cài đặt phát trực tiếp</h2></div></div>
+            <div class="christian-toggle-list"><label class="toggle-setting"><span><strong>Đọc nội dung trên Live</strong><small>Lời suy ngẫm, lời tự soạn và lời dẫn tương tác</small></span><input type="checkbox" id="ttsEnabled" checked></label><label class="toggle-setting"><span><strong>Tạm dừng nghi thức</strong><small>Bỏ qua lời dẫn đang chờ; vẫn nhận chat và người xem</small></span><input type="checkbox" id="presentationPaused"></label></div>
+            <div class="field voice-field"><label for="ttsVoice">Giọng đọc mặc định</label><select id="ttsVoice" disabled><option value="">Xác thực RPC để tải danh sách giọng</option></select></div>
+            <fieldset class="voice-rotation" id="christianVoiceRotationFieldset" disabled><legend>Giọng luân phiên</legend><p class="helper">Chọn từ 2 giọng trở lên để tự động đổi giọng theo từng lời nguyện.</p><div class="voice-rotation-list" id="christianVoiceRotationList"><p class="helper">Xác thực để tải danh sách giọng.</p></div></fieldset>
+            <div class="row voice-actions"><button class="btn" id="btnVoicePreview" type="button" disabled>Nghe thử nội dung đang chọn</button></div>
+            <audio id="christianAudioPreview" controls preload="none" aria-label="Nghe thử giọng đọc" hidden></audio>
+            <button class="btn primary" id="btnSaveSettings" type="button">Lưu cài đặt đọc</button><p id="settingsStatus" class="helper" role="status"></p>
+            <p class="helper" id="voiceStatus" role="status">Giọng đọc dùng cho các tương tác tự động.</p>
+          </section>
+        </aside>
+      </div>
+    </section>
+
+    <section id="musicSettings" role="tabpanel" hidden>
+      <div class="work-grid">
+        <section class="panel">
+          <div class="panel-head"><h2>Không gian âm thanh</h2><span class="eyebrow">3 bản nguyên bản</span></div>
+          <p class="muted">Chọn không khí cho buổi Live. Nghe thử chỉ phát tại trình duyệt này.</p>
+          <div class="track-list" id="christianMusicTrackList" aria-label="Thư viện nhạc Thiên Chúa giáo"></div>
+        </section>
+        <aside class="stack">
+          <section class="panel">
+            <div class="panel-head"><h2>Danh sách phát</h2></div>
+            <div class="field"><label for="christianMusicTrack">Bản nhạc đang chọn</label><select id="christianMusicTrack"><option value="sanctuary">Đàn organ nhà nguyện</option><option value="morning-grace">Bình minh ân sủng</option><option value="candlelight">Tĩnh lặng bên ánh nến</option></select></div>
+            <div class="row christian-music-actions"><button class="btn" id="btnChristianMusicPreview" type="button">Nghe thử</button><button class="btn" id="btnChristianMusicNext" type="button">Bài tiếp theo</button></div>
+            <audio id="christianMusicPreview" controls preload="none" aria-label="Nghe thử nhạc Thiên Chúa giáo"></audio>
+            <label class="row christian-music-rotate"><input type="checkbox" id="christianMusicAutoRotate"> Tự chuyển bài khi hết bản</label>
+            <p class="helper">3 bản nhạc nền không lời tổng hợp nguyên bản, mỗi bản khoảng 23 giây. Nhạc trên Live tự giảm khi có giọng đọc.</p>
+            <label class="toggle-setting christian-music-toggle"><span><strong>Phát nhạc nền trên Live</strong><small>Đồng bộ sang Phòng Live và OBS</small></span><input type="checkbox" id="christianBgMusicEnabled"></label>
+            <label for="christianMusicVolume">Âm lượng nhạc <strong id="christianMusicVolumeValue">18%</strong></label><input type="range" id="christianMusicVolume" min="0" max="50" step="1" value="18">
+            <p class="helper" id="christianMusicStatus" role="status">Nghe thử chỉ phát trên thiết bị này; chọn bài và cài đặt phát Live được đồng bộ.</p>
+          </section>
+          <section class="panel">
+            <h2>Nhạc của bạn</h2>
+            <p class="helper">File riêng chỉ nghe thử trong tab này, không tải lên máy chủ. Để phát trên OBS, dùng thư viện chung.</p>
+            <label for="musicFile">Chọn file âm thanh · dưới 50 MB</label><input type="file" id="musicFile" accept="audio/*">
+            <p class="helper" id="musicFileStatus" role="status"></p>
+          </section>
+        </aside>
+      </div>
+    </section>
+
+    <section id="background" role="tabpanel" hidden>
+      <div class="work-grid">
+        <div class="stack">
+          <section class="panel christian-background-panel">
+            <div class="panel-head"><div><p class="eyebrow">ẢNH NỀN RIÊNG</p><h2>Đổi ảnh nền nhà thờ</h2></div></div>
+            <div class="field"><label for="stageBackgroundFile">Chọn ảnh nền</label><input type="file" id="stageBackgroundFile" accept="image/png,image/jpeg,image/webp"><p class="helper">PNG, JPG hoặc WebP · tối đa 8 MB. Khuyên dùng ảnh dọc 9:16; ảnh ngang sẽ được cắt cho vừa khung. Ảnh này chỉ áp dụng cho Thiên Chúa giáo, không thay ảnh nền Phật giáo.</p></div>
+            <div class="row background-actions"><button class="btn primary" id="btnApplyBackground" type="button" disabled>Tải lên và áp dụng</button><button class="btn" id="btnResetBackground" type="button">Ảnh mặc định</button></div>
+            <p class="helper" id="backgroundStatus" role="status">Ảnh nền đồng bộ sang Phòng Live và OBS của hồ sơ này.</p>
+          </section>
+        </div>
+        <aside class="stack">
+          <section class="panel live-preview-panel">
+            <div class="panel-head"><h2>Nhà thờ hiện tại</h2></div>
+            <div class="scene-preview"><img class="church-stage-preview" src="/assets/thien-chua-giao/backgrounds/nha-tho-live.png" alt="Ảnh nền nhà thờ hiện tại"><span>Khung dọc 9:16</span></div>
+            <div class="preview-meta"><span>200 chỗ hiển thị</span><span>1080 × 1920</span></div>
+            <a class="btn primary full" href="/?profile=thien-chua-giao" target="_blank" rel="noopener">Mở phòng Live ↗</a>
+          </section>
+        </aside>
+      </div>
+    </section>
+    <details class="auth-details"><summary>Thông tin phản hồi kỹ thuật</summary><pre id="rpcOutput">Chưa có yêu cầu.</pre></details>
+  </main>
+  <script type="module" src="/scripts/auth.ts"></script><script type="module" src="/scripts/adminChristian.ts"></script><script type="module" src="/scripts/gooeyNav.ts"></script>
+</body>
+</html>

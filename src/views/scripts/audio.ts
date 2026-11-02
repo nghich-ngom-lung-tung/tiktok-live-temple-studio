@@ -90,7 +90,7 @@ class TempleAudioEngine {
 
     this.useSynthMusicFallback = false;
     this.synthBgTimer = null;
-    this.bgAudio = new Audio('/assets/music/lotus.wav');
+    this.bgAudio = new Audio('/assets/phat-giao/music/lotus.wav');
     this.bgAudio.loop = true;
     this.bgAudio.preload = 'auto';
     this.bgAudio.volume = this.bgBaseVolume;
@@ -106,12 +106,12 @@ class TempleAudioEngine {
   }
 
   ensureContext() {
-    if (!this.ctx) {
+    if (!this.ctx || this.ctx.state === 'closed') {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
       this.ctx = new AudioCtx();
     }
     if (this.ctx.state === 'suspended') {
-      this.ctx.resume();
+      void this.ctx.resume().catch(() => {});
     }
     this.unlocked = true;
     if (this.bgMusicEnabled) {
@@ -248,7 +248,7 @@ class TempleAudioEngine {
     const ctx = this.ensureContext();
     let pending = this.sampleBuffers.get(file);
     if (!pending) {
-      pending = fetch(`/assets/music/${file}`)
+      pending = fetch(`/assets/phat-giao/music/${file}`)
         .then(response => { if (!response.ok) throw new Error(`Không tải được âm thanh ${file}.`); return response.arrayBuffer(); })
         .then(data => ctx.decodeAudioData(data))
         .catch(error => { this.sampleBuffers.delete(file); throw error; });

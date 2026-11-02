@@ -18,8 +18,11 @@ export default defineConfig({
         server.middlewares.use((req, _res, next) => {
           if (req.url) {
             const url = new URL(req.url, 'http://vite.local');
-            if (url.pathname === '/admin') {
-              req.url = `/admin/index.html${url.search}`;
+            const cleanPath = url.pathname.replace(/\/+$/, '') || '/';
+            if (cleanPath === '/admin') {
+              req.url = `${url.searchParams.get('profile') === 'thien-chua-giao' ? '/admin/thien-chua-giao.html' : '/admin/index.html'}${url.search}`;
+            } else if (cleanPath === '/' && url.searchParams.get('profile') === 'thien-chua-giao') {
+              req.url = `/christian/index.html${url.search}`;
             }
           }
           next();
@@ -35,6 +38,7 @@ export default defineConfig({
       '/api': { target: backendTarget, changeOrigin: true },
       '/rpc': { target: backendTarget, changeOrigin: true },
       '/tts-cache': { target: backendTarget, changeOrigin: true },
+      '/stage-backgrounds': { target: backendTarget, changeOrigin: true },
       '/ws': {
         target: `ws://127.0.0.1:${backendPort}`,
         changeOrigin: true,
@@ -48,7 +52,9 @@ export default defineConfig({
     rolldownOptions: {
       input: {
         main: path.resolve(rootDir, 'src/views/index.html'),
-        admin: path.resolve(rootDir, 'src/views/admin/index.html')
+        admin: path.resolve(rootDir, 'src/views/admin/index.html'),
+        christianLive: path.resolve(rootDir, 'src/views/christian/index.html'),
+        christianAdmin: path.resolve(rootDir, 'src/views/admin/thien-chua-giao.html')
       }
     }
   }

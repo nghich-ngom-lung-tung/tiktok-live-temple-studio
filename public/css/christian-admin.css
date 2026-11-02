@@ -1,0 +1,74 @@
+.christian-admin-grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(330px,.72fr); gap:20px; align-items:start; }
+.christian-admin-grid.christian-single-column { grid-template-columns:minmax(0,1fr); }
+.christian-admin-page .panel-head .eyebrow { margin:0; }
+.christian-icon { display:inline-flex; align-items:center; justify-content:center; flex:0 0 auto; color:currentColor; }
+.christian-icon svg { display:block; width:1em; height:1em; }
+.christian-seal { flex:0 0 38px; width:38px; height:38px; display:grid; place-items:center; border:1px solid #d9bb82; border-radius:50%; color:#8a4737; background:#fbf2e2; font-size:20px; }
+.christian-button-icon { width:18px; height:18px; color:#a57836; }
+.christian-admin-page .btn.primary .christian-button-icon { color:inherit; }
+.christian-admin-page .christian-actions-grid { grid-template-columns:repeat(2,minmax(0,1fr)); margin-top:8px; }
+.christian-flow-list { display:grid; gap:9px; margin:16px 0 0; padding:0; list-style:none; }
+.christian-flow-list li { display:flex; align-items:flex-start; gap:11px; padding:11px 12px; border:1px solid #ebdfc9; border-radius:9px; background:#fcf7ee; }
+.christian-flow-list li>span { flex:0 0 28px; width:28px; height:28px; display:grid; place-items:center; border:1px solid #dfc697; border-radius:50%; color:#8a4737; background:#fffaf0; font-size:11px; font-weight:700; }
+.christian-flow-list strong,.christian-flow-list small { display:block; }
+.christian-flow-list strong { color:#583b31; font-size:12px; }
+.christian-flow-list small { margin-top:2px; color:#84725e; font-size:11px; line-height:1.5; }
+.christian-toggle-list { display:grid; gap:9px; }
+.christian-guide-card > .muted { line-height:1.7; }
+.christian-sim-badge { display:inline-flex; align-items:center; justify-content:center; min-height:26px; padding:4px 9px; border-radius:14px; background:#f2e5c8; color:#88632f; font-size:10px; font-weight:700; letter-spacing:.7px; }
+.christian-sim-badge.is-live { background:#f1dfd7; color:#80352a; }
+.preview-chat-label { margin-top:15px; }
+.christian-admin-page .error-copy:not(:empty) { color:#a4342a; }
+.toggle-setting { min-height:66px; display:flex!important; align-items:center; justify-content:space-between; gap:15px; padding:12px 14px; border:1px solid #e7d8bf; border-radius:9px; background:#fcf7ee; }
+.toggle-setting span strong,.toggle-setting span small { display:block; }.toggle-setting span strong { color:#5a3d31; font-size:13px; }.toggle-setting span small { color:#84735f; font-size:11px; }
+.toggle-setting input { width:19px!important; min-height:19px!important; height:19px; accent-color:#78372b; }
+.voice-field { margin-top:14px; }
+.christian-voice-rotation { min-width:0; margin:14px 0; padding:13px; border:1px solid #dfcaa9; border-radius:12px; background:linear-gradient(145deg,#fcf7ee,#f7efdf); }
+.christian-voice-rotation legend { padding:0 7px; color:#752e27; font-size:13px; font-weight:700; }
+.christian-voice-rotation .helper { margin:3px 0 10px; font-size:12px; line-height:1.55; }
+.christian-voice-rotation .voice-rotation-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px; }
+.christian-voice-rotation .voice-choice { display:flex; align-items:center; gap:8px; padding:8px 9px; border:1px solid #e8d8be; border-radius:9px; background:#fffdf8; color:#594636; font-size:12px; cursor:pointer; }
+.christian-voice-rotation .voice-choice:has(input:checked) { border-color:#a87939; background:#f4e6cb; color:#642b22; }
+.christian-voice-rotation .voice-choice input { width:16px; height:16px; min-height:0; flex:0 0 16px; margin:0; accent-color:#85392d; }
+.christian-voice-preview { margin-top:10px; }
+.christian-voice-preview .btn { flex:1; }
+.christian-music-actions { align-items:stretch; margin:2px 0 12px; }
+
+.christian-admin-page #christianMusicPreview:not([hidden]) { display:block; width:100%; height:42px; margin:0 0 14px; accent-color:#85392d; }
+.christian-music-toggle { margin:12px 0; }
+.christian-music-rotate { margin:8px 0 14px; }
+.christian-admin-page input[type="range"]#christianMusicVolume { accent-color:#85392d; }
+.christian-admin-page textarea { min-height:72px; }
+.christian-admin-page code { color:#7e4634; }
+.christian-admin-page .background-actions { align-items:stretch; }.christian-admin-page .background-actions button { flex:1; }
+.session-stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; padding:12px 0 18px; border-bottom:1px solid #ecdfca; }
+.session-stats span,.session-stats strong { display:block; }.session-stats span { color:#84725e; font-size:11px; }.session-stats strong { margin-top:4px; color:#71382b; font-size:17px; font-variant-numeric:tabular-nums; }
+.christian-admin-page .event-list li { border-color:#f0e7d6; }.christian-admin-page .event-list strong { color:#583b31; }
+.christian-admin-page .auth-details pre { border:1px solid #e7d8bf; border-radius:8px; }
+
+/* Spiritual badge colors for Christian ritual actions */
+.christian-admin-page .ritual-action[data-ritual=prayer] .ritual-icon { background: #fbf3e5; border-color: #e5cb9e; color: #b86c1f; }
+.christian-admin-page .ritual-action[data-ritual=scripture] .ritual-icon { background: #fbf0ee; border-color: #ddb2a6; color: #8e2f25; }
+.christian-admin-page .ritual-action[data-ritual=candle] .ritual-icon { background: #fdf3d8; border-color: #e4c987; color: #9b7228; }
+.christian-admin-page .ritual-action[data-ritual=bell] .ritual-icon { background: #fbf5e8; border-color: #dac2a1; color: #845a27; }
+.christian-admin-page .ritual-action[data-ritual=thanks] .ritual-icon { background: #fbeef1; border-color: #e1b4be; color: #9d3f52; }
+.christian-admin-page .ritual-action[data-ritual=choir] .ritual-icon { background: #faf0d8; border-color: #e2c583; color: #a97725; }
+.christian-admin-page .ritual-action[data-ritual=peace] .ritual-icon { background: #f3f5e9; border-color: #cbd3a9; color: #5d6e32; }
+.christian-admin-page .ritual-action[data-ritual=welcome] .ritual-icon { background: #fbf3e5; border-color: #e5cca1; color: #9c6c22; }
+
+.christian-admin-page .page-heading {
+  position: relative;
+  padding: 8px 0 10px 20px;
+  border-left: 3px solid #ac833d;
+}
+
+.christian-admin-page .page-heading > div::before {
+  content: 'TAM THẾ STUDIO · THIÊN CHÚA GIÁO / ĐIỀU HÀNH';
+  color: #925f2d;
+}
+
+@media(max-width:900px) { .christian-admin-grid { grid-template-columns:minmax(0,1fr); gap:14px; }.christian-admin-page .panel { padding:18px; } }
+@media(max-width:760px) { .christian-admin-grid>.stack:last-child { display:grid; grid-template-columns:1fr 1fr; align-items:start; }.christian-admin-grid>.stack:last-child>.panel:last-child { grid-column:1/-1; } }
+@media(max-width:520px) { .christian-admin-grid>.stack:last-child { grid-template-columns:1fr; }.christian-admin-grid>.stack:last-child>.panel:last-child { grid-column:auto; } }
+
+.christian-music-rotate input { width:18px; min-height:24px; flex:none; }

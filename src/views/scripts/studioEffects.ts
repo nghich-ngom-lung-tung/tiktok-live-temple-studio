@@ -1,6 +1,15 @@
 const paths:Record<string,string>={
  incense:'<path d="M8 24h16l-2 5H10l-2-5ZM12 24V10m4 14V7m4 17V10M12 6c-3-3 3-3 0-6m4 5c-3-3 3-3 0-5m4 6c-3-3 3-3 0-6"/>',
  prayer:'<path d="M9 8h14l3 9-3 9H9l-3-9 3-9Zm7-5v5m0 18v4M9 13h14M9 21h14M16 8v18"/>',
+ cross:'<path d="M16 3v26M7 11h18"/>',
+ bible:'<path d="M5 4h10a4 4 0 0 1 4 4v20H9a4 4 0 0 0-4 2V4Zm18 0H13a4 4 0 0 0-4 4v20m6-17v8m-4-4h8"/>',
+ heart:'<path d="M16 28S4 21 4 12a6 6 0 0 1 12-2 6 6 0 0 1 12 2c0 9-12 16-12 16Z"/>',
+ gift:'<path d="M4 13h24v16H4zM2 8h28v5H2zM16 8v21m0-21C8 8 7 2 11 2c3 0 5 4 5 6Zm0 0c8 0 9-6 5-6-3 0-5 4-5 6Z"/>',
+ person:'<circle cx="16" cy="10" r="6"/><path d="M5 29c0-7 4-11 11-11s11 4 11 11"/>',
+ link:'<path d="M13 20 9 24a5 5 0 0 1-7-7l6-6a5 5 0 0 1 7 0m4 1 4-4a5 5 0 0 1 7 7l-6 6a5 5 0 0 1-7 0m-10 3 12-12"/>',
+ save:'<path d="M5 3h18l5 5v21H4V3Zm4 0v9h14V4M9 29V17h14v12"/>',
+ chat:'<path d="M4 5h24v18H15l-8 6v-6H4zM9 12h14m-14 5h9"/>',
+ trash:'<path d="M5 8h22M12 8V4h8v4m4 0-1 21H9L8 8m5 5v11m6-11v11"/>',
  fish:'<path d="M5 20c0-6 5-10 12-10s11 4 11 10c0 5-5 8-12 8S5 25 5 20Zm4-1 13-1M5 5l11 9M3 3l3 1-2 3-2-2"/>',
  bell:'<path d="M7 22h18c-3-4-2-5-3-10a6 6 0 0 0-12 0c-1 5 0 6-3 10ZM13 26c1 3 5 3 6 0M16 3V1M3 10l2 2m24-2-2 2"/>',
  fortune:'<path d="M8 13h16l-2 17H10L8 13Zm4 0L10 3l4-1 2 11m1 0 2-11 4 1-3 10M12 20h8m-7 4h6"/>',
@@ -17,4 +26,4 @@ document.querySelectorAll<HTMLButtonElement>('.ritual-action').forEach(button=>b
 document.addEventListener('click',e=>{const button=(e.target as HTMLElement).closest<HTMLButtonElement>('button:not(:disabled)');if(!button)return;button.classList.remove('is-pressed');void button.offsetWidth;button.classList.add('is-pressed');setTimeout(()=>button.classList.remove('is-pressed'),650);});
 document.querySelectorAll<HTMLButtonElement>('[data-tab]').forEach(button=>button.addEventListener('click',()=>{const panel=document.getElementById(button.dataset.tab);if(panel&&!matchMedia('(prefers-reduced-motion: reduce)').matches)panel.animate([{opacity:0,transform:'translateY(9px)'},{opacity:1,transform:'translateY(0)'}],{duration:260,easing:'ease-out'});}));
 
-document.querySelectorAll<HTMLElement>('.hud-icon[data-icon],.hotspot-icon[data-icon],.top-stat-icon[data-icon],.sfx-card-icon[data-icon],.sfx-title-icon[data-icon],.sfx-card-play[data-icon],.welcome-mark[data-icon]').forEach(el=>el.innerHTML=ritualIcon(el.dataset.icon));
+document.querySelectorAll<HTMLElement>('.hud-icon[data-icon],.hotspot-icon[data-icon],.top-stat-icon[data-icon],.sfx-card-icon[data-icon],.sfx-title-icon[data-icon],.sfx-card-play[data-icon],.welcome-mark[data-icon],.christian-icon[data-icon]').forEach(el=>el.innerHTML=ritualIcon(el.dataset.icon));
