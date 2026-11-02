@@ -551,8 +551,13 @@ class TempleAudioEngine {
           audio.volume = this.ttsVolume;
           audio.onended = finish;
           audio.onerror = finish;
-          const playPromise = audio.play();
-          if (playPromise && typeof playPromise.catch === 'function') playPromise.catch(finish);
+          const begin = () => {
+            if (finished || epoch !== this.ttsEpoch) { finish(); return; }
+            const playPromise = audio.play();
+            if (playPromise && typeof playPromise.catch === 'function') playPromise.catch(finish);
+          };
+          const delay = startsAt ? Math.max(0, startsAt - Date.now()) : 0;
+          if (delay) setTimeout(begin, delay); else begin();
         } catch (_) {
           finish();
         }

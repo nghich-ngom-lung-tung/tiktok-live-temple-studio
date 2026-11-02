@@ -291,7 +291,7 @@ async function run(method: string, params: Record<string, unknown> = {}, button?
     const output = $('rpcOutput');
     if (output) output.textContent = JSON.stringify(result, null, 2);
     if (result?.settings && result?.profileId === 'thien-chua-giao') updateState(result);
-    setStatus(statusId, 'Đã đồng bộ hoạt động sang Phòng Live Thiên Chúa giáo.');
+    setStatus(statusId, 'Đã nhận và xếp lượt; theo dõi trạng thái đang chờ/đang phát.');
     return result;
   } catch (error: any) {
     setStatus(statusId, error.message || 'Không thực hiện được yêu cầu.', true);

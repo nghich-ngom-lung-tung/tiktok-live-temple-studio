@@ -146,10 +146,10 @@ function createScripturePicker({ random = randomInt } = {}) {
   const bags = new Map();
   let lastId = '';
   function pick(category = 'all') {
-    if (category !== 'all' && !SCRIPTURE_CATEGORIES.some(item => item.id === category)) throw new Error('Chủ đề suy ngẫm không hợp lệ.');
+    if (category !== 'all' && !SCRIPTURE_CATEGORIES.some(item => item.id === category) && !SCRIPTURE_CATALOG.some(item => `reference:${normalize(item.reference)}` === category)) throw new Error('Chủ đề suy ngẫm không hợp lệ.');
     let bag = bags.get(category);
     if (!bag?.length) {
-      bag = SCRIPTURE_CATALOG.filter(item => category === 'all' || item.category === category).slice();
+      bag = SCRIPTURE_CATALOG.filter(item => category === 'all' || item.category === category || `reference:${normalize(item.reference)}` === category).slice();
       for (let index = bag.length - 1; index > 0; index--) {
         const other = random(index + 1); [bag[index], bag[other]] = [bag[other], bag[index]];
       }
@@ -160,6 +160,6 @@ function createScripturePicker({ random = randomInt } = {}) {
     if (bag.length > 1 && bag.at(-1).id === lastId) [bag[0], bag[bag.length - 1]] = [bag[bag.length - 1], bag[0]];
     const selected = bag.pop(); lastId = selected.id; return selected;
   }
-  return { pick };
+  return { pick, pickReference: reference => pick(`reference:${normalize(reference)}`) };
 }
 module.exports = { SCRIPTURE_CATALOG, SCRIPTURE_CATEGORIES, findScripture, createScripturePicker };

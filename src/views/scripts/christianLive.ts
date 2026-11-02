@@ -26,7 +26,7 @@ if (wrapper && 'ResizeObserver' in window) new ResizeObserver(fitStage).observe(
 fitStage();
 
 type Viewer = { name?: string; uniqueId?: string; avatar?: string; character?: string; coins?: number; lastGift?: string; seatIndex?: number };
-type Session = { active?: boolean; username?: string; startedAt?: number; peakViewers?: number; uniqueViewers?: number; comments?: number; likes?: number; follows?: number; shares?: number; coins?: number; giftCount?: number; prayerRequests?: number; scriptureShares?: number };
+type Session = { active?: boolean; username?: string; startedAt?: number; peakViewers?: number; uniqueViewers?: number; comments?: number; likes?: number; follows?: number; shares?: number; coins?: number; giftCount?: number; prayerRequests?: number; scriptureShares?: number; thanksgiving?: number };
 type ChristianAudioEngine = {
   bgAudio: HTMLAudioElement; ttsVoice: string;
   onTtsStateChange: ((state: { speaking: boolean; text: string }) => void) | null;
@@ -64,15 +64,18 @@ let animationsPaused = false;
 let prayerTimer = 0;
 const scriptureControls = createScriptureControls('scriptureReference', 'scriptureReflection', 'btnResetScriptureReflection');
 const ritualEffects = createChristianEffects(stage, () => audio.ensureContext());
-const ritualPresentation = createChristianPresentation(stage);
+const ritualPresentation = createChristianPresentation(stage, resolveRitualReturnTarget);
 const playback = createChristianPlayback({
   play: handleEvent,
+  returning: event => ritualPresentation.finish(resolveRitualReturnTarget, event.endsAt),
   stop(reason) {
     if (reason === 'pause' || reason === 'cancel') audio.stopTts();
     ritualEffects.clear();
-    ritualPresentation.finish(resolveRitualReturnTarget);
-    window.clearTimeout(memberTimer);
-    document.getElementById('memberArrival')?.classList.remove('visible');
+    ritualPresentation.clear();
+    if (reason === 'pause' || reason === 'cancel') {
+      window.clearTimeout(memberTimer); memberTimer = 0; arrivalQueue.length = 0;
+      document.getElementById('memberArrival')?.classList.remove('visible');
+    }
     window.clearTimeout(prayerTimer);
     document.getElementById('prayerFigure')?.classList.remove('is-walking', 'is-praying');
     const tag = document.getElementById('prayerNameTag');
@@ -207,7 +210,7 @@ function renderSession(state: ChristianState): void {
     text('liveSessionViewers', Number(session.peakViewers || 0).toLocaleString('vi-VN'));
     text('liveSessionInteractions', [session.comments, session.likes, session.follows, session.shares].reduce((sum, value) => sum + Number(value || 0), 0).toLocaleString('vi-VN'));
     text('liveSessionCoins', Number(session.coins || 0).toLocaleString('vi-VN'));
-    text('liveSessionStats', `Phiên @${session.username || state.tiktok?.username || 'TikTok'} đang được ghi nhận.`);
+    text('liveSessionStats', `Phiên @${session.username || state.tiktok?.username || 'TikTok'} · ${Number(session.prayerRequests || 0)} lời nguyện · ${Number(session.scriptureShares || 0)} suy ngẫm · ${Number(session.thanksgiving || 0)} tri ân.`);
   } else {
     text('liveSessionDuration', '0:00:00');
     text('liveSessionViewers', '0');
@@ -536,15 +539,27 @@ function updateState(state: ChristianState): void {
   if (state.playback) playback.sync(state.playback);
 }
 
-function showMember(viewer: Viewer & { user?: string }): void {
-  const name = viewer.name || viewer.user || 'Khách xem';
-  text('arrivalName', name);
+type Arrival = Viewer & { user?: string; greeting?: string };
+const arrivalQueue: Arrival[] = [];
+function showNextMember(): void {
+  const viewer = arrivalQueue.shift();
+  if (!viewer) { memberTimer = 0; return; }
+  text('arrivalName', viewer.name || viewer.user || 'Khách xem');
+  text('arrivalGreeting', viewer.greeting || '');
   const avatar = document.getElementById('arrivalAvatar');
   if (avatar) avatar.innerHTML = avatarMarkup(viewer);
   const card = document.getElementById('memberArrival');
   card?.classList.add('visible');
-  window.clearTimeout(memberTimer);
-  memberTimer = window.setTimeout(() => card?.classList.remove('visible'), 4600);
+  memberTimer = window.setTimeout(() => {
+    card?.classList.remove('visible');
+    memberTimer = window.setTimeout(showNextMember, 200);
+  }, 4600);
+}
+function showMember(viewer: Arrival): void {
+  if (latestState?.settings?.presentationPaused) return;
+  if (arrivalQueue.length >= 200) return;
+  arrivalQueue.push(viewer);
+  if (!memberTimer) showNextMember();
 }
 
 function showChat(data: Viewer & { comment?: string; user?: string }): void {
@@ -608,7 +623,7 @@ function playSpeech(event: Record<string, any>): void {
   const eventId = String(event.id || '');
   if (!eventId || eventId === lastSpeechId) return;
   lastSpeechId = eventId;
-  audio.enqueueTts(String(event.ttsText || ''), { voice: event.ttsVoice || latestState?.settings?.ttsVoice || 'maichi', url: event.ttsUrl, startsAt: event.startsAt });
+  audio.enqueueTts(String(event.ttsText || ''), { voice: event.ttsVoice || latestState?.settings?.ttsVoice || 'maichi', url: event.ttsUrl, startsAt: event.speechStartsAt ?? event.startsAt });
 }
 
 function handleEvent(event: Record<string, any>): void {
@@ -630,7 +645,7 @@ function handleEvent(event: Record<string, any>): void {
     text('messageBody', event.ttsText || '');
     text('activeKicker', labels[event.type]);
     text('activeUser', event.user || 'Cộng đoàn');
-    if (event.type === 'welcome') showMember(event);
+    if (event.type === 'welcome') showMember({ ...event, greeting: event.ttsText });
   }
   ritualPresentation.show(event);
   playSpeech(event);
@@ -677,9 +692,10 @@ function connect(): void {
           if (data.event) playSpeech({ ...data.event, startsAt: data.startsAt || data.playback?.startsAt });
           break;
         case 'christian.activity':
-          if (data.type === 'like') showChat({ user: data.user, comment: `đã gửi ${Number(data.count || 1)} lượt thích ♥` });
-          else if (data.type === 'follow') showChat({ user: data.user, comment: 'đã theo dõi buổi cầu nguyện.' });
-          else if (data.type === 'share') showChat({ user: data.user, comment: 'đã chia sẻ buổi Live.' });
+          if (data.type === 'notice') { showChat({ ...data, comment: data.message }); break; }
+          if (data.type === 'like') showChat({ ...data, user: data.user, comment: `đã gửi ${Number(data.count || 1)} lượt thích ♥` });
+          else if (data.type === 'follow') showChat({ ...data, user: data.user, comment: 'đã theo dõi buổi cầu nguyện.' });
+          else if (data.type === 'share') showChat({ ...data, user: data.user, comment: 'đã chia sẻ buổi Live.' });
           break;
       }
     } catch (error) { console.warn('[Christian live event]', error); }
@@ -736,7 +752,7 @@ function initControls(): void {
     button.disabled = true;
     try {
       await rpc('christian.sendPrayer', { user: inputValue('prayerUser') || 'Người điều hành', uniqueId: `operator-${Date.now()}`, wish: inputValue('prayerWish') });
-      setStatus('ritualStatus', 'Đã đưa lời cầu nguyện lên Phòng Live.');
+      setStatus('ritualStatus', 'Đã nhận và xếp lượt; theo dõi trạng thái đang chờ/đang phát.');
       await refreshState();
     } catch (error) { setStatus('ritualStatus', error.message, true); }
     finally { button.disabled = false; }
@@ -746,7 +762,7 @@ function initControls(): void {
     button.disabled = true;
     try {
       await rpc('christian.shareScripture', { user: inputValue('prayerUser') || 'Người điều hành', uniqueId: `operator-${Date.now()}`, reference: inputValue('scriptureReference'), reflection: inputValue('scriptureReflection') });
-      setStatus('ritualStatus', 'Đã chia sẻ Kinh Thánh lên Live.');
+      setStatus('ritualStatus', 'Đã nhận và xếp lượt; theo dõi trạng thái đang chờ/đang phát.');
       await refreshState();
     } catch (error) { setStatus('ritualStatus', error.message, true); }
     finally { button.disabled = false; }
@@ -754,14 +770,14 @@ function initControls(): void {
   document.getElementById('btnQuickPrayer')?.addEventListener('click', async () => {
     try {
       await rpc('christian.sendPrayer', { user: inputValue('prayerUser') || 'Người điều hành', uniqueId: `operator-${Date.now()}`, wish: 'Xin Chúa ban bình an và sự chở che đến cho mọi người.' });
-      setStatus('ritualStatus', 'Đã dâng lời nguyện bình an lên Live.');
+      setStatus('ritualStatus', 'Đã nhận và xếp lượt; theo dõi trạng thái đang chờ/đang phát.');
       await refreshState();
     } catch (error) { setStatus('ritualStatus', error.message, true); }
   });
   document.getElementById('btnQuickScripture')?.addEventListener('click', async () => {
     try {
       await rpc('christian.shareScripture', { user: inputValue('prayerUser') || 'Người điều hành', reference: inputValue('scriptureReference'), reflection: inputValue('scriptureReflection') });
-      setStatus('ritualStatus', 'Đã chia sẻ Lời Chúa lên Live.');
+      setStatus('ritualStatus', 'Đã nhận và xếp lượt; theo dõi trạng thái đang chờ/đang phát.');
       await refreshState();
     } catch (error) { setStatus('ritualStatus', error.message, true); }
   });
@@ -935,6 +951,7 @@ window.addEventListener('temple-auth-changed', () => {
     ws?.close(1000, 'Signed out');
     ws = null;
     latestState = null;
+    window.clearTimeout(memberTimer); memberTimer = 0; arrivalQueue.length = 0;
     audio.applyRemoteSettings({ presentationPaused: true });
     return;
   }

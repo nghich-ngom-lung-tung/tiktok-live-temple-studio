@@ -131,7 +131,7 @@ function createChristianService({ stateModel, realtime, ceremonyQueue, ttsManage
     stateModel.recordRoomActivity('likes', amount);
     realtime.broadcastNotification('christian.state', stateModel.getPublicState(ttsManager));
     realtime.broadcastNotification('christian.activity', {
-      type: 'like', user: sanitizeUserName(viewer.user), count: amount, profileId: 'thien-chua-giao'
+      type: 'like', user: sanitizeUserName(viewer.user), uniqueId: viewer.uniqueId, avatar: viewer.avatar, count: amount, profileId: 'thien-chua-giao'
     });
   }
 
@@ -167,29 +167,38 @@ function createChristianService({ stateModel, realtime, ceremonyQueue, ttsManage
 
     const clean = sanitizeWishText(raw).slice(0, 240);
     if (!clean) return null;
-    if (now - (prayerCooldown.get(key) || 0) < 3500) return null;
-    const lower = clean.toLocaleLowerCase('vi');
+    if (now - (prayerCooldown.get(key) || 0) < 3500) {
+      realtime.broadcastNotification('christian.activity', { type: 'notice', user: viewer.name, uniqueId: viewer.uniqueId, avatar: viewer.avatar, message: 'Vui lòng chờ 3,5 giây giữa các thao tác.' });
+      return null;
+    }
+    const lower = raw.normalize('NFC').slice(0, 240).toLocaleLowerCase('vi');
     if (/kinh thánh|kinh thanh|lời chúa|loi chua|xin kinh|suy ngẫm|suy ngam|scripture/.test(lower)) {
       prayerCooldown.set(key, now);
-      const reference = SCRIPTURE_CATALOG.find(item => lower.includes(item.reference.toLocaleLowerCase('vi')))?.reference;
+      const normalized = lower.replace(/[–—]/g, '-').replace(/[.,;!?]/g, ' ');
+      const passage = SCRIPTURE_CATALOG.find(item => (normalized + ' ').includes(item.reference.toLocaleLowerCase('vi').replace(/[–—]/g, '-') + ' '));
+      if (!passage && /\d+\s*:\s*\d+/.test(lower)) {
+        realtime.broadcastNotification('christian.activity', { type: 'notice', user: viewer.name, uniqueId: viewer.uniqueId, avatar: viewer.avatar, message: 'Chưa có câu Kinh Thánh này trong thư viện. Hãy chọn một mục có sẵn.' });
+        return null;
+      }
+      const reference = passage ? scripturePicker.pickReference(passage.reference).id : undefined;
       const topics = { 'gia-dinh': /gia đình|gia dinh|trẻ nhỏ|tre nho/, 'binh-an': /bình an|binh an/, 'hy-vong': /hy vọng|hy vong|kiên trì|kien tri/,
         'yeu-thuong': /yêu thương|yeu thuong|tình yêu|tinh yeu/, 'tha-thu': /tha thứ|tha thu|hòa giải|hoa giai/, 'biet-on': /biết ơn|biet on|tạ ơn|ta on/,
         'nghi-ngoi': /nghỉ ngơi|nghi ngoi|an ủi|an ui/, 'khon-ngoan': /khôn ngoan|khon ngoan|lựa chọn|lua chon/, 'se-chia': /sẻ chia|se chia|phục vụ|phuc vu/, 'duc-tin': /đức tin|duc tin|chở che|cho che/ };
       const category = Object.entries(topics).find(([, pattern]) => pattern.test(lower))?.[0] || 'all';
       return shareScripture({ ...viewer, user: viewer.name, reference, category });
     }
+    if (/cầu nguyện|cau nguyen|xin cầu|xin cau|cầu bình an|cau binh an|xin chúa|xin chua|prayer|pray for/.test(lower)) {
+      prayerCooldown.set(key, now);
+      return sendPrayer({ ...viewer, user: viewer.name, wish: clean });
+    }
     const action = /thắp nến|thap nen/.test(lower) ? 'candle'
       : /đổ chuông|do chuong|rung chuông|rung chuong/.test(lower) ? 'bell'
       : /hiệp thông|hiep thong|đại lễ|dai le/.test(lower) ? 'communion'
       : /tạ ơn|ta on|tri ân|tri an/.test(lower) ? 'thanksgiving'
-      : /bình an|binh an/.test(lower) && !/cầu|cau|nguyện|nguyen/.test(lower) ? 'peace' : null;
+      : /bình an|binh an/.test(lower) && !/cầu|cau|nguyện|nguyen|xin chúa|xin chua/.test(lower) ? 'peace' : null;
     if (action) {
       prayerCooldown.set(key, now);
       return performAction(action, { user: viewer.name, uniqueId: viewer.uniqueId, avatar: viewer.avatar });
-    }
-    if (/cầu nguyện|cau nguyen|xin cầu|xin cau|prayer|pray for/.test(lower)) {
-      prayerCooldown.set(key, now);
-      return sendPrayer({ ...viewer, user: viewer.name, wish: clean });
     }
     return null;
   }

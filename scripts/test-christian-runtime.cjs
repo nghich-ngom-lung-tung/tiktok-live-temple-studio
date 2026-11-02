@@ -54,7 +54,7 @@ function runtime({ time = clock(), tts } = {}) {
   const stateModel = model(), notifications = [];
   tts ||= { getStatus: () => ({ ready: false, voices: [] }) };
   const realtime = { broadcastNotification: (method, params) => notifications.push({ method, params: structuredClone(params) }) };
-  const queue = createCeremonyQueue({ stateModel, realtime, ttsManager: tts, profileId: 'thien-chua-giao', prefetchSpeech: true, speechTimeoutMs: 180000, now: time.now, setTimer: time.setTimeout, clearTimer: time.clearTimeout });
+  const queue = createCeremonyQueue({ stateModel, realtime, ttsManager: tts, profileId: 'thien-chua-giao', prefetchSpeech: true, nonBlockingSpeech: true, speechTimeoutMs: 30000, now: time.now, setTimer: time.setTimeout, clearTimer: time.clearTimeout });
   const service = createChristianService({ stateModel, realtime, ceremonyQueue: queue, ttsManager: tts });
   return { stateModel, notifications, queue, service, realtime, time, tts };
 }
@@ -157,6 +157,24 @@ async function regressions() {
     assert.ok(r.queue.status().current.event.ttsText.includes('Khách thử'));
   }
   r.queue.clear();
+  r.service.parseViewerComment('cầu bình an cho gia đình', 'Natural', 'natural-prayer', '');
+  assert.equal(r.queue.status().current.event.type, 'prayer');
+  r.queue.clear();
+  r.service.parseViewerComment('xin kinh Thi Thiên 999:1', 'Unknown', 'unknown-passage', '');
+  assert.equal(r.queue.status().current, null, 'Do not silently substitute an unsupported Bible reference');
+  assert.ok(r.notifications.some(item => item.method === 'christian.activity' && item.params.type === 'notice'));
+  r.service.parseViewerComment('xin kinh Thi Thiên 23:1', 'Reader A', 'reader-a', '');
+  const requestedFirst = r.queue.status().current.event;
+  assert.equal(requestedFirst.reference, 'Thi Thiên 23:1'); r.queue.clear();
+  r.service.parseViewerComment('xin kinh Thi Thiên 23:1', 'Reader B', 'reader-b', '');
+  assert.equal(r.queue.status().current.event.reference, 'Thi Thiên 23:1');
+  assert.notEqual(r.queue.status().current.event.reflectionId, requestedFirst.reflectionId); r.queue.clear();
+  const referencePicker = createScripturePicker();
+  const requestedReference = SCRIPTURE_CATALOG[0].reference;
+  assert.notEqual(referencePicker.pickReference(requestedReference).id, referencePicker.pickReference(requestedReference).id);
+  r.service.handleLike({ user: 'Name', uniqueId: 'identity', avatar: '/avatar.png' }, 5);
+  const like = r.notifications.filter(item => item.method === 'christian.activity').at(-1).params;
+  assert.equal(like.uniqueId, 'identity'); assert.equal(like.avatar, '/avatar.png');
   assert.equal(r.stateModel.state.totalGiftThanks, 0, 'Thanksgiving must not invent gift credits');
   for (const [text, kind] of [['thắp nến', 'candle'], ['đổ chuông', 'bell'], ['hiệp thông', 'communion'], ['tạ ơn', 'thanksgiving'], ['bình an', 'peace']]) {
     r.service.parseViewerComment(text, 'Tên thật', `viewer-${kind}`, '');
@@ -167,8 +185,13 @@ async function regressions() {
   r.stateModel.beginLiveSession('test-channel');
   r.stateModel.recordGift({ user: 'A', uniqueId: 'a', coins: 3 });
   assert.equal(r.stateModel.sessionSummary().leaderboard[0].coins, 3);
+  r.stateModel.recordThanksgiving({ user: 'A', uniqueId: 'a' });
+  assert.equal(r.stateModel.sessionSummary().thanksgiving, 1);
   r.stateModel.endLiveSession();
   r.stateModel.setSimulatedViewerCount(200);
+  const countBeforePreview = r.stateModel.getRoomViewers().length;
+  r.stateModel.recordMember('Simulation', 'simulation_christian_1', '');
+  assert.equal(r.stateModel.getRoomViewers().length, countBeforePreview, 'Simulated performers must not also become real room members');
   const seats = new Map(r.stateModel.getRoomViewers().map(viewer => [viewer.uniqueId, viewer.seatIndex]));
   const real = r.stateModel.roomViewers.values().next().value;
   real.lastSeenAt += 10000;
@@ -181,32 +204,54 @@ async function regressions() {
     getStatus: () => ({ ready: true, voices: ['maichi'] }),
     synthesize(text) { calls.push(text); return new Promise(resolve => speech.set(text, resolve)); }
   } });
-  slow.service.sendPrayer({ user: 'A', wish: 'Lời đầu' }); await flush();
-  const firstText = calls[0];
+  slow.service.sendPrayer({ user: 'A', wish: 'First' }); await flush();
+  assert.equal(slow.queue.status().preparing, false, 'Visuals must not wait for speech');
+  assert.equal(slow.queue.status().current.event.ttsUrl, null);
   await time.advance(15000);
-  assert.equal(slow.queue.status().preparing, true, 'Speech beyond 12 seconds must not disappear');
-  speech.get(firstText)({ ok: true, url: '/first.wav', durationSec: 20 }); await flush();
-  slow.service.sendPrayer({ user: 'B', wish: 'Lời tiếp' }); await flush();
-  assert.equal(calls.length, 2, 'Prepare the next voice during current playback');
+  assert.ok(slow.queue.status().current, 'Keep the scene while waiting within the speech deadline');
+  speech.get(calls[0])({ ok: true, url: '/first.wav', durationSec: 2 }); await flush();
+  const spoken = slow.notifications.find(item => item.method === 'christian.speech');
+  assert.equal(spoken.params.startsAt, time.now() + 250, 'Start speech from its own future clock, never seek past the new WAV');
+  assert.equal(slow.queue.status().current.event.speechStartsAt, spoken.params.startsAt);
+  slow.service.sendPrayer({ user: 'B', wish: 'Second' }); await flush();
+  assert.equal(calls.length, 2);
   speech.get(calls[1])({ ok: true, url: '/second.wav', durationSec: 5 }); await flush();
-  const firstEnd = slow.queue.status().current.endsAt;
-  await time.advance(firstEnd - time.now());
+  const first = slow.queue.status().current;
+  assert.equal(first.endsAt - first.returnsAt, 2600, 'Reserve the complete return walk before admitting the next actor');
+  await time.advance(first.endsAt - time.now());
   assert.equal(slow.queue.status().current.event.ttsUrl, '/second.wav');
-  assert.equal(calls.length, 2, 'Prefetched voice must not be synthesized again');
+  assert.equal(calls.length, 2, 'Reuse prefetched speech');
   slow.queue.clear();
-  slow.service.sendPrayer({ user: 'C', wish: 'Hủy lượt' }); await flush();
+  slow.service.sendPrayer({ user: 'C', wish: 'Cancel' }); await flush();
   slow.service.updateSettings({ presentationPaused: true });
   speech.get(calls.at(-1))({ ok: true, url: '/stale.wav', durationSec: 5 }); await flush();
   assert.equal(slow.queue.status().current, null);
-  console.log('PASS slow TTS: survives >12 seconds, one-ahead prefetch, no duplicate synthesis, no stale voice after pause.');
+  assert.ok(!slow.notifications.some(item => item.method === 'christian.speech' && item.params.event.ttsUrl === '/stale.wav'));
+
+  let ready = false;
+  const warming = runtime({ time, tts: { getStatus: () => ({ ready }), synthesize: async () => ({ ok: true, url: '/warm.wav', durationSec: 2 }) } });
+  warming.service.sendPrayer({ user: 'W', wish: 'Warm up' }); await flush();
+  ready = true; await time.advance(250); await flush();
+  assert.equal(warming.queue.status().current.event.ttsUrl, '/warm.wav', 'Retry after worker readiness without replaying visuals');
+  warming.queue.clear();
+  const timeoutClock = clock(); let lateResolve;
+  const expires = runtime({ time: timeoutClock, tts: { getStatus: () => ({ ready: true }), synthesize: () => new Promise(resolve => lateResolve = resolve) } });
+  expires.service.sendPrayer({ user: 'Late', wish: 'Timeout' }); await flush();
+  await timeoutClock.advance(30250);
+  assert.ok(expires.queue.status().current.event.speechError, 'Expose bounded speech timeout');
+  await timeoutClock.advance(2600);
+  assert.equal(expires.queue.status().current, null);
+  lateResolve({ ok: true, url: '/expired.wav', durationSec: 2 }); await flush();
+  assert.ok(!expires.notifications.some(item => item.method === 'christian.speech'), 'Expired speech must not interrupt another scene');
+  console.log('PASS async speech: independent clock, readiness retry, prefetch, full return phase and stale-result rejection.');
 
   const source = stripTypeScriptTypes(fs.readFileSync(path.join(__dirname, '../src/views/scripts/christianPlayback.ts'), 'utf8')).replace('export function', 'function');
   const fakeDate = class extends Date { static now() { return time.now(); } };
   const sandbox = { Date: fakeDate, window: { setTimeout: time.setTimeout, clearTimeout: time.clearTimeout } };
   vm.runInNewContext(source, sandbox);
-  const plays = [], stops = [];
-  const controller = sandbox.createChristianPlayback({ play: event => plays.push(event), stop: () => stops.push(true), changed() {} });
-  const current = { event: { id: 'synchronized', type: 'bell' }, startsAt: time.now() + 250, endsAt: time.now() + 10250 };
+  const plays = [], stops = [], returns = [];
+  const controller = sandbox.createChristianPlayback({ play: event => plays.push(event), stop: () => stops.push(true), returning: () => returns.push(time.now()), changed() {} });
+  const current = { event: { id: 'synchronized', type: 'bell' }, startsAt: time.now() + 250, returnsAt: time.now() + 7650, endsAt: time.now() + 10250 };
   const status = { current, paused: false, pendingCount: 0, preparing: false };
   controller.sync(status); await time.advance(249); assert.equal(plays.length, 0);
   await time.advance(1); assert.equal(plays.length, 1); assert.equal(plays[0].startsAt, current.startsAt);
@@ -218,6 +263,12 @@ async function regressions() {
   assert.ok(stops.length >= 2);
   await time.advance(10000);
   reloaded.sync(status); await time.advance(0); assert.equal(plays.length, 2);
+  const returnAt = time.now() + 1250;
+  const returnController = sandbox.createChristianPlayback({ play() {}, stop() {}, returning: () => returns.push(time.now()), changed() {} });
+  returnController.sync({ current: { event: { id: 'return-phase' }, startsAt: time.now() + 250, returnsAt: returnAt, endsAt: returnAt + 2600 }, paused: false, pendingCount: 0, preparing: false });
+  await time.advance(1249); assert.equal(returns.length, 0);
+  await time.advance(1); assert.deepEqual(returns, [returnAt]);
+  await time.advance(2600); assert.equal(returns.length, 1);
   console.log('PASS client timeline: scheduled start, deduplication, reload offset, pause, expired-event rejection and automatic end.');
 }
 
@@ -226,7 +277,7 @@ async function fixture() {
   const realtime = createRealtimeService({ profileId: 'thien-chua-giao' });
   const tts = { getStatus: () => ({ ready: true, status: 'ready', voices: ['baotrang', 'giahuy', 'hamy', 'huuduc', 'kimoanh', 'maichi', 'quangminh', 'tiendat'], voice: stateModel.state.settings.ttsVoice }),
     synthesize: async (_text, voice = 'maichi') => ({ ok: true, url: '/__fixture-voice.wav', durationSec: process.argv.includes('--serve') ? 30 : 4, voice }) };
-  const queue = createCeremonyQueue({ stateModel, realtime, ttsManager: tts, profileId: 'thien-chua-giao', prefetchSpeech: true, speechTimeoutMs: 180000 });
+  const queue = createCeremonyQueue({ stateModel, realtime, ttsManager: tts, profileId: 'thien-chua-giao', prefetchSpeech: true, nonBlockingSpeech: true, speechTimeoutMs: 30000 });
   const service = createChristianService({ stateModel, realtime, ceremonyQueue: queue, ttsManager: tts });
   const calls = [];
   const coordinator = createProfileLiveCoordinator({

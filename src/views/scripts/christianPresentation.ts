@@ -15,7 +15,7 @@ const SCENES: Record<string, { label: string; title: string; icon: string }> = {
   announcement: { label: 'THÔNG ĐIỆP', title: 'Lời nhắn từ người điều hành', icon: 'sound' }
 };
 
-export function createChristianPresentation(stage: HTMLElement | null) {
+export function createChristianPresentation(stage: HTMLElement | null, resolveOrigin?: (event: Record<string, any>) => { attendee?: HTMLElement | null } | null) {
   const card = document.getElementById('scriptureCard');
   let actor: HTMLElement | null = null;
   let person: HTMLElement | null = null;
@@ -59,9 +59,10 @@ export function createChristianPresentation(stage: HTMLElement | null) {
     card?.classList.remove('is-ritual-active');
     card?.removeAttribute('data-ritual');
   }
-  function finish(resolveReturnTarget: (event: Record<string, any>) => { x: number; y: number; scale: number; attendee?: HTMLElement | null } | null) {
+  function finish(resolveReturnTarget: (event: Record<string, any>) => { x: number; y: number; scale: number; attendee?: HTMLElement | null } | null, endsAt?: number) {
     const node = actor;
     const event = currentEvent;
+    if (event && endsAt) event.endsAt = endsAt;
     if (!node || !event || !stage) { clear(); return; }
     prayerMotion.clear();
     for (const animation of animations) animation.cancel();
@@ -103,6 +104,7 @@ export function createChristianPresentation(stage: HTMLElement | null) {
       { left: `${target.x}px`, top: `${target.y}px`, transform: targetTransform, opacity: 1, offset: .92 },
       { left: `${target.x}px`, top: `${target.y}px`, transform: targetTransform, opacity: hiddenAttendee ? 0 : 1, offset: 1 }
     ], { duration: 2600, easing: 'cubic-bezier(.35,0,.4,1)', fill: 'forwards' });
+    animation.currentTime = Math.max(0, 2600 - Math.max(0, Number(event.endsAt || Date.now() + 2600) - Date.now()));
     returnAnimation = animation;
     void animation.finished.then(settle).catch(() => {});
   }
@@ -112,8 +114,8 @@ export function createChristianPresentation(stage: HTMLElement | null) {
   };
   return {
     clear, addCrowd: prayerMotion.addCrowd,
-    finish(resolveReturnTarget: (event: Record<string, any>) => { x: number; y: number; scale: number; attendee?: HTMLElement | null } | null) {
-      finish(resolveReturnTarget);
+    finish(resolveReturnTarget: (event: Record<string, any>) => { x: number; y: number; scale: number; attendee?: HTMLElement | null } | null, endsAt?: number) {
+      finish(resolveReturnTarget, endsAt);
     },
     show(event: Record<string, any>) {
       clear();
@@ -121,6 +123,8 @@ export function createChristianPresentation(stage: HTMLElement | null) {
       const scene = SCENES[event.type];
       if (!scene) return;
       currentEvent = event;
+      hiddenAttendee = resolveOrigin?.(event)?.attendee || null;
+      hiddenAttendee?.classList.add('is-ritual-hidden');
       const user = String(event.user || 'Người điều hành');
       const avatar = event.avatar ? `<img src="${escapeHtml(event.avatar)}" alt="">` : escapeHtml(user.charAt(0).toLocaleUpperCase('vi'));
       person = document.createElement('div');

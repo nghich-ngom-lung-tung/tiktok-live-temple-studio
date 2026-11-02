@@ -141,7 +141,7 @@ class ChristianStateModel {
       startedAt: Date.now(), updatedAt: Date.now(), endedAt: null,
       peakViewers: Number(this.state.tiktok.viewerCount || 0),
       comments: 0, likes: 0, follows: 0, shares: 0, coins: 0, giftCount: 0,
-      prayerRequests: 0, scriptureShares: 0, viewers: {}, supporters: {}
+      prayerRequests: 0, scriptureShares: 0, thanksgiving: 0, viewers: {}, supporters: {}
     };
     for (const key of this.roomViewers.keys()) this.state.liveSession.viewers[`u:${key}`] = true;
     this.saveState();
@@ -190,6 +190,8 @@ class ChristianStateModel {
   recordMember(user, uniqueId, avatar = '') {
     const name = sanitizeUserName(user || uniqueId);
     const key = String(uniqueId || name).toLocaleLowerCase('vi');
+    const simulated = this.simulatedViewers.get(key);
+    if (simulated) return { ...simulated, name, avatar: avatar || simulated.avatar };
     const previous = this.roomViewers.get(key);
     const arrivalOrder = previous?.arrivalOrder ?? ++this.arrivalSequence;
     const viewer = {
@@ -329,6 +331,10 @@ class ChristianStateModel {
   recordThanksgiving({ user, uniqueId }) {
     const name = sanitizeUserName(user || uniqueId);
     this.state.totalThanksgiving += 1;
+    if (this.state.liveSession?.active) {
+      this.state.liveSession.thanksgiving = (this.state.liveSession.thanksgiving || 0) + 1;
+      this.state.liveSession.updatedAt = Date.now();
+    }
     return this.pushEventLog({ type: 'thanksgiving', user: name, uniqueId: String(uniqueId || '') });
   }
 
