@@ -33,7 +33,8 @@ Fixture không kết nối phòng TikTok thật, không ghi trạng thái Live c
 
 - Đã gộp Kinh Thánh và Giọng đọc thành **Nội dung & giọng đọc**; mở rộng thành [100 lời suy ngẫm / 10 chủ đề](christian-reflections.md), có chọn ngẫu nhiên tránh lặp, nghe thử bản đang soạn và giữ bản nháp khi đổi lựa chọn.
 - Tab Nhạc sử dụng cùng `track-list` / `track-row` và bố cục hai cột như trang Phật giáo. Đã sửa vùng thư viện bị trống do lệch ID và thiếu phần tạo hàng bài hát.
-- Ba bài nhạc riêng có số thứ tự, mô tả và thời lượng đo từ WAV: 23,2 giây (hiển thị 0:23). Trình phát luôn hiện, có nghe thử, bài tiếp theo, tự chuyển bài, bật/tắt nhạc và âm lượng Live.
+- Sáu bài nhạc riêng có số thứ tự, mô tả và thời lượng đo từ WAV: 23,2 giây (hiển thị 0:23). Trình phát luôn hiện, có nghe thử, bài tiếp theo, tự chuyển bài, bật/tắt nhạc và âm lượng Live.
+- Bổ sung ba bản phối không lời tự tổng hợp: **Vườn bình an** (đàn hạc gảy), **Sớm mai bình an** (sáo mềm) và **Dòng nước tĩnh lặng** (dây ngân dài); mỗi bản có vòng hợp âm và giai điệu riêng.
 - Có mục **Nhạc của bạn**, dùng picker chung, nhận tệp audio tối đa 50 MB để nghe thử trong tab. Chọn lại bài thư viện sẽ giải phóng URL tệp riêng và xóa nhãn tệp cũ; không tải tệp lên server.
 - Kiểm tra trình duyệt: chọn hàng bài và dropdown cùng cập nhật; nghe thử đúng WAV (duration 23,2 giây); chuyển bài; chọn WAV cục bộ phát qua blob; quay về thư viện không còn blob/nhãn cũ; không có lỗi console.
 

@@ -9,7 +9,7 @@
 </head>
 <body class="studio-page christian-admin-page">
   <header class="studio-bar">
-    <a class="brand" href="/admin?profile=thien-chua-giao"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M16 3v26M10 11h12"/><path d="M7 29V14c0-5 4-9 9-9s9 4 9 9v15"/></svg>Tam Thế <span class="muted">Studio</span></a>
+    <a class="brand" href="/admin?profile=thien-chua-giao"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M16 27C6 26 2 20 3 13c5 0 10 2 13 7 3-5 8-7 13-7 1 7-3 13-13 14Z"/><path d="M16 24C8 20 10 10 16 4c6 6 8 16 0 20Z"/></svg>Tam Thế <span class="muted">Studio</span></a>
     <nav class="studio-links" aria-label="Điều hướng chính"><a href="/admin?profile=thien-chua-giao" aria-current="page">Quản lý</a><a href="/?profile=thien-chua-giao">Phòng Live</a><a href="/admin?profile=phat-giao" title="Chuyển sang hồ sơ Phật giáo">Phật giáo</a><a href="/?profile=thien-chua-giao&amp;obs=1" target="_blank" rel="noopener">OBS ↗</a></nav>
   </header>
   <main class="studio-main">
@@ -134,18 +134,18 @@
     <section id="musicSettings" role="tabpanel" hidden>
       <div class="work-grid">
         <section class="panel">
-          <div class="panel-head"><h2>Không gian âm thanh</h2><span class="eyebrow">3 bản nguyên bản</span></div>
+          <div class="panel-head"><h2>Không gian âm thanh</h2><span class="eyebrow">6 bản nguyên bản</span></div>
           <p class="muted">Chọn không khí cho buổi Live. Nghe thử chỉ phát tại trình duyệt này.</p>
           <div class="track-list" id="christianMusicTrackList" aria-label="Thư viện nhạc Thiên Chúa giáo"></div>
         </section>
         <aside class="stack">
           <section class="panel">
             <div class="panel-head"><h2>Danh sách phát</h2></div>
-            <div class="field"><label for="christianMusicTrack">Bản nhạc đang chọn</label><select id="christianMusicTrack"><option value="sanctuary">Đàn organ nhà nguyện</option><option value="morning-grace">Bình minh ân sủng</option><option value="candlelight">Tĩnh lặng bên ánh nến</option></select></div>
+            <div class="field"><label for="christianMusicTrack">Bản nhạc đang chọn</label><select id="christianMusicTrack"><option value="sanctuary">Đàn organ nhà nguyện</option><option value="morning-grace">Bình minh ân sủng</option><option value="candlelight">Tĩnh lặng bên ánh nến</option><option value="garden-peace">Vườn bình an</option><option value="gentle-dawn">Sớm mai bình an</option><option value="still-waters">Dòng nước tĩnh lặng</option></select></div>
             <div class="row christian-music-actions"><button class="btn" id="btnChristianMusicPreview" type="button">Nghe thử</button><button class="btn" id="btnChristianMusicNext" type="button">Bài tiếp theo</button></div>
             <audio id="christianMusicPreview" controls preload="none" aria-label="Nghe thử nhạc Thiên Chúa giáo"></audio>
             <label class="row christian-music-rotate"><input type="checkbox" id="christianMusicAutoRotate"> Tự chuyển bài khi hết bản</label>
-            <p class="helper">3 bản nhạc nền không lời tổng hợp nguyên bản, mỗi bản khoảng 23 giây. Nhạc trên Live tự giảm khi có giọng đọc.</p>
+            <p class="helper">6 bản nhạc nền không lời tổng hợp nguyên bản, mỗi bản khoảng 23 giây. Nhạc trên Live tự giảm khi có giọng đọc.</p>
             <label class="toggle-setting christian-music-toggle"><span><strong>Phát nhạc nền trên Live</strong><small>Đồng bộ sang Phòng Live và OBS</small></span><input type="checkbox" id="christianBgMusicEnabled"></label>
             <label for="christianMusicVolume">Âm lượng nhạc <strong id="christianMusicVolumeValue">18%</strong></label><input type="range" id="christianMusicVolume" min="0" max="50" step="1" value="18">
             <p class="helper" id="christianMusicStatus" role="status">Nghe thử chỉ phát trên thiết bị này; chọn bài và cài đặt phát Live được đồng bộ.</p>

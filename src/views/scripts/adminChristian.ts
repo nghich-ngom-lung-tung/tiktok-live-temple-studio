@@ -20,7 +20,10 @@ const DEFAULT_BACKGROUND = '/assets/thien-chua-giao/backgrounds/nha-tho-live.png
 const CHRISTIAN_MUSIC_TRACKS = [
   { id: 'sanctuary', label: 'Đàn organ nhà nguyện', mood: 'Organ ấm · hợp âm chậm, trang nghiêm' },
   { id: 'morning-grace', label: 'Bình minh ân sủng', mood: 'Piano sáng · giai điệu nhẹ, thanh thoát' },
-  { id: 'candlelight', label: 'Tĩnh lặng bên ánh nến', mood: 'Chuông mềm · âm nền sâu, lắng đọng' }
+  { id: 'candlelight', label: 'Tĩnh lặng bên ánh nến', mood: 'Chuông mềm · âm nền sâu, lắng đọng' },
+  { id: 'garden-peace', label: 'Vườn bình an', mood: 'Đàn hạc mộc · arpeggio thong thả' },
+  { id: 'gentle-dawn', label: 'Sớm mai bình an', mood: 'Sáo mềm · giai điệu nâng dần' },
+  { id: 'still-waters', label: 'Dòng nước tĩnh lặng', mood: 'Dây êm · hợp âm dài cho giờ suy niệm' }
 ];
 const musicLibrary = $('christianMusicTrackList');
 if (musicLibrary) musicLibrary.innerHTML = CHRISTIAN_MUSIC_TRACKS.map((track, index) =>

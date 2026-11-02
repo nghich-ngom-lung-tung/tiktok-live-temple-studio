@@ -43,7 +43,7 @@ function createChristianRpcService({ stateModel, service, commentService, ttsMan
         return service.updateSettings(params);
       case 'christian.advanceMusic': {
         const settings = stateModel.state.settings;
-        const tracks = ['sanctuary', 'morning-grace', 'candlelight'];
+        const tracks = ['sanctuary', 'morning-grace', 'candlelight', 'garden-peace', 'gentle-dawn', 'still-waters'];
         if (settings.musicAutoRotate && !settings.presentationPaused && settings.musicTrack === params.expectedTrack) {
           return service.updateSettings({ musicTrack: tracks[(tracks.indexOf(settings.musicTrack) + 1) % tracks.length] });
         }

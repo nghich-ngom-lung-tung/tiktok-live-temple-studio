@@ -199,7 +199,7 @@ function createChristianService({ stateModel, realtime, ceremonyQueue, ttsManage
     for (const [key, max] of [['ttsVolume', 1], ['bgMusicVolume', 0.5]]) {
       if (patch[key] !== undefined && (typeof patch[key] !== 'number' || !Number.isFinite(patch[key]) || patch[key] < 0 || patch[key] > max)) throw new Error('Âm lượng không hợp lệ.');
     }
-    if (patch.musicTrack !== undefined && !['sanctuary', 'morning-grace', 'candlelight'].includes(patch.musicTrack)) throw new Error('Bản nhạc không hợp lệ.');
+    if (patch.musicTrack !== undefined && !['sanctuary', 'morning-grace', 'candlelight', 'garden-peace', 'gentle-dawn', 'still-waters'].includes(patch.musicTrack)) throw new Error('Bản nhạc không hợp lệ.');
     const settings = { ...stateModel.state.settings, narrationTemplates: { ...stateModel.state.settings.narrationTemplates } };
     if (typeof patch.ttsEnabled === 'boolean') settings.ttsEnabled = patch.ttsEnabled;
     if (Number.isFinite(Number(patch.ttsVolume))) settings.ttsVolume = Math.max(0, Math.min(1, Number(patch.ttsVolume)));
@@ -224,7 +224,7 @@ function createChristianService({ stateModel, realtime, ceremonyQueue, ttsManage
       settings.ttsVoiceRotation = [...voices];
       voiceRotationCursor = 0;
     }
-    const tracks = ['sanctuary', 'morning-grace', 'candlelight'];
+    const tracks = ['sanctuary', 'morning-grace', 'candlelight', 'garden-peace', 'gentle-dawn', 'still-waters'];
     if (typeof patch.musicTrack === 'string' && tracks.includes(patch.musicTrack)) settings.musicTrack = patch.musicTrack;
     if (Number.isFinite(Number(patch.bgMusicVolume))) settings.bgMusicVolume = Math.max(0, Math.min(0.5, Number(patch.bgMusicVolume)));
     if (typeof patch.presentationPaused === 'boolean') settings.presentationPaused = patch.presentationPaused;

@@ -58,7 +58,7 @@ function clone(value) {
 }
 
 function normalizeMusicTrack(track) {
-  if (['sanctuary', 'morning-grace', 'candlelight'].includes(track)) return track;
+  if (['sanctuary', 'morning-grace', 'candlelight', 'garden-peace', 'gentle-dawn', 'still-waters'].includes(track)) return track;
   if (['bamboo', 'dawn'].includes(track)) return 'morning-grace';
   if (['rain', 'night'].includes(track)) return 'candlelight';
   return 'sanctuary';

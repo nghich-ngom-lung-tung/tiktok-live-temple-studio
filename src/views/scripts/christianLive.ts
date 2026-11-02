@@ -128,7 +128,10 @@ function syncVoiceSelect(tts: ChristianState['tts'], selectedVoice?: string): vo
 const MUSIC_TRACKS = [
   { id: 'sanctuary', label: 'Đàn organ nhà nguyện' },
   { id: 'morning-grace', label: 'Bình minh ân sủng' },
-  { id: 'candlelight', label: 'Tĩnh lặng bên ánh nến' }
+  { id: 'candlelight', label: 'Tĩnh lặng bên ánh nến' },
+  { id: 'garden-peace', label: 'Vườn bình an' },
+  { id: 'gentle-dawn', label: 'Sớm mai bình an' },
+  { id: 'still-waters', label: 'Dòng nước tĩnh lặng' }
 ];
 
 const PRAYER_PRESETS: Record<string, string> = {

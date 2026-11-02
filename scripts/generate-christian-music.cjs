@@ -28,6 +28,24 @@ const tracks = [
     chords: [[45, 52, 57, 60, 64], [41, 48, 53, 57, 60], [48, 55, 60, 64, 67], [43, 50, 55, 60, 62], [38, 45, 50, 53, 57], [41, 48, 53, 57, 60]],
     melody: [[76, 79, 84], [72, 77, 81], [76, 79, 84], [74, 79, 83], [74, 77, 81], [72, 77, 81]],
     voice: 'bell', pad: 0.48, lead: 0.085, bass: 0.13, shimmer: 0.025
+  },
+  {
+    file: 'garden-peace.wav',
+    chords: [[41, 48, 53, 57, 60], [40, 48, 52, 55, 60], [45, 52, 57, 60, 64], [38, 45, 50, 53, 57], [43, 50, 55, 59, 65], [36, 43, 48, 52, 55]],
+    melody: [[72, 76, 79], [71, 76, 79], [72, 76, 81], [69, 74, 77], [71, 74, 79], [72, 76, 79]],
+    voice: 'harp', pad: 0.42, lead: 0.105, bass: 0.09, shimmer: 0.022
+  },
+  {
+    file: 'gentle-dawn.wav',
+    chords: [[50, 57, 62, 66, 69], [49, 57, 61, 64, 69], [47, 54, 59, 62, 66], [43, 50, 55, 59, 62], [45, 50, 54, 57, 62], [45, 52, 57, 61, 64]],
+    melody: [[74, 78, 81], [76, 78, 83], [78, 81, 85], [76, 79, 83], [74, 78, 81], [73, 76, 81]],
+    voice: 'flute', pad: 0.43, lead: 0.115, bass: 0.075, shimmer: 0.035
+  },
+  {
+    file: 'still-waters.wav',
+    chords: [[43, 50, 55, 59, 62], [40, 47, 52, 55, 59], [41, 48, 53, 57, 60], [38, 45, 50, 53, 57], [43, 50, 55, 59, 62], [36, 43, 48, 52, 55]],
+    melody: [[71, 74, 79], [71, 76, 79], [72, 76, 81], [69, 74, 77], [71, 74, 79], [72, 76, 79]],
+    voice: 'strings', pad: 0.49, lead: 0.095, bass: 0.11, shimmer: 0.018
   }
 ];
 
@@ -53,11 +71,15 @@ function makeEvents(track) {
   const events = [];
   for (let bar = 0; bar < track.chords.length; bar++) {
     const notes = track.melody[bar];
-    const positions = track.voice === 'piano' ? [0.35, 1.45, 2.55, 3.35] : [0.45, 1.8, 3.05];
+    const positions = track.voice === 'piano' ? [0.35, 1.45, 2.55, 3.35]
+      : track.voice === 'harp' ? [0.28, 1.08, 1.92, 2.76, 3.52]
+        : track.voice === 'strings' ? [0.3, 2.3]
+          : [0.45, 1.8, 3.05];
     positions.forEach((beat, index) => {
       events.push({
         start: bar * BAR_SECONDS + beat,
-        duration: track.voice === 'bell' ? 1.65 : track.voice === 'organ' ? 1.25 : 0.92,
+        duration: track.voice === 'bell' ? 1.65 : track.voice === 'organ' ? 1.25
+          : track.voice === 'harp' ? 0.78 : track.voice === 'flute' ? 1.5 : track.voice === 'strings' ? 1.65 : 0.92,
         hz: frequency(notes[index % notes.length]),
         gain: track.voice === 'piano' ? (index % 2 ? 0.72 : 1) : 1,
         pan: ((index % 3) - 1) * 0.34
@@ -70,6 +92,25 @@ function makeEvents(track) {
 function leadSample(event, time, voice) {
   const age = time - event.start;
   if (age < 0 || age >= event.duration) return 0;
+  if (voice === 'harp') {
+    const attack = Math.min(1, age / 0.012);
+    const release = smooth((event.duration - age) / 0.28);
+    const pluck = Math.sin(TAU * event.hz * age)
+      + 0.2 * Math.sin(TAU * event.hz * 2.01 * age + 0.04)
+      + 0.055 * Math.sin(TAU * event.hz * 3.97 * age + 0.12);
+    return pluck * attack * release * Math.exp(-age * 2.25) * event.gain;
+  }
+  if (voice === 'flute' || voice === 'strings') {
+    const isFlute = voice === 'flute';
+    const attack = smooth(age / (isFlute ? 0.18 : 0.42));
+    const release = smooth((event.duration - age) / (isFlute ? 0.34 : 0.5));
+    const vibrato = (isFlute ? 0.022 : 0.038) * Math.sin(TAU * (isFlute ? 4.6 : 5.1) * age);
+    const phase = TAU * event.hz * age + vibrato;
+    const tone = Math.sin(phase)
+      + (isFlute ? 0.055 : 0.16) * Math.sin(phase * 2 + 0.06)
+      + (isFlute ? 0.012 : 0.035) * Math.sin(phase * 3 + 0.14);
+    return tone * attack * release * event.gain;
+  }
   const attack = Math.min(1, age / (voice === 'organ' ? 0.07 : 0.018));
   const tail = Math.max(0, (event.duration - age) / (voice === 'bell' ? 0.6 : 0.35));
   const decay = voice === 'piano' ? Math.exp(-age * 2.15) : voice === 'bell' ? Math.exp(-age * 1.35) : 0.68 + 0.32 * Math.exp(-age * 1.4);
