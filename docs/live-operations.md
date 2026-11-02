@@ -4,7 +4,7 @@
 
 - Kiểm tra quyền phát của tài khoản trước khi setup nguồn hình. Mở được giao diện LIVE Studio không có nghĩa tài khoản đã được phép Go LIVE. Thông báo “Access not available” cần được xử lý qua TikTok; connector không cấp quyền phát.
 - `tiktok-live-connector` là thư viện không chính thức để nhận sự kiện từ phòng đang Live. LIVE Studio/OBS đảm nhận phát hình và tiếng. Chưa xác nhận đường truyền thật cho đến khi thử với một phòng Live và thiết bị người xem.
-- Ưu tiên link nội bộ khi phần mềm phát chấp nhận. Cloudflare Tunnel chỉ là phương án HTTPS tùy chọn; dự án không tự khởi động tunnel. Quick Tunnel tạo địa chỉ công khai tạm thời, hết hiệu lực khi dừng tiến trình. Giữ riêng URL có token và chỉ cho phép origin HTTPS cụ thể qua `TEMPLE_CORS_ORIGINS` nếu dùng tunnel.
+- Ưu tiên link nội bộ khi phần mềm phát chấp nhận. Nếu LIVE Studio từ chối localhost/HTTP, dùng HTTPS theo [hướng dẫn Cloudflare Tunnel](cloudflare-live-studio.md). Dự án không tự khởi động tunnel. Quick Tunnel tạo địa chỉ công khai tạm thời, hết hiệu lực khi dừng tiến trình. Giữ riêng URL có token và chỉ cho phép origin HTTPS cụ thể qua `TEMPLE_CORS_ORIGINS`.
 - Xóa người giả lập chỉ xóa ghế test, không xóa thống kê đã lưu. Chat giả lập không cộng điểm. Hồ sơ Phật giáo có các thao tác ghi Công Đức và chức năng đặt lại bảng Công Đức; kiểm tra hồ sơ đang chọn trước khi đặt lại.
 - Hồ sơ Thiên Chúa giáo theo dõi lời cầu nguyện, chia sẻ Kinh Thánh, tri ân và quà; không dùng bảng Công Đức Phật giáo.
 - Khi tải màn Phật giáo, nhân vật giữa điện giữ nhãn chờ trung tính; chỉ đổi sang tên người tương tác khi phát nghi thức, không tự lấy người đứng đầu bảng Công Đức.
