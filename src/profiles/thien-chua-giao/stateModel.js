@@ -8,6 +8,7 @@ const profile = getProfile('thien-chua-giao');
 const DEFAULT_STATE = Object.freeze({
   totalPrayerRequests: 0,
   totalScriptureShares: 0,
+  totalThanksgiving: 0,
   totalGiftThanks: 0,
   supporters: {},
   recentEvents: [],
@@ -84,6 +85,7 @@ class ChristianStateModel {
       return {
         ...clone(DEFAULT_STATE),
         ...saved,
+        totalThanksgiving: Math.max(0, Number(saved.totalThanksgiving) || 0),
         supporters: saved.supporters || {},
         recentEvents: Array.isArray(saved.recentEvents) ? saved.recentEvents.slice(0, 50) : [],
         prayerRequests: Array.isArray(saved.prayerRequests) ? saved.prayerRequests.slice(0, 30) : [],
@@ -116,6 +118,7 @@ class ChristianStateModel {
       const toSave = {
         totalPrayerRequests: this.state.totalPrayerRequests,
         totalScriptureShares: this.state.totalScriptureShares,
+        totalThanksgiving: this.state.totalThanksgiving,
         totalGiftThanks: this.state.totalGiftThanks,
         supporters: this.state.supporters,
         recentEvents: this.state.recentEvents,
@@ -188,12 +191,13 @@ class ChristianStateModel {
     const name = sanitizeUserName(user || uniqueId);
     const key = String(uniqueId || name).toLocaleLowerCase('vi');
     const previous = this.roomViewers.get(key);
+    const arrivalOrder = previous?.arrivalOrder ?? ++this.arrivalSequence;
     const viewer = {
       name,
       uniqueId: String(uniqueId || name),
       avatar: avatar || previous?.avatar || '',
-      character: previous?.character || (crypto.randomInt(2) ? 'woman' : 'man'),
-      arrivalOrder: previous?.arrivalOrder ?? ++this.arrivalSequence,
+      character: previous?.character || (arrivalOrder % 2 === 1 ? 'man' : 'woman'),
+      arrivalOrder,
       joinedAt: previous?.joinedAt || Date.now(),
       lastSeenAt: Date.now()
     };
@@ -238,7 +242,7 @@ class ChristianStateModel {
         uniqueId,
         name: `Khách test ${String(index).padStart(3, '0')}`,
         avatar: '',
-        character: crypto.randomInt(2) ? 'woman' : 'man',
+        character: index % 2 === 1 ? 'man' : 'woman',
         isSimulated: true,
         arrivalOrder: ++this.arrivalSequence,
         joinedAt: Date.now(),
@@ -322,6 +326,12 @@ class ChristianStateModel {
     return supporter;
   }
 
+  recordThanksgiving({ user, uniqueId }) {
+    const name = sanitizeUserName(user || uniqueId);
+    this.state.totalThanksgiving += 1;
+    return this.pushEventLog({ type: 'thanksgiving', user: name, uniqueId: String(uniqueId || '') });
+  }
+
   getSupporters(limit = 6) {
     return Object.values(this.state.supporters)
       .sort((a, b) => b.coins - a.coins)
@@ -334,6 +344,7 @@ class ChristianStateModel {
       profileId: profile.id,
       totalPrayerRequests: this.state.totalPrayerRequests,
       totalScriptureShares: this.state.totalScriptureShares,
+      totalThanksgiving: this.state.totalThanksgiving,
       totalGiftThanks: this.state.totalGiftThanks,
       prayerRequests: this.state.prayerRequests.slice(0, 12),
       supporters: this.getSupporters(6),

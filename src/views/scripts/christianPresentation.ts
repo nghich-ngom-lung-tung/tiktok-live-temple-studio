@@ -19,16 +19,70 @@ export function createChristianPresentation(stage: HTMLElement | null) {
   const card = document.getElementById('scriptureCard');
   let actor: HTMLElement | null = null;
   let person: HTMLElement | null = null;
+  let currentEvent: Record<string, any> | null = null;
+  let hiddenAttendee: HTMLElement | null = null;
+  let returnAnimation: Animation | null = null;
   const animations = new Set<Animation>();
   const prayerMotion = createChristianPrayerMotion(stage);
   function clear() {
+    returnAnimation?.cancel(); returnAnimation = null;
     prayerMotion.clear();
     for (const animation of animations) animation.cancel();
     animations.clear();
+    hiddenAttendee?.classList.remove('is-ritual-hidden'); hiddenAttendee = null;
     actor?.remove(); actor = null;
+    person?.remove(); person = null;
+    currentEvent = null;
+    card?.classList.remove('is-ritual-active');
+    card?.removeAttribute('data-ritual');
+  }
+  function finish(resolveReturnTarget: (event: Record<string, any>) => { x: number; y: number; scale: number; attendee?: HTMLElement | null } | null) {
+    const node = actor;
+    const event = currentEvent;
+    if (!node || !event || !stage) { clear(); return; }
+    prayerMotion.clear();
+    for (const animation of animations) animation.cancel();
+    animations.clear();
     person?.remove(); person = null;
     card?.classList.remove('is-ritual-active');
     card?.removeAttribute('data-ritual');
+    currentEvent = null;
+
+    const target = resolveReturnTarget(event);
+    if (!target) { clear(); return; }
+    hiddenAttendee = target.attendee?.isConnected ? target.attendee : null;
+    hiddenAttendee?.classList.add('is-ritual-hidden');
+    node.classList.remove('has-arrived', 'is-resting');
+    node.classList.add('is-returning');
+    const targetTransform = `translate(-50%,-100%) scale(${target.scale})`;
+    const settle = () => {
+      if (actor !== node) return;
+      const attendee = hiddenAttendee;
+      hiddenAttendee = null;
+      if (attendee?.isConnected) {
+        attendee.classList.remove('is-ritual-hidden');
+        node.remove(); actor = null;
+      } else {
+        node.classList.remove('is-returning');
+        node.classList.add('has-arrived', 'is-resting');
+      }
+      returnAnimation = null;
+    };
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      node.style.left = `${target.x}px`;
+      node.style.top = `${target.y}px`;
+      node.style.transform = targetTransform;
+      settle();
+      return;
+    }
+    const animation = node.animate([
+      { left: '540px', top: `${CHRISTIAN_ALTAR_Y}px`, transform: 'translate(-50%,-100%) scale(.75)', opacity: 1, offset: 0 },
+      { left: '540px', top: `${Math.round((CHRISTIAN_ALTAR_Y + target.y) / 2)}px`, transform: 'translate(-50%,-100%) scale(.82)', opacity: 1, offset: .64 },
+      { left: `${target.x}px`, top: `${target.y}px`, transform: targetTransform, opacity: 1, offset: .92 },
+      { left: `${target.x}px`, top: `${target.y}px`, transform: targetTransform, opacity: hiddenAttendee ? 0 : 1, offset: 1 }
+    ], { duration: 2600, easing: 'cubic-bezier(.35,0,.4,1)', fill: 'forwards' });
+    returnAnimation = animation;
+    void animation.finished.then(settle).catch(() => {});
   }
   const text = (id: string, value: unknown) => {
     const node = document.getElementById(id);
@@ -36,11 +90,15 @@ export function createChristianPresentation(stage: HTMLElement | null) {
   };
   return {
     clear, addCrowd: prayerMotion.addCrowd,
+    finish(resolveReturnTarget: (event: Record<string, any>) => { x: number; y: number; scale: number; attendee?: HTMLElement | null } | null) {
+      finish(resolveReturnTarget);
+    },
     show(event: Record<string, any>) {
       clear();
       if (!stage || !card) return;
       const scene = SCENES[event.type];
       if (!scene) return;
+      currentEvent = event;
       const user = String(event.user || 'Người điều hành');
       const avatar = event.avatar ? `<img src="${escapeHtml(event.avatar)}" alt="">` : escapeHtml(user.charAt(0).toLocaleUpperCase('vi'));
       person = document.createElement('div');

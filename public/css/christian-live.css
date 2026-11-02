@@ -18,6 +18,12 @@
 .attendee-bow-sprite { position:absolute; inset:0; width:100%; height:100%; object-fit:contain; object-position:center bottom; opacity:0; pointer-events:none; }
 .ritual-actor.has-arrived .ritual-actor-walk { display:none; }
 .ritual-actor.has-arrived .ritual-actor-stand,.ritual-actor.has-arrived .ritual-actor-bow { display:block; }
+.ritual-actor.is-returning .ritual-actor-walk { display:block; animation-direction:reverse; }
+.ritual-actor.is-returning .ritual-actor-stand,.ritual-actor.is-returning .ritual-actor-bow { display:none; }
+.ritual-actor.is-resting .ritual-actor-name { bottom:calc(100% + 1px); gap:4px; max-width:112px; padding:2px 5px 2px 2px; border-radius:18px; box-shadow:0 3px 8px #160c0b60; }
+.ritual-actor.is-resting .ritual-actor-name>span { flex:0 0 20px; height:20px; }
+.ritual-actor.is-resting .ritual-actor-name strong { max-width:58px; font:600 9px/1.2 'Be Vietnam Pro',sans-serif; }
+.attendee.is-ritual-hidden { visibility:hidden!important; opacity:0!important; }
 .ritual-actor-shadow { position:absolute; left:20%; right:20%; bottom:0; height:22px; border-radius:50%; background:#30160e60; filter:blur(8px); }
 .ritual-actor-name { position:absolute; left:50%; bottom:calc(100% + 12px); transform:translateX(-50%); display:flex; align-items:center; gap:9px; max-width:300px; padding:5px 14px 5px 5px; border:1px solid #e7c982; border-radius:25px; background:#3b2118ed; color:#fff4df; }
 .ritual-actor-name>span { display:grid; place-items:center; flex:0 0 32px; height:32px; border-radius:50%; background:#e8d7b7; color:#743b2c; overflow:hidden; }

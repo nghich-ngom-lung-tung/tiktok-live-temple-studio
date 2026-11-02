@@ -38,7 +38,7 @@ type ChristianAudioEngine = {
 };
 type ChristianState = {
   playback?: ChristianPlayback;
-  totalPrayerRequests?: number; totalScriptureShares?: number; totalGiftThanks?: number;
+  totalPrayerRequests?: number; totalScriptureShares?: number; totalThanksgiving?: number; totalGiftThanks?: number;
   roomViewers?: Viewer[]; supporters?: Viewer[];
   tiktok?: { connected?: boolean; connecting?: boolean; username?: string; viewerCount?: number; lastError?: string | null };
   liveSession?: Session | null; liveSessions?: Session[]; simulatedViewerCount?: number;
@@ -70,7 +70,7 @@ const playback = createChristianPlayback({
   stop() {
     audio.stopTts();
     ritualEffects.clear();
-    ritualPresentation.clear();
+    ritualPresentation.finish(resolveRitualReturnTarget);
     window.clearTimeout(memberTimer);
     document.getElementById('memberArrival')?.classList.remove('visible');
     window.clearTimeout(prayerTimer);
@@ -102,6 +102,30 @@ const playback = createChristianPlayback({
 type ChristianArrival = { walker: HTMLElement; animation: Animation };
 const attendeeNodes = new Map<string, HTMLElement>();
 const attendeeArrivals = new Map<string, ChristianArrival>();
+
+function resolveRitualReturnTarget(event: Record<string, any>): { x: number; y: number; scale: number; attendee?: HTMLElement | null } {
+  const key = christianViewerKey({ uniqueId: String(event.uniqueId || ''), name: String(event.user || '') });
+  let attendee = attendeeNodes.get(key);
+  if (!attendee && String(event.uniqueId || '').startsWith('operator-')) {
+    const name = String(event.user || '').toLocaleLowerCase('vi');
+    attendee = Array.from(attendeeNodes.values()).find(node => node.dataset.viewerName === name);
+  }
+  if (attendee?.isConnected) {
+    const height = Number.parseFloat(attendee.style.height) || 260;
+    return {
+      x: Number(attendee.dataset.x) || 540,
+      y: Number(attendee.dataset.y) || 1340,
+      scale: Math.min(1, Math.max(.55, height / 360)),
+      attendee
+    };
+  }
+
+  const occupied = new Set(Array.from(attendeeNodes.values(), node => `${node.dataset.x}:${node.dataset.y}`));
+  const seatCount = Math.min(CHRISTIAN_CAPACITY, Math.max(2, attendeeNodes.size + 1));
+  const seat = christianLayoutForCount(seatCount).find(candidate => !occupied.has(`${candidate.x}:${candidate.y}`));
+  if (seat) return { x: seat.x, y: seat.y, scale: Math.min(1, Math.max(.55, seat.height / 360)) };
+  return { x: 540, y: 1580, scale: .7 };
+}
 
 function syncVoiceSelect(tts: ChristianState['tts'], selectedVoice?: string): void {
   const voiceSelect = document.getElementById('christianVoiceSelect') as HTMLSelectElement | null;
@@ -500,7 +524,7 @@ function updateState(state: ChristianState): void {
   text('statViewers', `${liveViewerCount.toLocaleString('vi-VN')} người xem`);
   text('hudPrayerCount', `${prayerCount.toLocaleString('vi-VN')} lời nguyện`);
   text('hudScriptureCount', `${Number(state.totalScriptureShares || 0).toLocaleString('vi-VN')} chia sẻ`);
-  text('hudGiftCount', `${Number(state.totalGiftThanks || 0).toLocaleString('vi-VN')} lời cảm ơn`);
+  text('hudGiftCount', `${(Number(state.totalThanksgiving || 0) + Number(state.totalGiftThanks || 0)).toLocaleString('vi-VN')} lời cảm tạ`);
   document.body.classList.toggle('is-connected', Boolean(state.tiktok?.connected));
   renderAttendees(state.roomViewers || []);
   renderSupporters(state.supporters || []);
@@ -744,6 +768,7 @@ function initControls(): void {
       button.disabled = true;
       try {
         await rpc(method, { user: inputValue('prayerUser') || 'Người điều hành' });
+        await refreshState();
         setStatus('ritualStatus', 'Đã xếp lượt tương tác, đồng bộ sang Live và OBS.');
       } catch (error) { setStatus('ritualStatus', error.message, true); }
       finally { button.disabled = false; }

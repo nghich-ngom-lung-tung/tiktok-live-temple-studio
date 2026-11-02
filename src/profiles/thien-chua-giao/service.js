@@ -6,6 +6,7 @@ function createChristianService({ stateModel, realtime, ceremonyQueue, ttsManage
   const prayerCooldown = new Map();
   const chatCooldown = new Map();
   const lastTemplateByKind = new Map();
+  let previewCharacterSequence = 0;
   let voiceRotationCursor = 0;
   const scripturePicker = createScripturePicker();
 
@@ -33,7 +34,7 @@ function createChristianService({ stateModel, realtime, ceremonyQueue, ttsManage
     // Operator previews are performers, not new arrivals in the TikTok room.
     if (!uniqueId || String(uniqueId).startsWith('operator-')) {
       const name = sanitizeUserName(user || 'Người điều hành');
-      const character = [...name].reduce((sum, letter) => sum + letter.codePointAt(0), 0) % 2 ? 'woman' : 'man';
+      const character = previewCharacterSequence++ % 2 === 0 ? 'man' : 'woman';
       return { name, uniqueId: String(uniqueId || `operator-${name}`), avatar: avatar || '', character };
     }
     return stateModel.recordMember(user, uniqueId, avatar);
@@ -47,7 +48,8 @@ function createChristianService({ stateModel, realtime, ceremonyQueue, ttsManage
       user: viewer.name, uniqueId: viewer.uniqueId, avatar: viewer.avatar, character: viewer.character,
       ttsText: template(kind, { user: viewer.name }), ttsVoice: nextVoice()
     };
-    stateModel.pushEventLog({ type: kind, user: viewer.name, uniqueId: viewer.uniqueId });
+    if (kind === 'thanksgiving') stateModel.recordThanksgiving({ user: viewer.name, uniqueId: viewer.uniqueId });
+    else stateModel.pushEventLog({ type: kind, user: viewer.name, uniqueId: viewer.uniqueId });
     realtime.broadcastNotification('christian.state', stateModel.getPublicState(ttsManager));
     ceremonyQueue.enqueue(event);
     return event;
