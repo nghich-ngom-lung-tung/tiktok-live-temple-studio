@@ -4,6 +4,9 @@ dist/
 data/tts-cache/
 data/models/
 data/merit-state.json
+/data/profiles/*/state.json
+/data/profiles/*/stage-backgrounds/
+/data/stage-backgrounds/
 .env
 .env.*
 !.env.example

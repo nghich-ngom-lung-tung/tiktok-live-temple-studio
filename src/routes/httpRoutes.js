@@ -1,8 +1,13 @@
 const express = require('express');
 
 function registerHttpRoutes({ app, controllers, security, rateLimiters }) {
-  app.get('/admin', (_req, res) => {
-    res.sendFile(controllers.adminPagePath);
+  const profileId = req => require('../profiles/registry').resolveProfileId(req.query?.profile);
+  app.get(['/', '/index.html'], (req, res, next) => {
+    if (profileId(req) === 'thien-chua-giao' && controllers.christianLivePagePath) return res.sendFile(controllers.christianLivePagePath);
+    next();
+  });
+  app.get(['/admin', '/admin/', '/admin/index.html'], (req, res) => {
+    res.sendFile(profileId(req) === 'thien-chua-giao' && controllers.christianAdminPagePath ? controllers.christianAdminPagePath : controllers.adminPagePath);
   });
 
   app.post('/api/auth', security.requireAllowedOrigin, rateLimiters.auth, controllers.auth.authenticate);
@@ -13,7 +18,10 @@ function registerHttpRoutes({ app, controllers, security, rateLimiters }) {
       security.requireRpcAuth,
       rateLimiters.stageBackground,
       express.raw({ type: ['image/png', 'image/jpeg', 'image/webp'], limit: '8mb' }),
-      controllers.stageBackground.upload,
+      (req, res, next) => {
+        const selected = controllers.stageBackgroundByProfile?.[profileId(req)] || controllers.stageBackground;
+        return selected.upload(req, res, next);
+      },
       (error, _req, res, next) => {
         if (error.type === 'entity.too.large') return res.status(413).json({ ok: false, error: 'Ảnh phải nhỏ hơn 8 MB.' });
         if (error.status === 415 || error.type === 'encoding.unsupported') return res.status(415).json({ ok: false, error: 'Chỉ nhận ảnh PNG, JPG hoặc WebP.' });
@@ -25,7 +33,7 @@ function registerHttpRoutes({ app, controllers, security, rateLimiters }) {
       security.requireAllowedOrigin,
       security.requireRpcAuth,
       rateLimiters.stageBackground,
-      controllers.stageBackground.reset
+      (req, res) => (controllers.stageBackgroundByProfile?.[profileId(req)] || controllers.stageBackground).reset(req, res)
     );
   }
   app.get('/api/auth/status', security.requireAllowedOrigin, security.requireRpcAuth, controllers.auth.status);

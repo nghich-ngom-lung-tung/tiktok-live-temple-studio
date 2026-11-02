@@ -223,56 +223,56 @@ initLiveOperations();
 
   // Bộ 8 khung cho từng nhân vật chủ lễ. Đạo tràng nền vẫn dùng Phật tử áo lam.
   const SPRITE_FRAMES = {
-    walk1: '/assets/devotee_walk.png',
-    walk2: '/assets/devotee_walk_2.png',
-    kneelDown: '/assets/devotee_kneel_down.png',
-    kneel: '/assets/devotee.png',
-    forehead: '/assets/devotee_bow.png',
-    bowMid: '/assets/devotee_bow_mid.png',
-    prostrate: '/assets/devotee_prostrate.png',
-    prostrateDeep: '/assets/devotee_prostrate_deep.png'
+    walk1: '/assets/phat-giao/characters/devotee_walk.png',
+    walk2: '/assets/phat-giao/characters/devotee_walk_2.png',
+    kneelDown: '/assets/phat-giao/characters/devotee_kneel_down.png',
+    kneel: '/assets/phat-giao/characters/devotee.png',
+    forehead: '/assets/phat-giao/characters/devotee_bow.png',
+    bowMid: '/assets/phat-giao/characters/devotee_bow_mid.png',
+    prostrate: '/assets/phat-giao/characters/devotee_prostrate.png',
+    prostrateDeep: '/assets/phat-giao/characters/devotee_prostrate_deep.png'
   };
   const CHARACTER_SPRITE_SETS = {
     aoLam: SPRITE_FRAMES,
     maleBrown: {
-      walk1: '/assets/characters/male-brown/walk1.webp',
-      walk2: '/assets/characters/male-brown/walk2.webp',
-      kneelDown: '/assets/characters/male-brown/kneelDown.webp',
-      kneel: '/assets/characters/male-brown/kneel.webp',
-      forehead: '/assets/characters/male-brown/forehead.webp',
-      bowMid: '/assets/characters/male-brown/bowMid.webp',
-      prostrate: '/assets/characters/male-brown/prostrate.webp',
-      prostrateDeep: '/assets/characters/male-brown/prostrateDeep.webp'
+      walk1: '/assets/phat-giao/characters/male-brown/walk1.webp',
+      walk2: '/assets/phat-giao/characters/male-brown/walk2.webp',
+      kneelDown: '/assets/phat-giao/characters/male-brown/kneelDown.webp',
+      kneel: '/assets/phat-giao/characters/male-brown/kneel.webp',
+      forehead: '/assets/phat-giao/characters/male-brown/forehead.webp',
+      bowMid: '/assets/phat-giao/characters/male-brown/bowMid.webp',
+      prostrate: '/assets/phat-giao/characters/male-brown/prostrate.webp',
+      prostrateDeep: '/assets/phat-giao/characters/male-brown/prostrateDeep.webp'
     },
     elder: {
-      walk1: '/assets/characters/elder/walk1.webp',
-      walk2: '/assets/characters/elder/walk2.webp',
-      kneelDown: '/assets/characters/elder/kneelDown.webp',
-      kneel: '/assets/characters/elder/kneel.webp',
-      forehead: '/assets/characters/elder/forehead.webp',
-      bowMid: '/assets/characters/elder/bowMid.webp',
-      prostrate: '/assets/characters/elder/prostrate.webp',
-      prostrateDeep: '/assets/characters/elder/prostrateDeep.webp'
+      walk1: '/assets/phat-giao/characters/elder/walk1.webp',
+      walk2: '/assets/phat-giao/characters/elder/walk2.webp',
+      kneelDown: '/assets/phat-giao/characters/elder/kneelDown.webp',
+      kneel: '/assets/phat-giao/characters/elder/kneel.webp',
+      forehead: '/assets/phat-giao/characters/elder/forehead.webp',
+      bowMid: '/assets/phat-giao/characters/elder/bowMid.webp',
+      prostrate: '/assets/phat-giao/characters/elder/prostrate.webp',
+      prostrateDeep: '/assets/phat-giao/characters/elder/prostrateDeep.webp'
     },
     novice: {
-      walk1: '/assets/characters/novice/walk1.webp',
-      walk2: '/assets/characters/novice/walk2.webp',
-      kneelDown: '/assets/characters/novice/kneelDown.webp',
-      kneel: '/assets/characters/novice/kneel.webp',
-      forehead: '/assets/characters/novice/forehead.webp',
-      bowMid: '/assets/characters/novice/bowMid.webp',
-      prostrate: '/assets/characters/novice/prostrate.webp',
-      prostrateDeep: '/assets/characters/novice/prostrateDeep.webp'
+      walk1: '/assets/phat-giao/characters/novice/walk1.webp',
+      walk2: '/assets/phat-giao/characters/novice/walk2.webp',
+      kneelDown: '/assets/phat-giao/characters/novice/kneelDown.webp',
+      kneel: '/assets/phat-giao/characters/novice/kneel.webp',
+      forehead: '/assets/phat-giao/characters/novice/forehead.webp',
+      bowMid: '/assets/phat-giao/characters/novice/bowMid.webp',
+      prostrate: '/assets/phat-giao/characters/novice/prostrate.webp',
+      prostrateDeep: '/assets/phat-giao/characters/novice/prostrateDeep.webp'
     },
     pinkAoDai: {
-      walk1: '/assets/characters/pink-ao-dai/walk1.webp',
-      walk2: '/assets/characters/pink-ao-dai/walk2.webp',
-      kneelDown: '/assets/characters/pink-ao-dai/kneelDown.webp',
-      kneel: '/assets/characters/pink-ao-dai/kneel.webp',
-      forehead: '/assets/characters/pink-ao-dai/forehead.webp',
-      bowMid: '/assets/characters/pink-ao-dai/bowMid.webp',
-      prostrate: '/assets/characters/pink-ao-dai/prostrate.webp',
-      prostrateDeep: '/assets/characters/pink-ao-dai/prostrateDeep.webp'
+      walk1: '/assets/phat-giao/characters/pink-ao-dai/walk1.webp',
+      walk2: '/assets/phat-giao/characters/pink-ao-dai/walk2.webp',
+      kneelDown: '/assets/phat-giao/characters/pink-ao-dai/kneelDown.webp',
+      kneel: '/assets/phat-giao/characters/pink-ao-dai/kneel.webp',
+      forehead: '/assets/phat-giao/characters/pink-ao-dai/forehead.webp',
+      bowMid: '/assets/phat-giao/characters/pink-ao-dai/bowMid.webp',
+      prostrate: '/assets/phat-giao/characters/pink-ao-dai/prostrate.webp',
+      prostrateDeep: '/assets/phat-giao/characters/pink-ao-dai/prostrateDeep.webp'
     }
   };
   const CENTRAL_CHARACTER_STORAGE_KEY = 'temple.centralCharacter';
@@ -698,7 +698,7 @@ initLiveOperations();
     latestUIState = st;
     presentationPaused = Boolean(st.settings?.presentationPaused);
     audio.applyRemoteSettings(st.settings || {});
-    const stageBackground = st.settings?.stageBackgroundUrl || '/assets/tam-the-sanctuary-stage.png';
+    const stageBackground = st.settings?.stageBackgroundUrl || '/assets/phat-giao/backgrounds/chinh-dien-phat-giao.png';
     document.querySelectorAll<HTMLImageElement>('.sanctuary-bg-img').forEach(image => {
       if (image.getAttribute('src') !== stageBackground) image.src = stageBackground;
     });
@@ -985,7 +985,7 @@ initLiveOperations();
       return;
     }
     const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    ws = new WebSocket(`${proto}//${window.location.host}/ws`);
+    ws = new WebSocket(`${proto}//${window.location.host}/ws?profile=phat-giao`);
 
     ws.onopen = () => {
       const token = window.TempleAuth.getToken();

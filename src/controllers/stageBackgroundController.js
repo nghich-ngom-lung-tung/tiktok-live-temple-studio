@@ -2,7 +2,7 @@ const crypto = require('node:crypto');
 const fs = require('node:fs/promises');
 const path = require('node:path');
 
-const DEFAULT_BACKGROUND = '/assets/tam-the-sanctuary-stage.png';
+const DEFAULT_BACKGROUND = '/assets/phat-giao/backgrounds/chinh-dien-phat-giao.png';
 const IMAGE_TYPES = new Map([
   ['image/png', { extension: 'png', signature: Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]) }],
   ['image/jpeg', { extension: 'jpg', signature: Buffer.from([0xff, 0xd8, 0xff]) }],
@@ -62,9 +62,10 @@ function dimensionsForImage(buffer, mimeType) {
   return null;
 }
 
-function createStageBackgroundController({ stateModel, realtime, ttsManager, stageBackgroundDir }) {
+function createStageBackgroundController({ stateModel, realtime, ttsManager, stageBackgroundDir, profileId = 'phat-giao', defaultBackground = DEFAULT_BACKGROUND, uploadUrlPrefix = '/stage-backgrounds' }) {
+  const namespace = require('../profiles/registry').getProfile(profileId).namespace;
   function publishState() {
-    realtime.broadcastNotification('temple.state', stateModel.getPublicState(ttsManager));
+    realtime.broadcastNotification(`${namespace}.state`, stateModel.getPublicState(ttsManager));
   }
 
   return {
@@ -95,7 +96,7 @@ function createStageBackgroundController({ stateModel, realtime, ttsManager, sta
       try {
         await fs.mkdir(stageBackgroundDir, { recursive: true });
         await fs.writeFile(target, image, { flag: 'wx' });
-        const url = `/stage-backgrounds/${filename}`;
+        const url = `${uploadUrlPrefix}/${filename}`;
         stateModel.state.settings.stageBackgroundUrl = url;
         stateModel.saveState();
         publishState();
@@ -108,10 +109,10 @@ function createStageBackgroundController({ stateModel, realtime, ttsManager, sta
     },
 
     reset(_req, res) {
-      stateModel.state.settings.stageBackgroundUrl = DEFAULT_BACKGROUND;
+      stateModel.state.settings.stageBackgroundUrl = defaultBackground;
       stateModel.saveState();
       publishState();
-      return res.json({ ok: true, url: DEFAULT_BACKGROUND });
+      return res.json({ ok: true, url: defaultBackground });
     }
   };
 }

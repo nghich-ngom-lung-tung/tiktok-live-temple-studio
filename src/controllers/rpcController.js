@@ -1,4 +1,4 @@
-function createRpcController(rpcService) {
+function createRpcController(rpcService, { profiles = null } = {}) {
   return async function handleHttpRpc(req, res) {
     const { jsonrpc, id, method, params } = req.body || {};
     if (!method) {
@@ -10,7 +10,13 @@ function createRpcController(rpcService) {
     }
 
     try {
-      const result = await rpcService.handleRpcCall(method, params || {});
+      const methodProfile = String(method).startsWith('christian.') ? 'thien-chua-giao' : String(method).startsWith('temple.') ? 'phat-giao' : null;
+      const requestedValue = req.query?.profile || params?.profileId;
+      const requestedProfile = requestedValue ? require('../profiles/registry').resolveProfileId(requestedValue) : null;
+      if (methodProfile && requestedProfile && methodProfile !== requestedProfile) throw new Error('Phương thức này thuộc hồ sơ Live khác.');
+      const selectedProfile = methodProfile || requestedProfile || require('../profiles/registry').DEFAULT_PROFILE_ID;
+      const selectedService = profiles?.[selectedProfile] || rpcService;
+      const result = await selectedService.handleRpcCall(method, { ...(params || {}), profileId: selectedProfile });
       res.json({ jsonrpc: jsonrpc || '2.0', id: id ?? null, result });
     } catch (error) {
       res.status(200).json({

@@ -33,6 +33,12 @@ async function main() {
   const newer = engine.currentAudio;
   resolveOld('blob:old'); await flush();
   assert.equal(engine.currentAudio, newer); assert.equal(engine.ttsPlaying, true);
+  engine.bgMusicEnabled = false;
+  engine.ctx = { state: 'suspended', resume: () => Promise.reject(new Error('Closed during resume')) };
+  engine.ensureContext(); await flush();
+  browser.AudioContext = class { constructor() { this.state = 'running'; } };
+  engine.ctx = { state: 'closed' };
+  assert.equal(engine.ensureContext().state, 'running');
   let closed = 0; engine.ctx = { close: async () => { closed++; } };
   engine.applyRemoteSettings({ presentationPaused: true, ttsEnabled: true, bgMusicEnabled: true, sfxEnabled: true });
   await flush(); assert.equal(closed, 1); assert.equal(engine.ttsEnabled, false); assert.equal(engine.bgMusicEnabled, false); assert.equal(engine.sfxEnabled, false); assert.equal(engine.ttsQueue.length, 0);

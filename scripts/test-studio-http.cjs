@@ -8,7 +8,7 @@ async function rpc(method,params={}){const r=await fetch(base+'/rpc',{method:'PO
  const config=await rpc('temple.voiceConfig');assert.equal(Object.keys(config.defaults).length,6);
  await rpc('temple.updateSettings',{musicTrack:'stream',musicAutoRotate:true});
  assert.equal((await rpc('temple.getState')).settings.musicTrack,'stream');
- for(const track of ['lotus','rain','stream','bamboo','night','dawn']){const r=await fetch(`${base}/assets/music/${track}.wav`);assert.equal(r.status,200);const b=Buffer.from(await r.arrayBuffer());assert.equal(b.toString('ascii',0,4),'RIFF');assert(b.length>2000000);}
+ for(const track of ['lotus','rain','stream','bamboo','night','dawn']){const r=await fetch(`${base}/assets/phat-giao/music/${track}.wav`);assert.equal(r.status,200);const b=Buffer.from(await r.arrayBuffer());assert.equal(b.toString('ascii',0,4),'RIFF');assert(b.length>2000000);}
  const ws=new WebSocket('ws://127.0.0.1:3012/ws',{headers});
  const welcome=new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error('Missing welcome event')),5000);ws.on('message',raw=>{const d=JSON.parse(raw);if(d.method==='temple.member'){clearTimeout(timer);resolve(d.params);}});});
  await new Promise(resolve=>ws.on('open',resolve));

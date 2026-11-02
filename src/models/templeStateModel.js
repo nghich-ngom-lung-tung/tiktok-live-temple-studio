@@ -29,7 +29,7 @@ const DEFAULT_STATE = {
     fortuneReadingMode: 'summary',
     musicTrack: 'lotus',
     musicAutoRotate: false,
-    stageBackgroundUrl: '/assets/tam-the-sanctuary-stage.png',
+    stageBackgroundUrl: '/assets/phat-giao/backgrounds/chinh-dien-phat-giao.png',
     bgMusicEnabled: true,
     sfxEnabled: true,
     presentationPaused: false,
@@ -161,7 +161,14 @@ class TempleStateModel {
           ...saved,
           devotees: saved.devotees || {},
           offerings: { ...DEFAULT_STATE.offerings, ...(saved.offerings || {}) },
-          settings: { ...DEFAULT_STATE.settings, ...(saved.settings || {}), autoSim: false, narrationTemplates: { ...DEFAULT_NARRATION, ...(saved.settings?.narrationTemplates || {}) } },
+          settings: {
+            ...DEFAULT_STATE.settings,
+            ...(saved.settings || {}),
+            stageBackgroundUrl: saved.settings?.stageBackgroundUrl === '/assets/tam-the-sanctuary-stage.png'
+              ? DEFAULT_STATE.settings.stageBackgroundUrl : (saved.settings?.stageBackgroundUrl || DEFAULT_STATE.settings.stageBackgroundUrl),
+            autoSim: false,
+            narrationTemplates: { ...DEFAULT_NARRATION, ...(saved.settings?.narrationTemplates || {}) }
+          },
           tiktok: { ...DEFAULT_STATE.tiktok }
         };
       }

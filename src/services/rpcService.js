@@ -12,6 +12,9 @@ function createRpcService({ stateModel, ritualService, commentService, ttsManage
   const saveState = () => stateModel.saveState();
 
 async function handleRpcCall(method, params = {}) {
+  // Profile routing metadata is not a ritual setting.
+  const { profileId, ...actionParams } = params;
+  params = actionParams;
   switch (method) {
     case 'temple.advanceMusic': {
       const tracks = ['lotus', 'rain', 'stream', 'bamboo', 'night', 'dawn'];

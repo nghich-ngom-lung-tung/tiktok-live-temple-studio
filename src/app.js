@@ -24,11 +24,19 @@ function createApp({ config, security, rateLimiters, controllers }) {
     '/stage-backgrounds',
     express.static(config.STAGE_BACKGROUND_DIR, { maxAge: '365d', immutable: true, index: false, dotfiles: 'deny' })
   );
+  if (config.CHRISTIAN_STAGE_BACKGROUND_DIR) {
+    app.use(
+      '/stage-backgrounds/thien-chua-giao',
+      express.static(config.CHRISTIAN_STAGE_BACKGROUND_DIR, { maxAge: '365d', immutable: true, index: false, dotfiles: 'deny' })
+    );
+  }
   registerHttpRoutes({
     app,
     controllers: {
       ...controllers,
-      adminPagePath: config.ADMIN_PAGE_PATH
+      adminPagePath: config.ADMIN_PAGE_PATH,
+      christianAdminPagePath: config.CHRISTIAN_ADMIN_PAGE_PATH,
+      christianLivePagePath: config.CHRISTIAN_LIVE_PAGE_PATH
     },
     security,
     rateLimiters

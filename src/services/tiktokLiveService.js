@@ -1,16 +1,19 @@
 const { TikTokLiveConnection, WebcastEvent, ControlEvent } = require('tiktok-live-connector');
 const { createGiftTracker } = require('./giftTracker');
 
-function createTikTokLiveService({ stateModel, realtime, ritualService, commentService, ttsManager, timers = {}, ceremonyQueue = null }) {
+function createTikTokLiveService({ stateModel, realtime, ritualService, commentService, ttsManager, timers = {}, ceremonyQueue = null, profileId = 'phat-giao', liveHandlers = null }) {
   const state = stateModel.state;
+  const { getProfile } = require('../profiles/registry');
+  const profile = getProfile(profileId);
   const later = timers.setTimeout || setTimeout, cancel = timers.clearTimeout || clearTimeout;
   const now = timers.now || Date.now;
   const giftTracker = createGiftTracker({ now });
   const broadcast = (...args) => realtime.broadcastNotification(...args);
+  const notify = (event, payload) => broadcast(`${profile.namespace}.${event}`, payload);
   const publicState = () => stateModel.getPublicState(ttsManager);
   let connection = null, wanted = '', revision = 0, reconnectTimer = null, retryCount = 0, connecting = null;
   const presenceTimer = (timers.setInterval || setInterval)(() => {
-    if (stateModel.pruneRoomViewers()) broadcast('temple.state', publicState());
+    if (stateModel.pruneRoomViewers()) notify('state', publicState());
   }, 60_000);
   presenceTimer.unref?.();
 
@@ -51,7 +54,7 @@ function createTikTokLiveService({ stateModel, realtime, ritualService, commentS
     retryCount++;
     const delay = Math.min(30_000, 2000 * 2 ** Math.min(retryCount - 1, 4));
     state.tiktok = { ...state.tiktok, connected: false, connecting: false, reconnecting: true, retryCount, nextRetryAt: now() + delay, viewerCount: 0 };
-    broadcast('temple.state', publicState());
+    notify('state', publicState());
     reconnectTimer = later(() => { reconnectTimer = null; void open(token).catch(() => {}); }, delay);
     reconnectTimer.unref?.();
   }
@@ -59,7 +62,7 @@ function createTikTokLiveService({ stateModel, realtime, ritualService, commentS
     if (!wanted || token !== revision) return state.tiktok;
     release();
     state.tiktok.connecting = true; state.tiktok.reconnecting = retryCount > 0; state.tiktok.nextRetryAt = null;
-    broadcast('temple.state', publicState());
+    notify('state', publicState());
     let current;
     try {
       current = new TikTokLiveConnection(wanted, { processInitialData: false, fetchRoomInfoOnConnect: true, enableExtendedGiftInfo: true });
@@ -71,14 +74,14 @@ function createTikTokLiveService({ stateModel, realtime, ritualService, commentS
         if (reconnectTimer) cancel(reconnectTimer); reconnectTimer = null;
         Object.assign(state.tiktok, { connected: true, connecting: false, reconnecting: false, retryCount: 0, nextRetryAt: null,
           roomId: String(room?.roomId || current.roomId || ''), lastError: null });
-        broadcast('temple.state', publicState());
+        notify('state', publicState());
       };
       on(ControlEvent.CONNECTED, connected);
       on(ControlEvent.DISCONNECTED, () => {
         Object.assign(state.tiktok, { connected: false, connecting: false, viewerCount: 0 });
-        if (wanted) scheduleRetry(token); else broadcast('temple.state', publicState());
+        if (wanted) scheduleRetry(token); else notify('state', publicState());
       });
-      on(ControlEvent.ERROR, error => { state.tiktok.lastError = error?.message || String(error); broadcast('temple.state', publicState()); });
+      on(ControlEvent.ERROR, error => { state.tiktok.lastError = error?.message || String(error); notify('state', publicState()); });
       on(WebcastEvent.STREAM_END, () => {
         ceremonyQueue?.clear();
         wanted = ''; revision++; connecting = null;
@@ -86,26 +89,32 @@ function createTikTokLiveService({ stateModel, realtime, ritualService, commentS
         release(); giftTracker.clear();
         Object.assign(state.tiktok, { connected: false, connecting: false, reconnecting: false, viewerCount: 0, nextRetryAt: null });
         stateModel.roomViewers.clear(); stateModel.endLiveSession('streamEnded');
-        broadcast('temple.state', publicState());
+        notify('state', publicState());
       });
       on(WebcastEvent.ROOM_USER, data => {
         ensureSession(); const viewerCount = Number(data?.total ?? data?.viewerCount);
         if (!Number.isFinite(viewerCount) || viewerCount < 0) return;
         state.tiktok.viewerCount = viewerCount; stateModel.recordViewerCount(viewerCount);
-        broadcast('temple.viewerCount', { viewerCount, liveSession: stateModel.sessionSummary() });
+        notify('viewerCount', { viewerCount, liveSession: stateModel.sessionSummary() });
       });
       on(WebcastEvent.MEMBER, data => {
         ensureSession(); const viewer = observe(data);
-        const devotee = stateModel.recordDevotee(viewer.user, viewer.uniqueId, viewer.avatar, 1, 0, 0, 'Đã vào Chánh Điện lễ Phật');
-        broadcast('temple.member', { user: devotee.name, uniqueId: devotee.uniqueId, avatar: devotee.avatar });
-        broadcast('temple.state', publicState());
+        if (liveHandlers?.onMember) liveHandlers.onMember(viewer.user, viewer.uniqueId, viewer.avatar);
+        else {
+          const devotee = stateModel.recordDevotee(viewer.user, viewer.uniqueId, viewer.avatar, 1, 0, 0, 'Đã vào Chánh Điện lễ Phật');
+          notify('member', { user: devotee.name, uniqueId: devotee.uniqueId, avatar: devotee.avatar });
+        }
+        notify('state', publicState());
       });
       on(WebcastEvent.CHAT, data => { ensureSession(); const viewer = observe(data); commentService.parseViewerComment(data?.content || data?.comment || '', viewer.user, viewer.uniqueId, viewer.avatar); });
       on(WebcastEvent.LIKE, data => {
         ensureSession(); const viewer = observe(data);
         const count = Math.max(1, Math.floor(Number(data?.count ?? data?.likeCount) || 1));
-        stateModel.recordRoomActivity('likes', count);
-        ritualService.strikeWoodenFish({ ...viewer, count });
+        if (liveHandlers?.onLike) liveHandlers.onLike(viewer, count);
+        else {
+          stateModel.recordRoomActivity('likes', count);
+          ritualService.strikeWoodenFish({ ...viewer, count });
+        }
       });
       const socialIds = new Set();
       const social = (data, kind) => {
@@ -113,8 +122,12 @@ function createTikTokLiveService({ stateModel, realtime, ritualService, commentS
         if (id && socialIds.has(`${kind}:${id}`)) return;
         if (id) socialIds.add(`${kind}:${id}`);
         if (socialIds.size > 2000) socialIds.delete(socialIds.values().next().value);
-        ensureSession(); const viewer = observe(data); stateModel.recordRoomActivity(kind);
-        ritualService.ringBell({ ...viewer, count: 1, wish: 'Hữu duyên tương ngộ nơi cửa Phật, cầu bình an may mắn', readTts: false });
+        ensureSession(); const viewer = observe(data);
+        if (liveHandlers?.onSocial) liveHandlers.onSocial(viewer, kind);
+        else {
+          stateModel.recordRoomActivity(kind);
+          ritualService.ringBell({ ...viewer, count: 1, wish: 'Hữu duyên tương ngộ nơi cửa Phật, cầu bình an may mắn', readTts: false });
+        }
       };
       on(WebcastEvent.FOLLOW, data => social(data, 'follows'));
       on(WebcastEvent.SHARE, data => social(data, 'shares'));
@@ -127,10 +140,13 @@ function createTikTokLiveService({ stateModel, realtime, ritualService, commentS
         ensureSession(); const viewer = observe(data);
         const gift = giftTracker.take(data, viewer.uniqueId || viewer.user);
         if (!gift) return;
-        const rule = state.settings.giftMappings?.[gift.giftId];
-        ritualService.offerGift({ ...viewer, coins: gift.coins, giftId: gift.giftId, giftQuantity: gift.quantity,
-          giftName: `${gift.quantity > 1 ? gift.quantity + 'x ' : ''}${gift.name}`,
-          presentation: rule?.action || null, wish: `Thành tâm dâng ${gift.name} kính lễ Đức Phật A Di Đà` });
+        const giftName = `${gift.quantity > 1 ? gift.quantity + 'x ' : ''}${gift.name}`;
+        if (liveHandlers?.onGift) liveHandlers.onGift({ ...viewer, coins: gift.coins, giftId: gift.giftId, giftQuantity: gift.quantity, giftName });
+        else {
+          const rule = state.settings.giftMappings?.[gift.giftId];
+          ritualService.offerGift({ ...viewer, coins: gift.coins, giftId: gift.giftId, giftQuantity: gift.quantity,
+            giftName, presentation: rule?.action || null, wish: `Thành tâm dâng ${gift.name} kính lễ Đức Phật A Di Đà` });
+        }
       });
       const room = await current.connect();
       if (valid()) connected(room);
@@ -160,7 +176,7 @@ function createTikTokLiveService({ stateModel, realtime, ritualService, commentS
     wanted = ''; revision++; connecting = null; if (reconnectTimer) cancel(reconnectTimer); reconnectTimer = null;
     release(); stateModel.roomViewers.clear(); giftTracker.clear(); stateModel.endLiveSession('manual');
     Object.assign(state.tiktok, { connected: false, connecting: false, reconnecting: false, viewerCount: 0, retryCount: 0, nextRetryAt: null });
-    broadcast('temple.state', publicState()); return state.tiktok;
+    notify('state', publicState()); return state.tiktok;
   }
   return { resolveTikTokUsername, extractUserFromEvent, connectTikTokLive, disconnectTikTokLive };
 }
