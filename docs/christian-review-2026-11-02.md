@@ -1,5 +1,7 @@
 # Rà soát toàn luồng Thiên Chúa giáo — 02/11/2026
 
+> Cập nhật tiếp theo: [rà tính năng cả hai hồ sơ](feature-review.md) đã kiểm tra ZeroTTS thật và sửa thêm giới hạn ký tự, khôi phục tiếng, dropdown và lưu dữ liệu. Thời hạn giọng hiện mặc định 180 giây (có cấu hình), thay cho 30 giây ghi trong lịch sử sửa bên dưới.
+
 Đợt rà soát này đọc luồng TikTok → service/state/RPC → hàng đợi → Live/Admin/OBS, giọng đọc, nhân vật, thư viện nội dung/nhạc và hướng dẫn. Phần phát hiện bên dưới lưu trạng thái trước khi sửa. Xem phần kết quả sửa cuối tài liệu để biết trạng thái hiện tại. Không dùng phòng TikTok thật hoặc chạy Python/ZeroTTS thật; không thay đổi dữ liệu Live đang lưu.
 
 ## Lỗi cần ưu tiên

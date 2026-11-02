@@ -133,14 +133,17 @@ flowchart TD
 
 | Sự kiện TikTok Live | Điều kiện / Từ khóa nhận diện | Nghi thức tương ứng trên Chánh Điện | Điểm Công Đức |
 | :--- | :--- | :--- | :---: |
-| **Thả tim (Like)** | Từng đợt like từ người xem | Gõ mõ gỗ trầm tụng kinh + Làn sóng Phật tử vái lạy | `+1` / tim |
+| **Thả tim (Like)** | Từng đợt like từ người xem | Tiếng mõ gỗ trầm + Làn sóng Phật tử vái lạy | `+1` / tim |
 | **Theo dõi (Follow) / Chia sẻ (Share)** | Thao tác follow hoặc share buổi live | Thỉnh Đại Hồng Chung ngân vang + Tỏa sóng âm vàng | `+10` |
 | **Bình luận Thắp hương** | `thắp hương`, `dâng hương`, `bái phật`, `lạy phật`, `hương` | Phật tử bước lên thảm đỏ, quỳ đảnh lễ 3 lạy + Đọc tên & lời khấn | `+15` |
 | **Bình luận Cầu nguyện** | `cầu ...`, `nguyện ...`, `nam mô`, `a di đà phật`, `bình an`, `chúc ...` | Bước lên đảnh lễ + Thả Đèn Hoa Đăng mang sớ khấn bay lên trời | `+10` |
 | **Bình luận Xin xăm** | `xin xăm`, `gieo quẻ`, `rút quẻ`, `quẻ` | Lắc ống xăm tre + Mở tờ Giải Quẻ đồng bộ giọng đọc AI | `+10` |
 | **Tặng quà Nhỏ (1–4 xu)** | Hoa hồng, Heart Me, Nốt nhạc... | Dâng Đài Hoa Sen Vàng + Thắp 3 nén hương + Đọc cảm tạ | `+20` / xu |
-| **Tặng quà Vừa (5–99 xu)** | Đèn lưu ly, Mâm ngũ quả, Chuông gió... | Dâng Mâm Quả / Đèn Lưu Ly + Thỉnh chuông đồng ngân vang | `+30` / xu |
+| **Tặng quà (5–9 xu/món)** | Theo giá từng món nhận từ TikTok | Đèn Lưu Ly + tiếng chuông | `+20` / xu |
+| **Tặng quà (10–99 xu/món)** | Theo giá từng món nhận từ TikTok | Đèn Lưu Ly (10–19) hoặc Mâm Quả (20–99) + tiếng chuông | `+30` / xu |
 | **Tặng quà Lớn ($\ge$ 100 xu)** | Quà đặc biệt $\ge$ 100 xu | **Đại Lễ Kim Long Chầu Phật**: Mưa hoa sen vàng, Hào quang vạn trượng, Chuông ngân vang | `+50` / xu |
+
+Điểm và loại nghi thức của quà dựa trên giá **mỗi món**; tổng điểm nhân theo số lượng thực nhận. Một combo 100 món giá 1 xu vẫn dùng cấp quà 1 xu, không bị đổi cấp theo cách TikTok gom gói. Cấu hình quà theo ID chỉ đổi cách trình diễn. Bình luận thường không khớp từ khóa được chuyển thành dâng 1 nén hương (+5); cùng người gửi có cooldown 3,5 giây.
 
 ## Tương tác Thiên Chúa giáo
 
@@ -156,7 +159,7 @@ flowchart TD
 
 Bình luận kích hoạt thao tác cách nhau ít nhất 3,5 giây/người; nếu gửi nhanh hơn, Live hiện thông báo chờ. Bình luận thường vẫn hiện bong bóng. Like/Follow/Share cập nhật thống kê và thông báo có tên/avatar; các sự kiện này dùng tương tác nhẹ. Khách mới có thẻ chào lần lượt kèm tên, avatar và lời chào. Hồ sơ không dùng điểm Công Đức.
 
-Các cảnh nghi thức chạy tuần tự: nhóm cầu nguyện/nến/hiệp thông/bình an/tri ân giữ ít nhất 10 giây cho động tác, rồi 2,6 giây trở về chỗ đứng. Giọng đọc có mốc riêng và được chuẩn bị trước khi có thể; nếu worker đang khởi động, lượt hiện tại thử chờ tối đa 30 giây mà vẫn phát hình. Khi quá hạn, giao diện báo lượt chỉ phát hình; tiếng đến sau hạn bị bỏ. Người xem mới mở OBS sẽ tiếp tục ở đúng vị trí âm thanh theo mốc tiếng.
+Các cảnh nghi thức chạy tuần tự: nhóm cầu nguyện/nến/hiệp thông/bình an/tri ân giữ ít nhất 10 giây cho động tác, rồi 2,6 giây trở về chỗ đứng. Giọng đọc có mốc riêng và được chuẩn bị trước khi có thể; nếu worker đang khởi động, lượt hiện tại thử chờ tối đa 180 giây mà vẫn phát hình. Khi quá hạn, giao diện báo lượt chỉ phát hình; tiếng đến sau hạn bị bỏ. Người xem mới mở OBS sẽ tiếp tục ở đúng vị trí âm thanh theo mốc tiếng.
 
 Các thao tác cũng có thể được khởi chạy từ **Thao tác phụng vụ nhanh** trong giao diện. Hồ sơ này thống kê lời cầu nguyện, chia sẻ Kinh Thánh, tri ân và quà; không dùng điểm Công Đức của hồ sơ Phật giáo. Sự kiện TikTok có thể thay đổi theo phiên bản connector và dữ liệu thực tế của phòng.
 
@@ -396,6 +399,14 @@ scripts/                   # Cài đặt, dev server và kiểm tra tự động
 docs/                      # Hướng dẫn vận hành và nội dung suy ngẫm
 data/                      # Trạng thái, model và cache runtime (không commit)
 ```
+
+## Kiểm tra tính năng
+
+Chạy `npm test` để build giao diện, kiểm tra TypeScript và chạy toàn bộ các bộ kiểm tra độc lập cho cả hai hồ sơ. Lệnh dừng ngay khi có kiểm tra không qua.
+
+Kiểm tra thêm bằng ZeroTTS thật và API của cả hai hồ sơ: mở terminal chạy `node scripts/review-server.cjs`, đợi worker sẵn sàng, rồi ở terminal khác chạy `node scripts/test-studio-http.cjs` và `node scripts/test-profile-features.cjs`. Server thử dùng trạng thái/ảnh nền riêng trong thư mục tạm; không kết nối TikTok thật. Model và cache giọng vẫn dùng chung thư mục local của máy.
+
+Kết quả và phạm vi kiểm tra: [rà soát chức năng cả hai hồ sơ](docs/feature-review.md).
 
 ## Bản quyền
 

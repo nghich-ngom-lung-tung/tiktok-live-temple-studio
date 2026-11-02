@@ -22,7 +22,7 @@
 
 Tương tác được ghi nhận khi nhận sự kiện. Các hồ sơ dùng chung đồng hồ bắt đầu/kết thúc để các màn Live, Admin và OBS đồng bộ; mỗi hồ sơ xử lý lượt theo thứ tự và không chạy chồng hoạt ảnh.
 
-**Thiên Chúa giáo:** hoạt ảnh bắt đầu ngay khi lượt được phát. ZeroTTS tổng hợp ở nền và dùng mốc bắt đầu tiếng riêng; tải lại sẽ tua theo mốc tiếng. Worker chưa sẵn sàng được thử lại, tổng thời gian chờ tiếng của lượt tối đa 30 giây. Quá hạn thì báo lỗi và tiếp tục bằng hình, bỏ kết quả tiếng đến trễ. Các cảnh cầu nguyện/hiệp thông vẫn giữ thời lượng cần thiết cho nhân vật đi lên, cúi đầu và trở về. Lịch máy chủ dành thêm 2,6 giây để người thực hiện về chỗ trước khi chạy người tiếp theo. Nếu màn Live kết nối lại, nó tiếp tục từ trạng thái và mốc thời gian máy chủ hiện tại.
+**Thiên Chúa giáo:** hoạt ảnh bắt đầu ngay khi lượt được phát. ZeroTTS tổng hợp ở nền và dùng mốc bắt đầu tiếng riêng; tải lại sẽ tua theo mốc tiếng. Worker chưa sẵn sàng được thử lại, tổng thời gian chờ tiếng của lượt tối đa 180 giây. Quá hạn thì báo lỗi và tiếp tục bằng hình, bỏ kết quả tiếng đến trễ. Các cảnh cầu nguyện/hiệp thông vẫn giữ thời lượng cần thiết cho nhân vật đi lên, cúi đầu và trở về. Lịch máy chủ dành thêm 2,6 giây để người thực hiện về chỗ trước khi chạy người tiếp theo. Nếu màn Live kết nối lại, nó tiếp tục từ trạng thái và mốc thời gian máy chủ hiện tại.
 
 **Phật giáo:** máy chủ chờ tối đa 12 giây để chuẩn bị giọng trước khi bắt đầu nghi thức. Nếu giọng chưa sẵn sàng, lượt vẫn phát hình ảnh và trạng thái hàng đợi báo lỗi giọng đọc.
 
@@ -42,7 +42,7 @@ Hồ sơ Thiên Chúa giáo ghi nhận lời cảm ơn và thống kê quà theo
 
 ## Kết nối và phiên thống kê
 
-- Mất kết nối TikTok: thử lại sau 2, 4, 8, 16 rồi tối đa 30 giây/lần. Nút ngắt kết nối và sự kiện TikTok kết thúc Live sẽ dừng thử lại.
+- Mất kết nối TikTok: thử lại sau 2, 4, 8, 16 rồi tối đa 180 giây/lần. Nút ngắt kết nối và sự kiện TikTok kết thúc Live sẽ dừng thử lại.
 - Không lấy lại lịch sử tương tác cũ lúc nối vào phòng, để tránh phát lại quà/chat trước khi ứng dụng bắt đầu nghe.
 - Phiên thống kê bắt đầu khi kết nối được phòng; nối lại cùng phòng giữ nguyên phiên. Chuyển tài khoản, kết thúc Live hoặc ngắt thủ công sẽ lưu phiên trước.
 - **Mở phiên thống kê mới** lưu phiên hiện tại rồi bắt đầu thống kê lại, giữ nguyên công đức tổng đã lưu.
