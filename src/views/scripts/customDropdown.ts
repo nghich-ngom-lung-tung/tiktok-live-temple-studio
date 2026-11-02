@@ -147,8 +147,9 @@ export function enhanceSelect(select: HTMLSelectElement): HTMLElement {
       return originalDescriptor?.get?.call(this);
     },
     set(val) {
+      const previous = originalDescriptor?.get?.call(this);
       originalDescriptor?.set?.call(this, val);
-      syncFromSelect();
+      if (previous !== originalDescriptor?.get?.call(this)) syncFromSelect();
     },
     configurable: true
   });

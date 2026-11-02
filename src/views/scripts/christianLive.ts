@@ -7,6 +7,7 @@ import { createScriptureControls } from './scriptureControls';
 import { createChristianPresentation } from './christianPresentation';
 import './audio';
 import './gooeyNav';
+import './customDropdown';
 import './studioEffects';
 
 initTabs();
@@ -88,6 +89,9 @@ const playback = createChristianPlayback({
   },
   changed(status) {
     if (latestState) latestState.playback = status;
+    if (!status.paused && status.current && status.current.endsAt > Date.now()) {
+      playSpeech({ ...status.current.event, startsAt: status.current.event.speechStartsAt ?? status.current.startsAt });
+    }
     document.body.classList.toggle('presentation-paused', status.paused);
     if (animationsPaused !== status.paused) {
       animationsPaused = status.paused;
@@ -96,6 +100,7 @@ const playback = createChristianPlayback({
       }
     }
     text('playbackStatus', status.paused ? 'Đã tạm dừng · bỏ các lượt đang chờ.'
+      : status.current?.event?.ttsPrepared === false ? `Đang phát hình, đang tạo lời đọc · ${status.pendingCount} lượt chờ.`
       : status.preparing ? `Đang tạo giọng đọc · ${status.pendingCount} lượt chờ.`
       : status.current?.event?.speechError ? status.current.event.speechError
       : status.current ? `Đang phát · ${status.pendingCount} lượt chờ.` : 'Sẵn sàng nhận lời cầu nguyện.');

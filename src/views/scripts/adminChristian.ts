@@ -90,6 +90,7 @@ function connectRealtime(): void {
 
 function renderPlayback(status: any): void {
   setText('playbackStatus', status?.paused ? 'Đã tạm dừng · bỏ các lượt đang chờ.'
+    : status?.current?.event?.ttsPrepared === false ? `Đang phát hình, đang tạo lời đọc · ${status.pendingCount} lượt chờ.`
     : status?.preparing ? `Đang tạo giọng đọc · ${status.pendingCount} lượt chờ.`
     : status?.current?.event?.speechError || (status?.current ? `Đang phát · ${status.pendingCount} lượt chờ.` : 'Sẵn sàng nhận tương tác.'));
 }
