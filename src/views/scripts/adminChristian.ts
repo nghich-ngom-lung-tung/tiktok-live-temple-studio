@@ -2,7 +2,7 @@ import { ACTIVE_PROFILE_ID, rpc, toast, escapeHtml, initTabs } from './studioSha
 import { TTS_VOICE_NAMES } from './ttsVoiceNames';
 import { createScriptureControls } from './scriptureControls';
 import './customDropdown';
-import './studioEffects';
+import { ritualIcon } from './studioEffects';
 
 const contentUrl = new URL(window.location.href);
 if (['scripture', 'voiceSettings'].includes(contentUrl.searchParams.get('tab') || contentUrl.hash.slice(1))) {
@@ -191,14 +191,18 @@ function renderRecent(events: any[] = []): void {
   const list = $('recentActivity');
   if (!list) return;
   if (!events.length) {
-    list.innerHTML = '<li>Chưa có tương tác trong phiên này.</li>';
+    list.innerHTML = '<li class="event-summary-empty">Chưa có tương tác trong phiên này.</li>';
     return;
   }
   const labels: Record<string, string> = { prayer: 'gửi lời cầu nguyện', scripture: 'chia sẻ suy ngẫm', gift: 'gửi quà', member: 'vừa vào phòng Live', candle: 'thắp nến tạ ơn', bell: 'đổ chuông thánh đường', communion: 'hiệp thông đại lễ', peace: 'gửi lời chúc bình an', thanksgiving: 'dâng lời tri ân', welcome: 'được chào đón' };
+  const icons: Record<string, string> = { prayer: 'prayer', scripture: 'bible', gift: 'gift', member: 'person', candle: 'incense', bell: 'bell', communion: 'ceremony', peace: 'heart', thanksgiving: 'heart', welcome: 'person' };
   list.innerHTML = events.slice(0, 6).map(event => {
-    const time = event.timestamp ? new Date(event.timestamp).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : 'Vừa xong';
-    const detail = event.title ? `${event.title} · ${event.reference}` : event.reference || event.giftName || event.wish || '';
-    return `<li><strong>${escapeHtml(event.user || 'Khách xem')}</strong> ${labels[event.type] || 'tương tác'}${detail ? ` · ${escapeHtml(detail)}` : ''}<small>${escapeHtml(time)}</small></li>`;
+    const date = event.timestamp ? new Date(event.timestamp) : null;
+    const validDate = date && !Number.isNaN(date.getTime());
+    const time = validDate ? date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : 'Vừa xong';
+    const detail = event.title ? [event.title, event.reference].filter(Boolean).join(' · ') : event.type === 'gift' ? [event.giftName, Number(event.coins) ? `${Number(event.coins).toLocaleString('vi-VN')} xu` : ''].filter(Boolean).join(' · ') : event.reference || event.giftName || event.wish || '';
+    const description = `${event.user || 'Khách xem'} ${labels[event.type] || 'tương tác'}${detail ? ` · ${detail}` : ''}`;
+    return `<li class="event-summary-item" data-kind="${escapeHtml(event.type || 'other')}" title="${escapeHtml(description)}"><span class="event-feed-icon" aria-hidden="true">${ritualIcon(icons[event.type] || 'heart')}</span><span class="event-summary-copy"><span><strong>${escapeHtml(event.user || 'Khách xem')}</strong> ${labels[event.type] || 'tương tác'}${detail ? ` · ${escapeHtml(detail)}` : ''}</span><time${validDate ? ` datetime="${escapeHtml(date.toISOString())}"` : ''}>${escapeHtml(time)}</time></span></li>`;
   }).join('');
 }
 

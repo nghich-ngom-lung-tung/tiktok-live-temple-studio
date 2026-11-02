@@ -48,6 +48,14 @@
 .session-stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; padding:12px 0 18px; border-bottom:1px solid #ecdfca; }
 .session-stats span,.session-stats strong { display:block; }.session-stats span { color:#84725e; font-size:11px; }.session-stats strong { margin-top:4px; color:#71382b; font-size:17px; font-variant-numeric:tabular-nums; }
 .christian-admin-page .event-list li { border-color:#f0e7d6; }.christian-admin-page .event-list strong { color:#583b31; }
+.christian-admin-page .event-summary-item[data-kind="prayer"] .event-feed-icon,
+.christian-admin-page .event-summary-item[data-kind="scripture"] .event-feed-icon { background:#fbefeb!important; border-color:#e5c1b7!important; color:#87372c!important; }
+.christian-admin-page .event-summary-item[data-kind="gift"] .event-feed-icon,
+.christian-admin-page .event-summary-item[data-kind="thanksgiving"] .event-feed-icon { background:#f9edf0!important; border-color:#e4c2ca!important; color:#914452!important; }
+.christian-admin-page .event-summary-item[data-kind="member"] .event-feed-icon,
+.christian-admin-page .event-summary-item[data-kind="welcome"] .event-feed-icon { background:#f1f4e9!important; border-color:#d1d9b9!important; color:#63733d!important; }
+.christian-admin-page .event-summary-item[data-kind="candle"] .event-feed-icon,
+.christian-admin-page .event-summary-item[data-kind="bell"] .event-feed-icon { background:#fcf3dd!important; border-color:#e8d29d!important; color:#9b7329!important; }
 .christian-admin-page .auth-details pre { border:1px solid #e7d8bf; border-radius:8px; }
 
 /* Spiritual badge colors for Christian ritual actions */
