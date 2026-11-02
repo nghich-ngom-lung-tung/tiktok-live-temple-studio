@@ -67,8 +67,8 @@ const ritualEffects = createChristianEffects(stage, () => audio.ensureContext())
 const ritualPresentation = createChristianPresentation(stage);
 const playback = createChristianPlayback({
   play: handleEvent,
-  stop() {
-    audio.stopTts();
+  stop(reason) {
+    if (reason === 'pause' || reason === 'cancel') audio.stopTts();
     ritualEffects.clear();
     ritualPresentation.finish(resolveRitualReturnTarget);
     window.clearTimeout(memberTimer);
@@ -671,6 +671,10 @@ function connect(): void {
         case 'christian.event':
           if (data.state) updateState(data.state);
           if (data.playback) playback.sync({ ...latestState?.playback, current: data.playback, paused: Boolean(latestState?.settings?.presentationPaused), pendingCount: latestState?.playback?.pendingCount || 0, preparing: false });
+          break;
+        case 'christian.speech':
+          if (data.playback) playback.sync({ ...latestState?.playback, current: data.playback, paused: Boolean(latestState?.settings?.presentationPaused), pendingCount: latestState?.playback?.pendingCount || 0, preparing: false });
+          if (data.event) playSpeech({ ...data.event, startsAt: data.startsAt || data.playback?.startsAt });
           break;
         case 'christian.activity':
           if (data.type === 'like') showChat({ user: data.user, comment: `đã gửi ${Number(data.count || 1)} lượt thích ♥` });

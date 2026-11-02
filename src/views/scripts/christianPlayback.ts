@@ -6,7 +6,7 @@ export type ChristianPlayback = {
 // The server owns the timeline, including recovery after a page reload.
 export function createChristianPlayback({ play, stop, changed }: {
   play: (event: Record<string, any>) => void;
-  stop: () => void;
+  stop: (reason: 'pause' | 'cancel' | 'finish' | 'replace') => void;
   changed: (status: ChristianPlayback) => void;
 }) {
   let status: ChristianPlayback | null = null;
@@ -14,12 +14,13 @@ export function createChristianPlayback({ play, stop, changed }: {
   let endTimer = 0;
   let scheduled = '';
   let playing = '';
+  let playingEndsAt = 0;
   const played = new Set<string>();
-  function cancel() {
+  function cancel(reason: 'pause' | 'cancel' | 'finish' | 'replace' = 'cancel') {
     window.clearTimeout(timer);
     window.clearTimeout(endTimer);
-    timer = 0; scheduled = ''; playing = '';
-    stop();
+    timer = 0; endTimer = 0; scheduled = ''; playing = ''; playingEndsAt = 0;
+    stop(reason);
   }
   return {
     sync(next: ChristianPlayback) {
@@ -27,22 +28,37 @@ export function createChristianPlayback({ play, stop, changed }: {
       status = next;
       changed(next);
       const current = next.current;
-      if (next.paused || !current || current.endsAt <= Date.now()) {
-        if (playing || scheduled || next.paused) cancel();
+      if (next.paused) {
+        cancel('pause');
+        return;
+      }
+      if (!current || current.endsAt <= Date.now()) {
+        if (playing || scheduled) cancel(current ? 'finish' : 'cancel');
         return;
       }
       const id = current.event?.id;
-      if (!id || played.has(id) || scheduled === id) return;
-      cancel();
+      if (!id) return;
+      if (playing === id) {
+        if (current.endsAt !== playingEndsAt) {
+          playingEndsAt = current.endsAt;
+          window.clearTimeout(endTimer);
+          endTimer = window.setTimeout(() => cancel('finish'), Math.max(0, current.endsAt - Date.now()));
+        }
+        return;
+      }
+      if (played.has(id) || scheduled === id) return;
+      cancel('replace');
       scheduled = id;
       timer = window.setTimeout(() => {
         scheduled = ''; timer = 0;
-        if (status?.paused || status?.current?.event?.id !== id || current.endsAt <= Date.now()) return;
+        const latest = status?.current;
+        if (status?.paused || !latest || latest.event?.id !== id || latest.endsAt <= Date.now()) return;
         playing = id;
+        playingEndsAt = latest.endsAt;
         played.add(id);
         if (played.size > 500) played.delete(played.values().next().value);
-        play({ ...current.event, startsAt: current.startsAt, endsAt: current.endsAt, elapsedMs: Math.max(0, Date.now() - current.startsAt) });
-        endTimer = window.setTimeout(cancel, Math.max(0, current.endsAt - Date.now()));
+        play({ ...latest.event, startsAt: latest.startsAt, endsAt: latest.endsAt, elapsedMs: Math.max(0, Date.now() - latest.startsAt) });
+        endTimer = window.setTimeout(() => cancel('finish'), Math.max(0, latest.endsAt - Date.now()));
       }, Math.max(0, current.startsAt - Date.now()));
     },
     stop: cancel
