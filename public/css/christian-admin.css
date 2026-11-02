@@ -19,6 +19,10 @@
 .christian-sim-badge.is-live { background:#f1dfd7; color:#80352a; }
 .preview-chat-label { margin-top:15px; }
 .christian-admin-page .error-copy:not(:empty) { color:#a4342a; }
+.christian-admin-page .track-row { padding:18px 10px; border-radius:8px; }
+.christian-admin-page .track-row:hover { background:#f5ebd9; }
+.christian-admin-page .track-row[aria-pressed=true] { background:#f2e6cf; color:var(--temple-cinnabar); }
+.christian-admin-page .christian-seal[data-icon="bible"] svg { width:24px; height:24px; }
 .toggle-setting { min-height:66px; display:flex!important; align-items:center; justify-content:space-between; gap:15px; padding:12px 14px; border:1px solid #e7d8bf; border-radius:9px; background:#fcf7ee; }
 .toggle-setting span strong,.toggle-setting span small { display:block; }.toggle-setting span strong { color:#5a3d31; font-size:13px; }.toggle-setting span small { color:#84735f; font-size:11px; }
 .toggle-setting input { width:19px!important; min-height:19px!important; height:19px; accent-color:#78372b; }

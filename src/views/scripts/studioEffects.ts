@@ -2,7 +2,7 @@ const paths:Record<string,string>={
  incense:'<path d="M8 24h16l-2 5H10l-2-5ZM12 24V10m4 14V7m4 17V10M12 6c-3-3 3-3 0-6m4 5c-3-3 3-3 0-5m4 6c-3-3 3-3 0-6"/>',
  prayer:'<path d="M9 8h14l3 9-3 9H9l-3-9 3-9Zm7-5v5m0 18v4M9 13h14M9 21h14M16 8v18"/>',
  cross:'<path d="M16 3v26M7 11h18"/>',
- bible:'<path d="M5 4h10a4 4 0 0 1 4 4v20H9a4 4 0 0 0-4 2V4Zm18 0H13a4 4 0 0 0-4 4v20m6-17v8m-4-4h8"/>',
+ bible:'<path d="M4 6h4a8 8 0 0 1 8 8v13a8 8 0 0 0-8-6H4V6Zm24 0h-4a8 8 0 0 0-8 8v13a8 8 0 0 1 8-6h4V6ZM22 9v6m-3-3h6"/>',
  heart:'<path d="M16 28S4 21 4 12a6 6 0 0 1 12-2 6 6 0 0 1 12 2c0 9-12 16-12 16Z"/>',
  gift:'<path d="M4 13h24v16H4zM2 8h28v5H2zM16 8v21m0-21C8 8 7 2 11 2c3 0 5 4 5 6Zm0 0c8 0 9-6 5-6-3 0-5 4-5 6Z"/>',
  person:'<circle cx="16" cy="10" r="6"/><path d="M5 29c0-7 4-11 11-11s11 4 11 11"/>',
