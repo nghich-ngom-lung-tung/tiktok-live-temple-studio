@@ -165,6 +165,15 @@ function createCeremonyQueue({ stateModel, realtime, ttsManager, profileId = 'ph
     timer = null; active = null; preparing = false; pending.length = 0; prepared = new WeakMap(); speechResults = new WeakMap(); speechTail = Promise.resolve(); publish();
   }
   publish();
-  return { enqueue, clear, resume() { publish(); void pump(); }, status: () => stateModel.playback };
+  return { enqueue, clear, resume() {
+    if (active && !stateModel.state.settings.ttsEnabled) {
+      if (speechTimer) { clearTimer(speechTimer); speechTimer = null; }
+      active.event = { ...active.event, ttsPrepared: true, speechError: null };
+      active.returnsAt = Math.min(active.returnsAt, Math.max(now(), active.startsAt + durationFor(active.event, null)));
+      active.endsAt = active.returnsAt + active.returnDuration;
+      scheduleFinish(active);
+    }
+    publish(); void pump();
+  }, status: () => stateModel.playback };
 }
 module.exports = { createCeremonyQueue };

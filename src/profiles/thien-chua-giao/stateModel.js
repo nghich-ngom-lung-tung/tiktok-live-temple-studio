@@ -1,6 +1,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
+const { writeJsonAtomic } = require('../../utils/atomicJson');
 const { sanitizeUserName, sanitizeWishText } = require('../../utils/textSanitizer');
 const { getProfile } = require('../registry');
 
@@ -127,7 +128,7 @@ class ChristianStateModel {
         liveSessions: this.state.liveSessions,
         settings: this.state.settings
       };
-      fs.promises.writeFile(this.stateFile, JSON.stringify(toSave, null, 2), 'utf8').catch(error => {
+      writeJsonAtomic(this.stateFile, toSave).catch(error => {
         console.error('[Thiên Chúa giáo] Lỗi lưu state:', error.message);
       });
     }, 500);
@@ -268,7 +269,7 @@ class ChristianStateModel {
       user: sanitizeUserName(user || uniqueId),
       uniqueId: String(uniqueId || ''),
       avatar: String(avatar || ''),
-      wish: sanitizeWishText(wish).slice(0, 240),
+      wish: sanitizeWishText(wish, 240).slice(0, 240),
       timestamp: new Date().toISOString()
     };
     this.state.totalPrayerRequests += 1;
@@ -288,9 +289,9 @@ class ChristianStateModel {
       user: sanitizeUserName(user || uniqueId),
       uniqueId: String(uniqueId || ''),
       avatar: String(avatar || ''),
-      reference: sanitizeWishText(reference).slice(0, 80),
+      reference: String(reference || '').normalize('NFC').slice(0, 80),
       reflectionId, title, category,
-      reflection: sanitizeWishText(reflection).slice(0, 240),
+      reflection: sanitizeWishText(reflection, 240).slice(0, 240),
       timestamp: new Date().toISOString()
     };
     this.state.totalScriptureShares += 1;

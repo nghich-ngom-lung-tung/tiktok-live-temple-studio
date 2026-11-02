@@ -28,7 +28,7 @@ function sanitizeUserName(rawName) {
   return letters.length < 2 ? 'Thí Chủ Hữu Duyên' : normalized;
 }
 
-function sanitizeWishText(rawWish) {
+function sanitizeWishText(rawWish, maxLength = 120) {
   if (!rawWish) return '';
   const cleaned = String(rawWish)
     .normalize('NFKC')
@@ -39,7 +39,7 @@ function sanitizeWishText(rawWish) {
     .replace(/(.)\1{2,}/gi, '$1$1')
     .replace(/\s+/g, ' ')
     .replace(/^[.,!?\s-]+|[.,!?\s-]+$/g, '')
-    .slice(0, 120);
+    .slice(0, Math.max(1, Math.min(1000, Number(maxLength) || 120)));
 
   if (!cleaned || BAD_WORDS_RE.test(cleaned)) return '';
   const letters = cleaned.match(VI_LETTER_RE) || [];

@@ -1,17 +1,18 @@
 const { DEFAULT_NARRATION } = require('../services/narrationService');
 const fs = require('fs');
+const { writeJsonAtomic } = require('../utils/atomicJson');
 const { sanitizeUserName, sanitizeWishText } = require('../utils/textSanitizer');
 
 const DEFAULT_STATE = {
-  totalIncense: 108,
-  totalMerit: 1080,
-  woodenFishHits: 360,
-  bellRings: 36,
-  lanternCount: 18,
-  fortuneCount: 12,
+  totalIncense: 0,
+  totalMerit: 0,
+  woodenFishHits: 0,
+  bellRings: 0,
+  lanternCount: 0,
+  fortuneCount: 0,
   activeIncenseSticks: 9,
   haloIntensity: 0.45,
-  offerings: { lotus: 3, fruit: 2, lamp: 2, dragon: 1 },
+  offerings: { lotus: 0, fruit: 0, lamp: 0, dragon: 0 },
   devotees: {},
   recentEvents: [],
   liveSessions: [],
@@ -31,6 +32,8 @@ const DEFAULT_STATE = {
     musicAutoRotate: false,
     stageBackgroundUrl: '/assets/phat-giao/backgrounds/chinh-dien-phat-giao.png',
     bgMusicEnabled: true,
+    musicVolume: 0.65,
+    ttsVolume: 0.95,
     sfxEnabled: true,
     presentationPaused: false,
     sfxVolume: 0.8,
@@ -191,10 +194,11 @@ class TempleStateModel {
         activeIncenseSticks: this.state.activeIncenseSticks,
         offerings: this.state.offerings,
         devotees: this.state.devotees,
+        recentEvents: this.state.recentEvents,
         settings: this.state.settings,
         liveSession: this.state.liveSession, liveSessions: this.state.liveSessions
       };
-      fs.promises.writeFile(this.stateFile, JSON.stringify(toSave, null, 2), 'utf8').catch((error) => {
+      writeJsonAtomic(this.stateFile, toSave).catch((error) => {
         console.error('[State] Lỗi lưu file:', error.message);
       });
     }, 1200);

@@ -27,7 +27,7 @@ function createChristianService({ stateModel, realtime, ceremonyQueue, ttsManage
     let text = (candidates.length ? candidates : templates)[Math.floor(Math.random() * (candidates.length || templates.length))] || '';
     lastTemplateByKind.set(kind, text);
     for (const [key, value] of Object.entries(values)) text = text.replaceAll(`{${key}}`, String(value || ''));
-    return sanitizeWishText(text).slice(0, 1000);
+    return sanitizeWishText(text, 1000).slice(0, 1000);
   }
 
   function prepareViewer(user, uniqueId, avatar) {
@@ -57,7 +57,7 @@ function createChristianService({ stateModel, realtime, ceremonyQueue, ttsManage
 
   function sendPrayer({ user, uniqueId, avatar, wish }) {
     const viewer = prepareViewer(user, uniqueId, avatar);
-    const cleanWish = sanitizeWishText(wish).slice(0, 240) || 'Xin cầu nguyện cho gia đình được bình an.';
+    const cleanWish = sanitizeWishText(wish, 240).slice(0, 240) || 'Xin cầu nguyện cho gia đình được bình an.';
     const request = stateModel.recordPrayer({ user: viewer.name, uniqueId: viewer.uniqueId, avatar: viewer.avatar, wish: cleanWish });
     const event = {
       id: crypto.randomUUID(), type: 'prayer', profileId: 'thien-chua-giao',
@@ -75,7 +75,7 @@ function createChristianService({ stateModel, realtime, ceremonyQueue, ttsManage
     const passage = reference ? findScripture(reference) : scripturePicker.pick(category);
     if (!passage) throw new Error('Chọn một mục trong danh sách Kinh Thánh có sẵn nhé.');
     const viewer = prepareViewer(user, uniqueId, avatar);
-    const cleanReflection = sanitizeWishText(reflection).slice(0, 240) || passage.reflection;
+    const cleanReflection = sanitizeWishText(reflection, 240).slice(0, 240) || passage.reflection;
     const share = stateModel.recordScriptureShare({
       user: viewer.name, uniqueId: viewer.uniqueId, avatar: viewer.avatar,
       reference: passage.reference,
@@ -96,6 +96,7 @@ function createChristianService({ stateModel, realtime, ceremonyQueue, ttsManage
   }
 
   function thankGift({ user, uniqueId, avatar, coins, giftQuantity, giftName }) {
+    if (!Number.isFinite(Number(coins ?? 0)) || !Number.isFinite(Number(giftQuantity ?? 1))) throw new Error('Giá trị và số lượng quà phải là số hữu hạn.');
     const viewer = prepareViewer(user, uniqueId, avatar);
     const supporter = stateModel.recordGift({
       user: viewer.name, uniqueId: viewer.uniqueId, avatar: viewer.avatar,
@@ -165,7 +166,7 @@ function createChristianService({ stateModel, realtime, ceremonyQueue, ttsManage
       if (chatCooldown.size > 1000) chatCooldown.delete(chatCooldown.keys().next().value);
     }
 
-    const clean = sanitizeWishText(raw).slice(0, 240);
+    const clean = sanitizeWishText(raw, 240).slice(0, 240);
     if (!clean) return null;
     if (now - (prayerCooldown.get(key) || 0) < 3500) {
       realtime.broadcastNotification('christian.activity', { type: 'notice', user: viewer.name, uniqueId: viewer.uniqueId, avatar: viewer.avatar, message: 'Vui lòng chờ 3,5 giây giữa các thao tác.' });

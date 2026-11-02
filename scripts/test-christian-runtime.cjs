@@ -54,7 +54,7 @@ function runtime({ time = clock(), tts } = {}) {
   const stateModel = model(), notifications = [];
   tts ||= { getStatus: () => ({ ready: false, voices: [] }) };
   const realtime = { broadcastNotification: (method, params) => notifications.push({ method, params: structuredClone(params) }) };
-  const queue = createCeremonyQueue({ stateModel, realtime, ttsManager: tts, profileId: 'thien-chua-giao', prefetchSpeech: true, nonBlockingSpeech: true, speechTimeoutMs: 30000, now: time.now, setTimer: time.setTimeout, clearTimer: time.clearTimeout });
+  const queue = createCeremonyQueue({ stateModel, realtime, ttsManager: tts, profileId: 'thien-chua-giao', prefetchSpeech: true, nonBlockingSpeech: true, speechTimeoutMs: require('../src/services/speechPolicy').CHRISTIAN_SPEECH_TIMEOUT_MS, now: time.now, setTimer: time.setTimeout, clearTimer: time.clearTimeout });
   const service = createChristianService({ stateModel, realtime, ceremonyQueue: queue, ttsManager: tts });
   return { stateModel, notifications, queue, service, realtime, time, tts };
 }
@@ -169,6 +169,12 @@ async function regressions() {
   r.service.parseViewerComment('xin kinh Thi Thiên 23:1', 'Reader B', 'reader-b', '');
   assert.equal(r.queue.status().current.event.reference, 'Thi Thiên 23:1');
   assert.notEqual(r.queue.status().current.event.reflectionId, requestedFirst.reflectionId); r.queue.clear();
+  const longReflection = 'Xin Chúa ban bình an và hy vọng cho mọi người. '.repeat(5).trim().replace(/\.$/, '');
+  r.service.shareScripture({ user: 'Long', reference: SCRIPTURE_CATALOG[0].id, reflection: longReflection });
+  assert.equal(r.queue.status().current.event.reflection.length, longReflection.length);
+  assert.ok(r.queue.status().current.event.ttsText.length > 120, 'Narration must not be silently cut at 120 characters');
+  assert.equal(r.stateModel.state.recentEvents[0].reference, SCRIPTURE_CATALOG[0].reference, 'Keep punctuation in stored Bible references');
+  r.queue.clear();
   const referencePicker = createScripturePicker();
   const requestedReference = SCRIPTURE_CATALOG[0].reference;
   assert.notEqual(referencePicker.pickReference(requestedReference).id, referencePicker.pickReference(requestedReference).id);
@@ -234,10 +240,17 @@ async function regressions() {
   ready = true; await time.advance(250); await flush();
   assert.equal(warming.queue.status().current.event.ttsUrl, '/warm.wav', 'Retry after worker readiness without replaying visuals');
   warming.queue.clear();
+  const muteClock = clock();
+  const muting = runtime({ time: muteClock, tts: { getStatus: () => ({ ready: true, voices: ['maichi'] }), synthesize: () => new Promise(() => {}) } });
+  muting.service.sendPrayer({ user: 'Mute', wish: 'Pending voice' }); await flush();
+  const reservedEnd = muting.queue.status().current.endsAt;
+  muting.service.updateSettings({ ttsEnabled: false });
+  assert.ok(muting.queue.status().current.endsAt < reservedEnd, 'Muting speech releases the synthesis wait while retaining the complete visual and return');
+  muting.queue.clear();
   const timeoutClock = clock(); let lateResolve;
   const expires = runtime({ time: timeoutClock, tts: { getStatus: () => ({ ready: true }), synthesize: () => new Promise(resolve => lateResolve = resolve) } });
   expires.service.sendPrayer({ user: 'Late', wish: 'Timeout' }); await flush();
-  await timeoutClock.advance(30250);
+  await timeoutClock.advance(require('../src/services/speechPolicy').CHRISTIAN_SPEECH_TIMEOUT_MS + 250);
   assert.ok(expires.queue.status().current.event.speechError, 'Expose bounded speech timeout');
   await timeoutClock.advance(2600);
   assert.equal(expires.queue.status().current, null);
@@ -277,7 +290,7 @@ async function fixture() {
   const realtime = createRealtimeService({ profileId: 'thien-chua-giao' });
   const tts = { getStatus: () => ({ ready: true, status: 'ready', voices: ['baotrang', 'giahuy', 'hamy', 'huuduc', 'kimoanh', 'maichi', 'quangminh', 'tiendat'], voice: stateModel.state.settings.ttsVoice }),
     synthesize: async (_text, voice = 'maichi') => ({ ok: true, url: '/__fixture-voice.wav', durationSec: process.argv.includes('--serve') ? 30 : 4, voice }) };
-  const queue = createCeremonyQueue({ stateModel, realtime, ttsManager: tts, profileId: 'thien-chua-giao', prefetchSpeech: true, nonBlockingSpeech: true, speechTimeoutMs: 30000 });
+  const queue = createCeremonyQueue({ stateModel, realtime, ttsManager: tts, profileId: 'thien-chua-giao', prefetchSpeech: true, nonBlockingSpeech: true, speechTimeoutMs: require('../src/services/speechPolicy').CHRISTIAN_SPEECH_TIMEOUT_MS });
   const service = createChristianService({ stateModel, realtime, ceremonyQueue: queue, ttsManager: tts });
   const calls = [];
   const coordinator = createProfileLiveCoordinator({

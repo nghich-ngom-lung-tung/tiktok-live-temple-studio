@@ -80,6 +80,32 @@ async function main() {
   assert.ok(tracker.take(fallback, 'fallback'));
   console.log('PASS gifts: incremental combos, duplicates, final packet, standalone gifts, per-user isolation.');
 
+  const credits = runtime();
+  assert.equal(credits.stateModel.state.totalMerit, 0);
+  assert.equal(credits.stateModel.state.totalIncense, 0);
+  assert.equal(credits.stateModel.state.settings.musicVolume, .65);
+  assert.equal(credits.stateModel.state.settings.ttsVolume, .95);
+  const likeBurst = credits.rituals.strikeWoodenFish({ user: 'Like sender', count: 250 }).event;
+  assert.equal(likeBurst.merit, 250, 'Large connector Like packets must retain all credits');
+  credits.queue.clear();
+  const recognized = [];
+  const keywordParser = require('../src/services/commentService').createCommentService({ rituals: new Proxy({}, { get: (_target, kind) => params => { recognized.push({kind, params}); return params; } }) });
+  keywordParser.parseViewerComment('rất vui được làm quen', 'Guest', 'neutral', '');
+  assert.equal(recognized.at(-1).kind, 'burnIncense', 'The substring que inside quen must not draw a fortune');
+  keywordParser.parseViewerComment('hương', 'Guest', 'incense-keyword', '');
+  assert.equal(recognized.at(-1).params.count, 3);
+  for (const [coins, multiplier] of [[1,20],[5,20],[9,20],[10,30],[99,30],[100,50]]) {
+    assert.equal(credits.rituals.offerGift({user:'Gift sender', coins}).event.merit, coins * multiplier);
+    credits.queue.clear();
+  }
+  const batch = runtime(), split = runtime();
+  const batchGift = batch.rituals.offerGift({user:'Same gift', coins:100, giftQuantity:100}).event;
+  for(let i=0;i<100;i++) { split.rituals.offerGift({user:'Same gift', coins:1, giftQuantity:1}); split.queue.clear(); }
+  assert.equal(batchGift.giftType, 'lotus', 'A combo of cheap gifts must not become an expensive gift type');
+  for(const field of ['totalMerit','totalIncense']) assert.equal(batch.stateModel.state[field], split.stateModel.state[field], field);
+  assert.deepEqual(batch.stateModel.state.offerings, split.stateModel.state.offerings);
+  assert.equal(Object.values(batch.stateModel.state.devotees)[0].gifts, 100);
+  console.log('PASS interaction contracts: full Like credit, keyword boundaries, incense keyword and gift thresholds.');
   const r = runtime();
   const first = r.rituals.burnIncense({ user: 'First user', readTts: false }).event;
   const second = r.rituals.offerGift({ user: 'Second user', coins: 10, readTts: false }).event;

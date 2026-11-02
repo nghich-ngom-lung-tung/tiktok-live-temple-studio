@@ -46,8 +46,7 @@ function parseViewerComment(commentText, user, uniqueId, avatar) {
     lower.includes('gieo que') ||
     lower.includes('rút quẻ') ||
     lower.includes('rut que') ||
-    lower.includes('quẻ') ||
-    lower.includes('que')
+    /(?:^|[^\p{L}\p{N}])(?:quẻ|que)(?=$|[^\p{L}\p{N}])/u.test(lower)
   ) {
     return Rituals.drawFortune({ user: cleanUser, uniqueId, avatar, topic: cleanWish });
   }
@@ -71,7 +70,8 @@ function parseViewerComment(commentText, user, uniqueId, avatar) {
     lower.includes('bái phật') ||
     lower.includes('bai phat') ||
     lower.includes('lạy phật') ||
-    lower.includes('lay phat')
+    lower.includes('lay phat') ||
+    /(?:^|[^\p{L}\p{N}])(?:hương|huong)(?=$|[^\p{L}\p{N}])/u.test(lower)
   ) {
     return Rituals.burnIncense({ user: cleanUser, uniqueId, avatar, count: 3, wish: cleanWish });
   }

@@ -31,7 +31,7 @@ function createChristianRpcService({ stateModel, service, commentService, ttsMan
         realtime.broadcastNotification('christian.state', getState());
         return getState();
       case 'christian.previewChat': {
-        const comment = sanitizeWishText(params.comment).slice(0, 240);
+        const comment = sanitizeWishText(params.comment, 240).slice(0, 240);
         if (!comment || isBlockedSpamOrToxic(comment)) throw new Error('Nội dung bình luận không hợp lệ.');
         const viewer = stateModel.getRoomViewers().find(item => item.isSimulated && item.uniqueId === String(params.uniqueId || ''));
         if (!viewer) throw new Error('Chọn một người test đang có trong room trước nhé.');
@@ -54,7 +54,7 @@ function createChristianRpcService({ stateModel, service, commentService, ttsMan
       case 'christian.ttsStatus':
         return ttsManager.getStatus();
       case 'christian.speak': {
-        const text = sanitizeWishText(params.text).slice(0, 1000);
+        const text = sanitizeWishText(params.text, 1000).slice(0, 1000);
         if (!text) throw new Error('Nhập nội dung cần đọc.');
         if (params.broadcast !== false && stateModel.state.settings.presentationPaused) throw new Error('Đang tạm dừng hiệu ứng và âm thanh.');
         if (params.broadcast !== false && stateModel.state.settings.ttsEnabled === false) throw new Error('Bật giọng đọc trước khi phát thông báo trên Live.');

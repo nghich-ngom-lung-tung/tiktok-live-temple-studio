@@ -27,7 +27,7 @@ function createGiftTracker({ now = Date.now } = {}) {
     while (streaks.size > 2000) streaks.delete(streaks.keys().next().value);
     while (messages.size > 4000) messages.delete(messages.keys().next().value);
     const unitCoins = Math.max(1, Number(gift.diamondCount ?? data.diamondCount) || 1);
-    return { giftId, quantity, coins: unitCoins * quantity, name: String(gift.name || data.giftName || gift.describe || 'Quà tặng') };
+    return { giftId, quantity, coins: unitCoins * quantity, name: String(gift.name || gift.giftName || data.giftName || gift.describe || 'Quà tặng') };
   }
   return { take, clear() { streaks.clear(); messages.clear(); } };
 }

@@ -12,7 +12,8 @@
     "typecheck": "tsc --noEmit",
     "test:christian": "node scripts/test-christian-runtime.cjs",
     "build": "npm run typecheck && vite build",
-    "start": "npm run build && node server.js"
+    "start": "npm run build && node server.js",
+    "test": "npm run build && node scripts/run-tests.cjs"
   },
   "dependencies": {
     "cors": "^2.8.5",

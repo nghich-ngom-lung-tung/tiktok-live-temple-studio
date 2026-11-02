@@ -86,7 +86,7 @@ const rituals = {
     const user = sanitizeUserName(params.user);
     const uniqueId = params.uniqueId || '';
     const avatar = params.avatar || '';
-    const count = Math.max(1, Math.min(50, Number(params.count) || 1));
+    const count = Math.max(1, Math.min(1_000_000, Math.floor(Number(params.count) || 1)));
     const merit = count;
 
     state.woodenFishHits += count;
@@ -174,13 +174,17 @@ const rituals = {
   },
 
   offerGift(params = {}) {
+    if ((params.coins !== undefined && !Number.isFinite(Number(params.coins)))
+      || (params.giftQuantity !== undefined && !Number.isFinite(Number(params.giftQuantity)))) throw new Error('Giá trị và số lượng quà phải là số hữu hạn.');
     const user = sanitizeUserName(params.user);
     const uniqueId = params.uniqueId || '';
     const avatar = params.avatar || '';
     const coins = Math.max(1, Number(params.coins) || 10);
+    const giftQuantity = Math.max(1, Math.floor(Number(params.giftQuantity) || 1));
+    const giftUnitCoins = Math.max(1, coins / giftQuantity);
     const giftType = ['lotus', 'fruit', 'lamp', 'dragon'].includes(params.giftType)
       ? params.giftType
-      : (coins >= 100 ? 'dragon' : coins >= 20 ? 'fruit' : coins >= 5 ? 'lamp' : 'lotus');
+      : (giftUnitCoins >= 100 ? 'dragon' : giftUnitCoins >= 20 ? 'fruit' : giftUnitCoins >= 5 ? 'lamp' : 'lotus');
 
     const giftLabels = {
       lotus: 'Đài Hoa Sen Vàng',
@@ -189,15 +193,15 @@ const rituals = {
       dragon: 'Đại Lễ Kim Long Chầu Phật'
     };
     const giftName = params.giftName || giftLabels[giftType];
-    const multiplier = coins >= 100 ? 50 : coins >= 10 ? 30 : 20;
+    const multiplier = giftUnitCoins >= 100 ? 50 : giftUnitCoins >= 10 ? 30 : 20;
     const merit = Math.max(20, coins * multiplier);
 
-    state.offerings[giftType] = (state.offerings[giftType] || 0) + 1;
-    state.totalIncense += 3;
-    state.activeIncenseSticks = Math.min(36, state.activeIncenseSticks + 3);
+    state.offerings[giftType] = (state.offerings[giftType] || 0) + giftQuantity;
+    state.totalIncense += 3 * giftQuantity;
+    state.activeIncenseSticks = Math.min(36, state.activeIncenseSticks + 3 * giftQuantity);
 
     const wish = params.wish || `Dâng cúng ${giftName} lên Tam Bảo`;
-    const devotee = recordDevotee(user, uniqueId, avatar, merit, 3, 1, wish);
+    const devotee = recordDevotee(user, uniqueId, avatar, merit, 3 * giftQuantity, giftQuantity, wish);
 
     const ttsText = params.readTts === false
       ? ''
@@ -211,7 +215,8 @@ const rituals = {
       giftType,
       giftName,
       giftId: params.giftId || null,
-      giftQuantity: Number(params.giftQuantity || 1),
+      giftQuantity,
+      giftUnitCoins,
       presentation: params.presentation || null,
       count: Math.min(9, Number(params.giftQuantity || 1)),
       coins,
@@ -353,21 +358,21 @@ const rituals = {
       configureAutoSim(next.autoSim);
     }
     if (params.presentationPaused === true) ceremonyQueue?.clear();
-    else if (params.presentationPaused === false) ceremonyQueue?.resume();
+    else if (!state.settings.presentationPaused) ceremonyQueue?.resume();
     saveState();
     broadcastNotification('temple.state', getPublicState());
     return getPublicState();
   },
 
   resetMerit() {
-    state.totalIncense = 9;
+    state.totalIncense = 0;
     state.totalMerit = 0;
     state.woodenFishHits = 0;
     state.bellRings = 0;
     state.lanternCount = 0;
     state.fortuneCount = 0;
     state.activeIncenseSticks = 3;
-    state.offerings = { lotus: 1, fruit: 1, lamp: 1, dragon: 0 };
+    state.offerings = { lotus: 0, fruit: 0, lamp: 0, dragon: 0 };
     state.devotees = {};
     state.recentEvents = [];
     saveState();
