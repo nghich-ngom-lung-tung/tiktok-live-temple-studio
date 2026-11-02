@@ -269,7 +269,7 @@ npm start
 
 ### Khắc phục sự cố nhanh
 
-**LIVE Studio từ chối localhost/HTTP:** dùng URL HTTPS theo [hướng dẫn Cloudflare Tunnel](docs/cloudflare-live-studio.md). Repo chưa tự bật tunnel; hướng dẫn có đủ bước chạy cloudflared, giữ token, cấu hình origin và URL cho cả hai hồ sơ. Nếu nguồn local hoạt động thì không cần tunnel.
+**LIVE Studio từ chối localhost/HTTP:** dùng URL HTTPS theo [hướng dẫn Cloudflare Tunnel](docs/cloudflare-live-studio.md). Sau khi cài `cloudflared`, chạy `npm run start:https` hoặc `.\start.ps1 -Https` để tự tạo tunnel, cấu hình origin và in URL cho cả hai hồ sơ. Hướng dẫn cũng có cách chạy thủ công. Nếu nguồn local hoạt động thì không cần tunnel.
 
 * **Token không hợp lệ sau khi khởi động lại:** nếu chưa đặt `TEMPLE_RPC_TOKEN`, lấy token mới từ terminal hoặc đặt token riêng cố định trong biến môi trường.
 * **ZeroTTS chưa sẵn sàng:** kiểm tra `uv`, chạy `npm run setup:python`, rồi khởi động lại. Lần đầu tải model cần Internet và khoảng `900 MB` dung lượng.

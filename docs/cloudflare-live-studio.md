@@ -2,7 +2,33 @@
 
 Nếu nguồn trình duyệt của LIVE Studio từ chối URL `http://localhost`/`http://127.0.0.1` nhưng nhận URL HTTPS, dùng tunnel để đưa màn Live local ra một URL HTTPS. Đây là trường hợp đã được người dùng báo trên máy của mình, không phải khẳng định mọi phiên bản LIVE Studio đều bắt buộc Cloudflare. Nếu phần mềm phát đã mở được URL local thì không cần tunnel.
 
-Ứng dụng hiện **không tự cài hoặc tự chạy cloudflared**. Backend đã hỗ trợ cho phép origin HTTPS cụ thể qua `TEMPLE_CORS_ORIGINS`; giao diện tự dùng WebSocket `wss:` khi mở qua HTTPS. Hướng dẫn dưới đây chạy tunnel bằng tay và dùng bản build production ở cổng 3000.
+Ứng dụng có chế độ HTTPS tự động. Backend cho phép đúng origin HTTPS do cloudflared cấp; giao diện tự dùng WebSocket `wss:` khi mở qua HTTPS. Tunnel trỏ tới bản build production, không công khai Vite dev server.
+
+## Cách nhanh: một terminal
+
+Cài `cloudflared` theo mục chuẩn bị bên dưới, rồi chạy:
+
+```powershell
+npm run start:https
+```
+
+Hoặc dùng script Windows có kiểm tra môi trường:
+
+```powershell
+.\start.ps1 -Https
+```
+
+Lệnh build giao diện, kiểm tra cổng local, chạy cloudflared, lấy hostname Quick Tunnel, truyền hostname vào `TEMPLE_CORS_ORIGINS` rồi khởi động backend. Backend được kiểm tra xác thực local, rồi kiểm tra HTTPS qua Cloudflare trước khi hiện thông báo sẵn sàng. Lúc mới được cấp URL, DNS/đường tunnel có thể cần thêm thời gian. Terminal in hai link nguồn có `profile`, `obs=1` và token để dán vào LIVE Studio, cùng link Quản lý local. Không cần nhập lại origin hoặc khởi động backend lần thứ hai.
+
+Nếu đã đặt `TEMPLE_RPC_TOKEN` thì giữ token đó; nếu chưa có, launcher tạo token riêng cho phiên. Token không được ghi vào mã nguồn hoặc tệp cấu hình. `PORT` mặc định 3000; ví dụ `$env:PORT = '3001'` trước khi chạy nếu cần cổng khác. Launcher chỉ bind backend vào `127.0.0.1`.
+
+Ctrl+C dừng các tiến trình backend/worker/tunnel do lệnh này tạo. Nếu backend hoặc tunnel tự dừng, launcher dừng phần còn lại và báo chạy lại lệnh; không giữ link đã hỏng hoặc tự đổi URL trong nguồn LIVE Studio. Khi chạy lại, Quick Tunnel cấp URL mới nên cần thay link trong nguồn phát. Nếu cổng đang có app khác chạy, launcher báo lỗi, không tắt app đó.
+
+Chế độ Quick Tunnel tự động dùng một tệp cấu hình trống trong thư mục tạm và loại các biến `TUNNEL_*` khỏi môi trường riêng của tiến trình cloudflared, để cấu hình named tunnel cũ không ghi đè URL mới. Cấu hình Cloudflare hiện có trên máy không bị sửa; tệp tạm được dọn khi dừng.
+
+Không tự tải hoặc cài cloudflared. Nếu thiếu, lệnh báo cách cài. Nếu không cấp được URL trong 60 giây, backend chưa sẵn sàng sau 30 giây, hoặc HTTPS chưa truy cập được sau 45 giây, lệnh dừng và dọn tiến trình của phiên. Mốc backend sẵn sàng chỉ xác nhận web/API, không khẳng định ZeroTTS đã tải xong model hay LIVE Studio đã phát tiếng.
+
+Cách hai terminal dưới đây vẫn dùng được khi muốn tự quản lý tunnel hoặc dùng hostname cố định.
 
 ## Chuẩn bị
 
@@ -74,4 +100,6 @@ Mở URL nguồn HTTPS trên trình duyệt trước, bấm một thao tác từ
 
 Tunnel làm URL local truy cập được từ Internet; RPC/state/âm thanh giọng vẫn yêu cầu token của app. Không chia sẻ token hoặc dùng token mẫu. Cloudflare chỉ chuyển tiếp nguồn hình/tiếng và kết nối web; không cấp quyền Go LIVE cho tài khoản TikTok.
 
-Tài liệu này đã đối chiếu cấu hình origin, xác thực và cách chọn HTTP/WebSocket trong code; chưa khởi tạo tunnel công khai hoặc thử trực tiếp LIVE Studio trong lần cập nhật tài liệu này.
+Chạy `node scripts/test-https-live.cjs` khi muốn kiểm tra tunnel thật với dữ liệu tạm riêng (cần cloudflared và Internet; script tự dừng tunnel/backend khi kết thúc).
+
+Launcher có kiểm tra tự động với tiến trình giả lập: hostname chính xác, log URL chia nhiều chunk, origin/token, thứ tự khởi động, cổng bận, thiếu cloudflared, timeout, hủy và dọn tiến trình. Đã thử Quick Tunnel công khai thật trên cổng riêng với dữ liệu tạm: HTTPS cho cả hai hồ sơ, kiểm tra bắt buộc token và WebSocket WSS đều qua; tunnel/backend/worker thử được dừng khi kết thúc. Chưa thử trực tiếp nguồn phát trong giao diện LIVE Studio hoặc âm thanh đến thiết bị người xem trong lần tích hợp này.
